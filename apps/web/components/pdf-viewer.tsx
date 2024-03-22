@@ -130,7 +130,7 @@ export default function PDFViewer(): JSX.Element {
       <div
         style={{
           height: "100vh",
-          width: "75vw",
+          width: "50vw",
           position: "relative",
         }}
       >

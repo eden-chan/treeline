@@ -17,7 +17,7 @@ export function Sidebar({
   resetHighlights,
 }: Props) {
   return (
-    <div className="sidebar" style={{ width: "25vw" }}>
+    <div className="sidebar" style={{ width: "50vw" }}>
       <div className="description" style={{ padding: "1rem" }}>
         <h2 style={{ marginBottom: "1rem" }}>react-pdf-highlighter</h2>
 
