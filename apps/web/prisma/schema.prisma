@@ -8,3 +8,55 @@ datasource db {
   relationMode = "prisma"
 }
 
+type HighlightsHighlights {
+  comment  HighlightsHighlightsComment
+  content  HighlightsHighlightsContent
+  id       String
+  position HighlightsHighlightsPosition
+}
+
+type HighlightsHighlightsComment {
+  emoji String
+  text  String
+}
+
+type HighlightsHighlightsContent {
+  image String?
+  text  String?
+}
+
+type HighlightsHighlightsPosition {
+  boundingRect HighlightsHighlightsPositionBoundingRect
+  pageNumber   Int
+  rects        HighlightsHighlightsPositionRects[]
+}
+
+type HighlightsHighlightsPositionBoundingRect {
+  /// Multiple data types found: Float: 12.5%, Int: 87.5% out of 8 sampled entries
+  height     Json
+  pageNumber Int?
+  width      Float
+  x1         Float
+  x2         Float
+  y1         Json
+  y2         Json
+}
+
+type HighlightsHighlightsPositionRects {
+  /// Multiple data types found: Float: 7.1%, Int: 92.9% out of 14 sampled entries
+  height     Json
+  pageNumber Int?
+  width      Float
+  x1         Float
+  x2         Float
+  y1         Float
+  y2         Float
+}
+
+model highlights {
+  id         String                 @id @default(auto()) @map("_id") @db.ObjectId
+  highlights HighlightsHighlights[]
+  source     String
+  user       String
+}
+
