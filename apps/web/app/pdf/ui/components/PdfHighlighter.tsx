@@ -7,7 +7,7 @@ import {
   NullL10n,
   PDFLinkService,
   PDFViewer,
-} from "pdfjs-dist";
+} from "pdfjs-dist/legacy/web/pdf_viewer";
 import type {
   IHighlight,
   LTWH,
@@ -204,7 +204,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     }
 
     return findOrCreateContainerLayer(
-      textLayer.textLayerDiv,
+      textLayer.textLayerDiv, 
       "PdfHighlighter__highlight-layer"
     );
   }
