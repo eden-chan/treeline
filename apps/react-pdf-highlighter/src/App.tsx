@@ -1,3 +1,4 @@
+'use client'
 import React, { useState, useEffect } from "react";
 
 import {
@@ -7,15 +8,16 @@ import {
   Highlight,
   Popup,
   AreaHighlight,
+  Spinner, 
+  Sidebar
 } from "./react-pdf-highlighter";
 
 import type { IHighlight, NewHighlight } from "./react-pdf-highlighter";
 
 import { testHighlights as _testHighlights } from "./test-highlights";
-import { Spinner } from "./Spinner";
-import { Sidebar } from "./Sidebar";
 
 import "./style/App.css";
+import { getAllHighlights } from "../ui/lib/mongo";
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
@@ -117,6 +119,7 @@ const App = () => {
 
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>
+      
       <Sidebar
         highlights={highlights}
         resetHighlights={resetHighlights}
