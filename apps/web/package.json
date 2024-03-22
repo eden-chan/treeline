@@ -9,6 +9,7 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@clerk/nextjs": "^4.29.9",
     "@prisma/client": "^5.11.0",
     "@repo/ui": "workspace:*",
     "@wojtekmaj/react-hooks": "^1.19.0",
