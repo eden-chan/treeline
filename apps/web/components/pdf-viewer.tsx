@@ -6,10 +6,10 @@ import {
   PdfHighlighter,
   Tip,
   Highlight,
+  Forest,
   Popup,
   AreaHighlight,
   Spinner,
-  Sidebar,
 } from "../app/pdf/ui";
 
 import type { IHighlight, NewHighlight } from "../app/pdf/ui/types";
@@ -210,7 +210,7 @@ export default function PDFViewer(): JSX.Element {
           )}
         </PdfLoader>
       </div>
-      <Sidebar
+      <Forest
         highlights={highlights}
         resetHighlights={resetHighlights}
         toggleDocument={toggleDocument}
