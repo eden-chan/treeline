@@ -38,6 +38,7 @@
     "@prisma/client": "^5.11.0",
     "lodash.debounce": "^4.0.8",
     "mongodb": "^6.5.0",
+    "next": "^14.1.4",
     "pdfjs-dist": "2.16.105",
     "react-rnd": "^10.1.10"
   },

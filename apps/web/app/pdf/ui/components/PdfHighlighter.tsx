@@ -7,8 +7,7 @@ import {
   NullL10n,
   PDFLinkService,
   PDFViewer,
-} from "pdfjs-dist/legacy/web/pdf_viewer";
-
+} from "pdfjs-dist";
 import type {
   IHighlight,
   LTWH,
@@ -104,7 +103,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     tipChildren: null,
   };
 
-  // eventBus = new EventBus();
+  eventBus = new EventBus();
   linkService = new PDFLinkService({
     eventBus: this.eventBus,
     externalLinkTarget: 2,

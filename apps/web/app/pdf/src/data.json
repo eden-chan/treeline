@@ -1,0 +1,5 @@
+{
+  id: "1",
+  text: "Highlight 1",
+  position: { pageNumber: 1, boundingRect: { x1: 10, y1: 20, x2: 30, y2: 40 }, rects: [{ x1: 10, y1: 20, x2: 30, y2: 40 }] }
+}

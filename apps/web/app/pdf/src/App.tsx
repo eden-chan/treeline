@@ -42,12 +42,16 @@ const HighlightPopup = ({
 
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
+const initialUrl = PRIMARY_PDF_URL
+if (document) {
 
-const searchParams = new URLSearchParams(document.location.search);
+  const searchParams = new URLSearchParams(document.location.search);
+  const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
+}
 
-const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 
 const App = () => {
+  
   const [url, setUrl] = useState(initialUrl);
   const [highlights, setHighlights] = useState<Array<IHighlight>>(
     testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : []

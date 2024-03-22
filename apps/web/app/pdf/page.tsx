@@ -1,4 +1,4 @@
-import PDFViewer from "./components/pdf-viewer";
+import PDFViewer from "./src/App";
 
 export default function Page(): JSX.Element {
     return (
