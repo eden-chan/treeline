@@ -75,4 +75,5 @@ export const HighlightSchema = z.object({
         .optional(),
     })
     .optional(),
+  id: z.string(),
 });

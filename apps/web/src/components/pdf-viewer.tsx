@@ -52,7 +52,7 @@ if (document) {
 export default function PDFViewer(): JSX.Element {
 
   const data = clientApi.post.hello.useQuery({ text: 'client' });
-
+  const mutation = clientApi.post.create.useMutation();
 
   const [url, setUrl] = useState(initialUrl);
   const [highlights, setHighlights] = useState<Array<IHighlight>>(
@@ -101,9 +101,52 @@ export default function PDFViewer(): JSX.Element {
     console.log("Saving highlight", highlight);
 
 
+    // const highlightSchema = {
+    //   user: "eden",
+    //   highlights: [testHighlights["https://arxiv.org/pdf/1604.02480.pdf"]],
+    //   source: "https://arxiv.org/pdf/1604.02480.pdf",
+    // };
+    mutation.mutate({
+      user: "eden",
+      highlights: [
+        {
+          id: `highlight_${Date.now()}`,
+          content: {
+            text: "SSA",
+          },
+          position: {
+            boundingRect: {
+              x1: 816.4599609375,
+              y1: 360.1875,
+              x2: 848.4677734375,
+              y2: 380.1875,
+              width: 1019.9999999999999,
+              height: 1319.9999999999998,
+              pageNumber: 1,
+            },
+            rects: [
+              {
+                x1: 816.4599609375,
+                y1: 360.1875,
+                x2: 848.4677734375,
+                y2: 380.1875,
+                width: 1019.9999999999999,
+                height: 1319.9999999999998,
+                pageNumber: 1,
+              },
+            ],
+            pageNumber: 1,
+          },
+          comment: {
+            text: "My Static Single Assignment",
+            emoji: "😎",
+          },
+        },
+      ],
+      source: "https://arxiv.org/pdf/1604.02480.pdf",
+    });
 
-
-    // (testHighlightToAdd);
+    // (testHighlightToAdd);  
     console.log('added highlight: ', data);
 
     setHighlights([{ ...highlight, id: getNextId() }, ...highlights]);

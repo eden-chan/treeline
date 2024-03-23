@@ -315,9 +315,3 @@ export const testHighlights = {
     },
   ],
 };
-
-export const testHighlightToAdd = {
-  user: "eden",
-  highlights: [testHighlights["https://arxiv.org/pdf/1604.02480.pdf"]],
-  source: "https://arxiv.org/pdf/1604.02480.pdf",
-};
