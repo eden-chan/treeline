@@ -9,15 +9,15 @@ datasource db {
 }
 
 type HighlightsHighlights {
-  comment  HighlightsHighlightsComment
+  comment  HighlightsHighlightsComment?
   content  HighlightsHighlightsContent
   id       String
   position HighlightsHighlightsPosition
 }
 
 type HighlightsHighlightsComment {
-  emoji String
-  text  String
+  emoji String?
+  text  String?
 }
 
 type HighlightsHighlightsContent {
@@ -32,18 +32,17 @@ type HighlightsHighlightsPosition {
 }
 
 type HighlightsHighlightsPositionBoundingRect {
-  /// Multiple data types found: Float: 12.5%, Int: 87.5% out of 8 sampled entries
-  height     Json
+  height     Float
   pageNumber Int?
   width      Float
   x1         Float
   x2         Float
-  y1         Json
-  y2         Json
+  y1         Float
+  y2         Float
 }
 
 type HighlightsHighlightsPositionRects {
-  height     Json
+  height     Float
   pageNumber Int?
   width      Float
   x1         Float
@@ -58,4 +57,3 @@ model Highlights {
   source     String
   user       String
 }
-
