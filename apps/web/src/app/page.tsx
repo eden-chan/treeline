@@ -1,6 +1,6 @@
 import React from "react";
-import Tree from "@components/tree";
-import PDFViewer from "@components/pdf-viewer";
+import Tree from "~/components/tree";
+import PDFViewer from "~/components/pdf-viewer";
 
 export default function Page(): JSX.Element {
   return (
