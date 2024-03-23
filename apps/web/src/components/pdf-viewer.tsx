@@ -95,17 +95,18 @@ export default function PDFViewer({ loadedHighlights, loadedSource }: { loadedHi
 
   const addHighlight = async (highlight: NewHighlight) => {
     console.log("Saving highlight", highlight);
+    const id = getNextId()
     // If the highlights object doesn't exist, create it
     mutation.mutate({
       user: "eden",
-      highlights: [highlight],
+      highlights: [{ ...highlight, id }],
       source: url,
     });
 
     // (testHighlightToAdd);  
     console.log('added highlight: ', data);
 
-    setHighlights([{ ...highlight, id: getNextId() }, ...highlights]);
+    setHighlights([{ ...highlight, id }, ...highlights]);
   };
 
   const updateHighlight = (

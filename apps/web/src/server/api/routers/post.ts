@@ -61,12 +61,6 @@ export const highlightsRouter = createTRPCRouter({
       z.object({ user: z.string().optional(), source: z.string().optional() })
     )
     .query(async ({ ctx, input }) => {
-      console.log(
-        "Fetching user highlights with input:",
-        input,
-        "and ctx:",
-        ctx
-      );
       const whereClause: Record<string, any> = {};
       if (input.user) {
         console.log("Filtering by user:", input.user);
@@ -78,9 +72,12 @@ export const highlightsRouter = createTRPCRouter({
       }
       let result;
       try {
+        const start = Date.now();
         result = await db.highlights.findMany({
           where: whereClause,
         });
+        const end = Date.now();
+        console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
         return [];
