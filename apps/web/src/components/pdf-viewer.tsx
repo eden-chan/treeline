@@ -14,10 +14,13 @@ import {
 
 import type { IHighlight, NewHighlight } from "../app/pdf/ui/types";
 
-import { testHighlights as _testHighlights, testHighlightToAdd } from "../app/pdf/data/test-highlights";
+import {
+  testHighlights as _testHighlights,
+  testHighlightToAdd,
+} from "../app/pdf/data/test-highlights";
 
 import "../app/pdf/ui/style/main.css";
-import { clientApi } from '~/trpc/react'
+import { clientApi } from "@src/trpc/react";
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
@@ -50,8 +53,7 @@ if (document) {
 }
 
 export default function PDFViewer(): JSX.Element {
-
-  const data = clientApi.post.hello.useQuery({ text: 'client' });
+  const data = clientApi.post.hello.useQuery({ text: "client" });
   const mutation = clientApi.post.create.useMutation();
 
   const [url, setUrl] = useState(initialUrl);
@@ -71,7 +73,7 @@ export default function PDFViewer(): JSX.Element {
     setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
   };
 
-  let scrollViewerTo = (highlight: any) => { };
+  let scrollViewerTo = (highlight: any) => {};
 
   const scrollToHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
@@ -99,7 +101,6 @@ export default function PDFViewer(): JSX.Element {
 
   const addHighlight = async (highlight: NewHighlight) => {
     console.log("Saving highlight", highlight);
-
 
     // const highlightSchema = {
     //   user: "eden",
@@ -146,8 +147,8 @@ export default function PDFViewer(): JSX.Element {
       source: "https://arxiv.org/pdf/1604.02480.pdf",
     });
 
-    // (testHighlightToAdd);  
-    console.log('added highlight: ', data);
+    // (testHighlightToAdd);
+    console.log("added highlight: ", data);
 
     setHighlights([{ ...highlight, id: getNextId() }, ...highlights]);
   };
@@ -169,11 +170,11 @@ export default function PDFViewer(): JSX.Element {
         } = h;
         return id === highlightId
           ? {
-            id,
-            position: { ...originalPosition, ...position },
-            content: { ...originalContent, ...content },
-            ...rest,
-          }
+              id,
+              position: { ...originalPosition, ...position },
+              content: { ...originalContent, ...content },
+              ...rest,
+            }
           : h;
       }),
     );

@@ -1,4 +1,5 @@
-import { TRPCReactProvider } from '~/trpc/react';
+import React from 'react';
+import { TRPCReactProvider } from '@src/trpc/react';
 import PDFViewer from "../../components/pdf-viewer";
 
 export default function Page() {
