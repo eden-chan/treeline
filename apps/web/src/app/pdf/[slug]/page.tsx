@@ -9,9 +9,10 @@ export default async function Page({ params }: { params: { slug: string } }) {
     const user_and_source = await api.post.fetchUserHighlights({ user: "eden", source: pdfUrl });
     const highlights = user_and_source[0]?.highlights ?? []
     const source = user_and_source[0]?.source ?? pdfUrl
+    const loadedUserHighlightsId = user_and_source[0]?.id ?? null
 
     return <TRPCReactProvider>
-        <PDFViewer loadedHighlights={highlights} loadedSource={source} />
+        <PDFViewer loadedHighlights={highlights} loadedSource={source} loadedUserHighlightsId={loadedUserHighlightsId} />
     </TRPCReactProvider>
 }
 

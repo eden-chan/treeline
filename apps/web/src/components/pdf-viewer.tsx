@@ -46,12 +46,13 @@ const HighlightPopup = ({
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
 
-export default function PDFViewer({ loadedHighlights, loadedSource }: { loadedHighlights: IHighlight[], loadedSource: string }): JSX.Element {
+export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHighlightsId }: { loadedHighlights: IHighlight[], loadedSource: string, loadedUserHighlightsId: string }): JSX.Element {
 
   const data = clientApi.post.hello.useQuery({ text: 'client' });
-  const mutation = clientApi.post.create.useMutation();
+  const mutation = clientApi.post.addHighlight.useMutation();
 
 
+  const [userHighlightsId, setUserHighlightsId] = useState(loadedUserHighlightsId)
   const [url, setUrl] = useState(loadedSource);
   const [highlights, setHighlights] = useState<Array<IHighlight>>(loadedHighlights);
 
@@ -97,15 +98,13 @@ export default function PDFViewer({ loadedHighlights, loadedSource }: { loadedHi
     console.log("Saving highlight", highlight);
     const id = getNextId()
     // If the highlights object doesn't exist, create it
-    mutation.mutate({
+    const returnId = mutation.mutate({
       user: "eden",
       highlights: [{ ...highlight, id }],
       source: url,
-    });
-
-    // (testHighlightToAdd);  
-    console.log('added highlight: ', data);
-
+      id: userHighlightsId
+    });;
+    console.log('added highlight: ', returnId, 'loaded id', userHighlightsId);
     setHighlights([{ ...highlight, id }, ...highlights]);
   };
 

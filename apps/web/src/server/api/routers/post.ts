@@ -12,38 +12,26 @@ export const highlightsRouter = createTRPCRouter({
       };
     }),
 
-  create: publicProcedure
+  // Create new highlight object if doesn't exist
+  // Otherwise, update the highlight objects
+  addHighlight: publicProcedure
     .input(
       z.object({
         highlights: z.array(HighlightSchema),
         user: z.string(),
         source: z.string(),
+        id: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return db.highlights.create({
-        data: {
-          user: input.user,
-          source: input.source,
-          highlights: input.highlights,
-        },
-      });
-    }),
-  update: publicProcedure
-    .input(
-      z.object({
-        highlights: z.array(HighlightSchema),
-        user: z.string(),
-        source: z.string(),
-        id: z.string(),
-      })
-    )
-    .mutation(async ({ ctx, input }) => {
-      return db.highlights.update({
+      return db.highlights.upsert({
         where: {
           id: input.id,
         },
-        data: {
+        update: {
+          highlights: input.highlights,
+        },
+        create: {
           user: input.user,
           source: input.source,
           highlights: input.highlights,
