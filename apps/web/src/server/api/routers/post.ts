@@ -1,7 +1,7 @@
 import { z } from "zod";
-import { db } from "~/lib/db";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
-import { HighlightSchema } from "~/types/post";
+import { db } from "@src/lib/db";
+import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
+import { HighlightSchema } from "@src/types/post";
 
 export const highlightsRouter = createTRPCRouter({
   hello: publicProcedure

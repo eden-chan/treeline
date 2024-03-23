@@ -1,8 +1,8 @@
 
 import React from "react";
-import Tree from "~/components/tree";
-import PDFViewer from "~/components/pdf-viewer";
-import { api } from "~/trpc/server";
+import Tree from "@src/components/tree";
+import PDFViewer from "@src/components/pdf-viewer";
+import { api } from "@src/trpc/server";
 
 export default async function Page() {
   const hello = await api.post.hello({ text: "from tRPC" });

@@ -1,7 +1,7 @@
 import { useRouter } from 'next/router';
-import PDFViewer from '../../../components/pdf-viewer'; // Adjust the import path as necessary
-import { api } from '~/trpc/server';
-import { TRPCReactProvider } from '~/trpc/react';
+import PDFViewer from '@src/components/pdf-viewer'; // Adjust the import path as necessary
+import { api } from '@src/trpc/server';
+import { TRPCReactProvider } from '@src/trpc/react';
 export default async function Page({ params }: { params: { slug: string } }) {
 
     const arxivId = params.slug
