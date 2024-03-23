@@ -225,11 +225,11 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
         resetHighlights={resetHighlights}
         toggleDocument={toggleDocument}
       />
-      <Sidebar
-        highlights={highlights}
-        resetHighlights={resetHighlights}
-        toggleDocument={toggleDocument}
-      />
+      {/* <Sidebar */}
+      {/*   highlights={highlights} */}
+      {/*   resetHighlights={resetHighlights} */}
+      {/*   toggleDocument={toggleDocument} */}
+      {/* /> */}
     </div>
   );
 }
