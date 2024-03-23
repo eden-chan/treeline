@@ -63,7 +63,7 @@ export const highlightsRouter = createTRPCRouter({
         });
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
-        throw new Error("Error fetching highlights");
+        return [];
       }
       console.log("Fetched highlights:", result);
       return result;

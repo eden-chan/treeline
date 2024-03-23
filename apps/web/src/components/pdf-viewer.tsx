@@ -44,20 +44,16 @@ const HighlightPopup = ({
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
 const initialUrl = PRIMARY_PDF_URL;
-if (document) {
-  const searchParams = new URLSearchParams(document.location.search);
-  const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
-}
 
-export default function PDFViewer(): JSX.Element {
+
+export default function PDFViewer({ loadedHighlights, loadedSource }: { loadedHighlights: IHighlight[], loadedSource: string }): JSX.Element {
 
   const data = clientApi.post.hello.useQuery({ text: 'client' });
   const mutation = clientApi.post.create.useMutation();
 
-  const [url, setUrl] = useState(initialUrl);
-  const [highlights, setHighlights] = useState<Array<IHighlight>>(
-    testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : [],
-  );
+
+  const [url, setUrl] = useState(loadedSource);
+  const [highlights, setHighlights] = useState<Array<IHighlight>>(loadedHighlights);
 
   const resetHighlights = () => {
     setHighlights([]);
@@ -99,8 +95,6 @@ export default function PDFViewer(): JSX.Element {
 
   const addHighlight = async (highlight: NewHighlight) => {
     console.log("Saving highlight", highlight);
-
-
     // const highlightSchema = {
     //   user: "eden",
     //   highlights: [testHighlights["https://arxiv.org/pdf/1604.02480.pdf"]],

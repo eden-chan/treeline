@@ -25,16 +25,15 @@ const updateHash = (id: string) => {
 export function Forest({ highlights, toggleDocument, resetHighlights }: Props) {
   console.log(highlights);
 
-  const [nodes, setNodes] = useState(
-    highlights.map((highlight, index) => {
-      return {
-        id: highlight.id,
-        position: { x: 0, y: index * 100 },
-        data: { label: highlight.comment.text },
-        type: "input",
-      };
-    }),
-  );
+  const [nodes, setNodes] = useState(() => {
+    if (!highlights || highlights?.length === 0) return [];
+    return highlights.map((highlight, index) => ({
+      id: highlight!.id,
+      position: { x: 0, y: index * 100 },
+      data: { label: highlight?.comment?.text },
+      type: "input",
+    }));
+  });
   const [edges, setEdges] = useState([]);
 
   const onNodesChange: OnNodesChange = useCallback(
@@ -50,7 +49,7 @@ export function Forest({ highlights, toggleDocument, resetHighlights }: Props) {
   );
 
   return (
-    <div style={{ width: "50vw", height: "100vh" }}>
+    <div style={{ width: "50vw", height: "100vh" }} >
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -63,7 +62,7 @@ export function Forest({ highlights, toggleDocument, resetHighlights }: Props) {
         <MiniMap />
         <Background variant={"dots" as BackgroundVariant} gap={12} size={1} />
       </ReactFlow>
-    </div>
+    </div >
   );
 }
 
