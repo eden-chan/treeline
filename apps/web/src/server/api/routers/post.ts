@@ -21,8 +21,28 @@ export const highlightsRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // simulate a slow db call
       return db.highlights.create({
+        data: {
+          user: input.user,
+          source: input.source,
+          highlights: input.highlights,
+        },
+      });
+    }),
+  update: publicProcedure
+    .input(
+      z.object({
+        highlights: z.array(HighlightSchema),
+        user: z.string(),
+        source: z.string(),
+        id: z.string(),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      return db.highlights.update({
+        where: {
+          id: input.id,
+        },
         data: {
           user: input.user,
           source: input.source,

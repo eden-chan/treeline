@@ -10,6 +10,7 @@ import {
   Popup,
   AreaHighlight,
   Spinner,
+  Sidebar,
 } from "../app/pdf/ui";
 
 import type { IHighlight, NewHighlight } from "../app/pdf/ui/types";
@@ -18,6 +19,7 @@ import { testHighlights as _testHighlights, testHighlightToAdd } from "../app/pd
 
 import "../app/pdf/ui/style/main.css";
 import { clientApi } from '~/trpc/react'
+
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
@@ -43,8 +45,6 @@ const HighlightPopup = ({
 
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
-const initialUrl = PRIMARY_PDF_URL;
-
 
 export default function PDFViewer({ loadedHighlights, loadedSource }: { loadedHighlights: IHighlight[], loadedSource: string }): JSX.Element {
 
@@ -95,49 +95,11 @@ export default function PDFViewer({ loadedHighlights, loadedSource }: { loadedHi
 
   const addHighlight = async (highlight: NewHighlight) => {
     console.log("Saving highlight", highlight);
-    // const highlightSchema = {
-    //   user: "eden",
-    //   highlights: [testHighlights["https://arxiv.org/pdf/1604.02480.pdf"]],
-    //   source: "https://arxiv.org/pdf/1604.02480.pdf",
-    // };
+    // If the highlights object doesn't exist, create it
     mutation.mutate({
       user: "eden",
-      highlights: [
-        {
-          id: `highlight_${Date.now()}`,
-          content: {
-            text: "SSA",
-          },
-          position: {
-            boundingRect: {
-              x1: 816.4599609375,
-              y1: 360.1875,
-              x2: 848.4677734375,
-              y2: 380.1875,
-              width: 1019.9999999999999,
-              height: 1319.9999999999998,
-              pageNumber: 1,
-            },
-            rects: [
-              {
-                x1: 816.4599609375,
-                y1: 360.1875,
-                x2: 848.4677734375,
-                y2: 380.1875,
-                width: 1019.9999999999999,
-                height: 1319.9999999999998,
-                pageNumber: 1,
-              },
-            ],
-            pageNumber: 1,
-          },
-          comment: {
-            text: "My Static Single Assignment",
-            emoji: "😎",
-          },
-        },
-      ],
-      source: "https://arxiv.org/pdf/1604.02480.pdf",
+      highlights: [highlight],
+      source: url,
     });
 
     // (testHighlightToAdd);  
@@ -259,6 +221,11 @@ export default function PDFViewer({ loadedHighlights, loadedSource }: { loadedHi
         </PdfLoader>
       </div>
       <Forest
+        highlights={highlights}
+        resetHighlights={resetHighlights}
+        toggleDocument={toggleDocument}
+      />
+      <Sidebar
         highlights={highlights}
         resetHighlights={resetHighlights}
         toggleDocument={toggleDocument}
