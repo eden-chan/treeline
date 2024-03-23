@@ -14,10 +14,7 @@ import {
 
 import type { IHighlight, NewHighlight } from "../app/pdf/ui/types";
 
-import {
-  testHighlights as _testHighlights,
-  testHighlightToAdd,
-} from "../app/pdf/data/test-highlights";
+import { testHighlights as _testHighlights } from "../app/pdf/data/test-highlights";
 
 import "../app/pdf/ui/style/main.css";
 import { clientApi } from "@src/trpc/react";
