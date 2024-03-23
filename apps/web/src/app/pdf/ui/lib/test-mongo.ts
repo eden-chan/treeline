@@ -1,7 +1,7 @@
-import { createHighlight } from './mongo';
+import { createHighlight } from "./mongo";
 
 async function testUpload() {
-  const testData = {
+  const testHighlight = {
     content: {
       text: "Sample highlight for testing upload functionality",
     },
@@ -35,16 +35,14 @@ async function testUpload() {
 
   try {
     const highlightToAdd = {
-      "user": 'eden', 
-      "allHighlights": [{
-          source: "https://example.com/test-pdf",
-          highlights: [testData]}
-      ]  
+      user: "eden",
+      highlights: [testHighlight],
+      source: "https://arxiv.org/pdf/1708.08021.pdf",
     };
     const result = await createHighlight(highlightToAdd);
-    console.log('Upload successful:', result);
+    console.log("Upload successful:", result);
   } catch (error) {
-    console.error('Upload failed:', error);
+    console.error("Upload failed:", error);
   }
 }
 

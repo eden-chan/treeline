@@ -1,10 +1,11 @@
+import { TRPCReactProvider } from '~/trpc/react';
 import PDFViewer from "../../components/pdf-viewer";
 
-export default function Page(): JSX.Element {
+export default function Page() {
   return (
-    <main>
+    <TRPCReactProvider>
       <PDFViewer />
-    </main>
+    </TRPCReactProvider>
   );
 }
 

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { db } from "~/lib/db";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { HighlightSchema } from "~/types/post";
 
 export const highlightsRouter = createTRPCRouter({
   hello: publicProcedure
@@ -12,14 +13,20 @@ export const highlightsRouter = createTRPCRouter({
     }),
 
   create: publicProcedure
-    .input(z.object({ name: z.string().min(1) }))
+    .input(
+      z.object({
+        highlights: z.array(HighlightSchema),
+        user: z.string(),
+        source: z.string(),
+      })
+    )
     .mutation(async ({ ctx, input }) => {
       // simulate a slow db call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      return ctx.db.post.create({
+      return db.highlights.create({
         data: {
-          name: input.name,
+          user: input.user,
+          source: input.source,
+          highlights: input.highlights,
         },
       });
     }),
@@ -34,7 +41,12 @@ export const highlightsRouter = createTRPCRouter({
       z.object({ user: z.string().optional(), source: z.string().optional() })
     )
     .query(async ({ ctx, input }) => {
-      console.log("Fetching user highlights with input:", input);
+      console.log(
+        "Fetching user highlights with input:",
+        input,
+        "and ctx:",
+        ctx
+      );
       const whereClause: Record<string, any> = {};
       if (input.user) {
         console.log("Filtering by user:", input.user);
