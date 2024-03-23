@@ -52,7 +52,7 @@ type HighlightsHighlightsPositionRects {
   y2         Float
 }
 
-model highlights {
+model Highlights {
   id         String                 @id @default(auto()) @map("_id") @db.ObjectId
   highlights HighlightsHighlights[]
   source     String
