@@ -16,8 +16,7 @@ type HighlightsHighlights {
 }
 
 type HighlightsHighlightsComment {
-  emoji String?
-  text  String?
+  text String?
 }
 
 type HighlightsHighlightsContent {
