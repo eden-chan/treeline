@@ -56,6 +56,7 @@ export class Tip extends Component<Props, State> {
           >
             <div>
               <textarea
+              className='text-black'
                 placeholder="Your comment"
                 autoFocus
                 value={text}
