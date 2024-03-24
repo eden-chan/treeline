@@ -1,7 +1,10 @@
 
 import React from "react";
 import Tree from "@src/components/tree";
-import PDFViewer from "@src/components/pdf-viewer";
+import dynamic from 'next/dynamic';
+const PdfViewer = dynamic(() => import('../components/pdf-viewer'), {
+  ssr: false, // Disable server-side rendering for this component
+});
 import { api } from "@src/trpc/server";
 
 export default async function Page() {

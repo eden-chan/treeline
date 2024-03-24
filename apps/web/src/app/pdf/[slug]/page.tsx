@@ -1,6 +1,8 @@
 import { useRouter } from 'next/router';
-import PDFViewer from '@src/components/pdf-viewer'; // Adjust the import path as necessary
-import { api } from '@src/trpc/server';
+import dynamic from 'next/dynamic';
+const PDFViewer = dynamic(() => import('@src/components/pdf-viewer'), {
+    ssr: false, // Disable server-side rendering for this component
+}); import { api } from '@src/trpc/server';
 import { TRPCReactProvider } from '@src/trpc/react';
 export default async function Page({ params }: { params: { slug: string } }) {
 

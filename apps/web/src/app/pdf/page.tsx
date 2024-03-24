@@ -1,8 +1,13 @@
 import React from "react";
 import { TRPCReactProvider } from "@src/trpc/react";
-import PDFViewer from "@src/components/pdf-viewer";
+
 import { api } from "@src/trpc/server";
 import { IHighlight } from "./ui";
+
+import dynamic from 'next/dynamic';
+const PDFViewer = dynamic(() => import('@src/components/pdf-viewer'), {
+  ssr: false, // Disable server-side rendering for this component
+});
 
 export default async function Page() {
   const user_and_source = await api.post.fetchUserHighlights({
