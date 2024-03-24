@@ -21,8 +21,8 @@ type HighlightsHighlightsComment {
 }
 
 type HighlightsHighlightsContent {
-  text String?
   image String?
+  text  String?
 }
 
 type HighlightsHighlightsPosition {
