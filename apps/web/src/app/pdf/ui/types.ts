@@ -14,13 +14,10 @@ export interface LTWHP extends LTWH {
 export interface Scaled {
   x1: number;
   y1: number;
-
   x2: number;
   y2: number;
-
   width: number;
   height: number;
-
   pageNumber?: number;
 }
 

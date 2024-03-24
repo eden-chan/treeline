@@ -4,13 +4,14 @@ const PDFViewer = dynamic(() => import('@src/components/pdf-viewer'), {
 }); import { api } from '@src/trpc/server';
 import { TRPCReactProvider } from '@src/trpc/react';
 import { PDFHighlights } from '../ui';
+import { ObjectId } from 'mongodb';
 export default async function Page({ params }: { params: { slug: string } }) {
 
     const arxivId = params.slug
 
     const pdfUrl = `https://arxiv.org/pdf/${arxivId}.pdf`;
     const user_and_source = await api.post.fetchUserHighlights({ user: "admin", source: pdfUrl }) as PDFHighlights;
-    const { highlights = [], source = pdfUrl, id = "" } = user_and_source || {};
+    const { highlights = [], source = pdfUrl, id = new ObjectId().toString() } = user_and_source || {};
 
 
     return <TRPCReactProvider>
