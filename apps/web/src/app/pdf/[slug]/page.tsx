@@ -8,13 +8,11 @@ export default async function Page({ params }: { params: { slug: string } }) {
 
     const arxivId = params.slug
     const pdfUrl = `https://arxiv.org/pdf/${arxivId}.pdf`;
-    const user_and_source = await api.post.fetchUserHighlights({ user: "eden", source: pdfUrl });
-    const highlights = user_and_source[0]?.highlights ?? []
-    const source = user_and_source[0]?.source ?? pdfUrl
-    const loadedUserHighlightsId = user_and_source[0]?.id ?? null
+    const user_and_source = await api.post.fetchUserHighlights({ user: "admin", source: pdfUrl });
+    const { highlights, source, id } = user_and_source ?? {}
 
     return <TRPCReactProvider>
-        <PDFViewer loadedHighlights={highlights} loadedSource={source} loadedUserHighlightsId={loadedUserHighlightsId} />
+        <PDFViewer loadedHighlights={highlights} loadedSource={source} loadedUserHighlightsId={id} />
     </TRPCReactProvider>
 }
 

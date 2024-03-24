@@ -21,7 +21,7 @@ export const highlightsRouter = createTRPCRouter({
         user: z.string(),
         source: z.string(),
         id: z.string().optional(),
-      }),
+      })
     )
     .mutation(async ({ ctx, input }) => {
       return db.highlights.upsert({
@@ -46,7 +46,7 @@ export const highlightsRouter = createTRPCRouter({
    */
   fetchUserHighlights: publicProcedure
     .input(
-      z.object({ user: z.string().optional(), source: z.string().optional() }),
+      z.object({ user: z.string().optional(), source: z.string().optional() })
     )
     .query(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};
@@ -62,16 +62,16 @@ export const highlightsRouter = createTRPCRouter({
       try {
         const start = Date.now();
         console.log("where clause", whereClause);
-        result = await db.highlights.findMany({
+        result = await db.highlights.findFirst({
           where: whereClause,
         });
         const end = Date.now();
         console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
-        return [];
+        return {};
       }
-      console.log("Fetched highlights:", result);
+      console.log("Fetched single highlights:", result);
       return result;
     }),
 });

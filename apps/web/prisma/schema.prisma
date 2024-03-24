@@ -9,19 +9,19 @@ datasource db {
 }
 
 type HighlightsHighlights {
-  comment  HighlightsHighlightsComment?
+  comment  HighlightsHighlightsComment
   content  HighlightsHighlightsContent
   id       String
   position HighlightsHighlightsPosition
 }
 
 type HighlightsHighlightsComment {
-  text String?
+  emoji String
+  text  String
 }
 
 type HighlightsHighlightsContent {
-  image String?
-  text  String?
+  text String?
 }
 
 type HighlightsHighlightsPosition {
@@ -32,7 +32,7 @@ type HighlightsHighlightsPosition {
 
 type HighlightsHighlightsPositionBoundingRect {
   height     Float
-  pageNumber Int?
+  pageNumber Int
   width      Float
   x1         Float
   x2         Float
@@ -42,7 +42,7 @@ type HighlightsHighlightsPositionBoundingRect {
 
 type HighlightsHighlightsPositionRects {
   height     Float
-  pageNumber Int?
+  pageNumber Int
   width      Float
   x1         Float
   x2         Float
@@ -50,7 +50,7 @@ type HighlightsHighlightsPositionRects {
   y2         Float
 }
 
-model Highlights {
+model highlights {
   id         String                 @id @default(auto()) @map("_id") @db.ObjectId
   highlights HighlightsHighlights[]
   source     String
