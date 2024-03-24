@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
-import { HighlightSchema } from "@src/types/post";
+import { IHighlightSchema } from "@src/app/pdf/ui/types";
 
 export const highlightsRouter = createTRPCRouter({
   hello: publicProcedure
@@ -17,26 +17,31 @@ export const highlightsRouter = createTRPCRouter({
   addHighlight: publicProcedure
     .input(
       z.object({
-        highlights: z.array(HighlightSchema),
+        highlights: z.array(IHighlightSchema),
         user: z.string(),
         source: z.string(),
         id: z.string().optional(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return db.highlights.upsert({
-        where: {
-          id: input.id,
-        },
-        update: {
-          highlights: input.highlights,
-        },
-        create: {
-          user: input.user,
-          source: input.source,
-          highlights: input.highlights,
-        },
-      });
+      if (input.id) {
+        return db.highlights.update({
+          where: {
+            id: input.id,
+          },
+          data: {
+            highlights: input.highlights,
+          },
+        });
+      } else {
+        return db.highlights.create({
+          data: {
+            user: input.user,
+            source: input.source,
+            highlights: input.highlights,
+          },
+        });
+      }
     }),
   /**
    * Fetches user highlights based on optional user and source filters.

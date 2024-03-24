@@ -10,7 +10,6 @@ import {
   Popup,
   AreaHighlight,
   Spinner,
-  Sidebar,
 } from "../app/pdf/ui";
 
 import type { IHighlight, NewHighlight } from "../app/pdf/ui/types";
@@ -79,6 +78,7 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
   };
 
   useEffect(() => {
+
     window.addEventListener("hashchange", scrollToHighlightFromHash, false);
 
     return () => {
@@ -98,12 +98,13 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
     console.log("Saving highlight", highlight);
     const id = getNextId()
     // If the highlights object doesn't exist, create it
-    const returnId = mutation.mutate({
-      user: "eden",
-      highlights: [{ ...highlight, id }],
+    const returnId: any = mutation.mutate({
+      user: "admin",
+      highlights: [{ ...highlight, id }, ...highlights],
       source: url,
       id: userHighlightsId
-    });;
+    });
+
     console.log('added highlight: ', returnId, 'loaded id', userHighlightsId);
     setHighlights([{ ...highlight, id }, ...highlights]);
   };

@@ -15,7 +15,6 @@ export default async function Page() {
     source: "https://arxiv.org/pdf/1604.02480.pdf",
   }) as PDFHighlights
 
-
   const { highlights, source, id } = user_and_source
 
   return (
