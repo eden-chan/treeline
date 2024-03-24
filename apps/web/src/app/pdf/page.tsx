@@ -2,7 +2,7 @@ import React from "react";
 import { TRPCReactProvider } from "@src/trpc/react";
 
 import { api } from "@src/trpc/server";
-import { IHighlight } from "./ui";
+import { PDFHighlights } from "./ui";
 
 import dynamic from 'next/dynamic';
 const PDFViewer = dynamic(() => import('@src/components/pdf-viewer'), {
@@ -13,20 +13,15 @@ export default async function Page() {
   const user_and_source = await api.post.fetchUserHighlights({
     user: "admin",
     source: "https://arxiv.org/pdf/1604.02480.pdf",
-  }) as {
-    highlights: { id: string; comment: { emoji: string; text: string; }; content: { image: string | null; text: string | null; }; position: { pageNumber: number; } & any; }[];
-    source: string;
-    id: string;
-    user: string;
-  };
+  }) as PDFHighlights
 
 
-  const { highlights, source, id, user } = user_and_source
+  const { highlights, source, id } = user_and_source
 
   return (
     <TRPCReactProvider>
       {/* <pre className="text-blue-500">{JSON.stringify(user_and_source, null, 2)}</pre> */}
-      <PDFViewer loadedHighlights={highlights} loadedSource={source} id={id} />
+      <PDFViewer loadedHighlights={highlights} loadedSource={source} loadedUserHighlightsId={id} />
     </TRPCReactProvider>
   );
 }

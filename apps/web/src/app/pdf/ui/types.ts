@@ -76,3 +76,10 @@ export interface Page {
   node: HTMLElement;
   number: number;
 }
+
+export interface PDFHighlights {
+  highlights: IHighlight[];
+  source: string;
+  user: string;
+  id: string;
+}
