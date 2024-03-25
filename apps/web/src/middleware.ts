@@ -9,6 +9,8 @@ export default authMiddleware({
   // Prevent the specified routes from accessing
   // authentication information:
   // ignoredRoutes: ['/no-auth-in-this-route'],
+  publicRoutes: ["/api/webhooks(.*)"],
+  ignoredRoutes: ["/((?!api|trpc))(_next.*|.+.[w]+$)", "/"],
 });
 
 export const config = {
