@@ -74,7 +74,7 @@ export default function PDFViewer({
 
   const scrollToHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
-    setHighlight(highlight);
+    if (highlight) setHighlight(highlight);
 
     if (highlight) {
       scrollViewerTo(highlight);
@@ -233,7 +233,10 @@ export default function PDFViewer({
         </PdfLoader>
       </div>
       {highlight ? (
-        <Forest highlight={highlight} />
+        <Forest
+          highlight={highlight}
+          returnHome={() => setHighlight(undefined)}
+        />
       ) : (
         <Sidebar
           highlights={highlights}

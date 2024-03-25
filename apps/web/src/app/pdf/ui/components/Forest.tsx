@@ -1,4 +1,6 @@
 import React, { useCallback, useState } from "react";
+
+import { Button } from "@/components/ui/button";
 import ReactFlow, {
   MiniMap,
   Controls,
@@ -14,13 +16,14 @@ import "reactflow/dist/style.css";
 
 interface Props {
   highlight: IHighlight;
+  returnHome: () => void;
 }
 
 const updateHash = (id: string) => {
   document.location.hash = `highlight-${id}`;
 };
 
-export function Forest({ highlight }: Props) {
+export function Forest({ highlight, returnHome }: Props) {
   console.log(highlight);
 
   const [nodes, setNodes] = useState(() => {
@@ -48,7 +51,13 @@ export function Forest({ highlight }: Props) {
   );
 
   return (
-    <div style={{ width: "50vw", height: "100vh" }}>
+    <div style={{ width: "50vw", height: "100vh", position: "relative" }}>
+      <Button
+        className="absolute top-4 left-4 bg-black z-10"
+        onClick={returnHome}
+      >
+        Go Back
+      </Button>
       <ReactFlow
         nodes={nodes}
         edges={edges}

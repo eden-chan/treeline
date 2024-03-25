@@ -11,6 +11,7 @@
   "dependencies": {
     "@clerk/nextjs": "^4.29.9",
     "@prisma/client": "^5.11.0",
+    "@radix-ui/react-slot": "^1.0.2",
     "@repo/ui": "workspace:*",
     "@tanstack/react-query": "^5.25.0",
     "@trpc/client": "next",
@@ -18,7 +19,10 @@
     "@trpc/react-query": "next",
     "@trpc/server": "next",
     "@wojtekmaj/react-hooks": "^1.19.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
     "lodash.debounce": "^4.0.8",
+    "lucide-react": "^0.363.0",
     "mongodb": "^6.5.0",
     "next": "^14.1.1",
     "pdfjs-dist": "2.16.105",
@@ -29,6 +33,8 @@
     "reactflow": "^11.10.4",
     "server-only": "^0.0.1",
     "superjson": "^2.2.1",
+    "tailwind-merge": "^2.2.2",
+    "tailwindcss-animate": "^1.0.7",
     "zod": "^3.22.4"
   },
   "devDependencies": {
