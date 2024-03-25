@@ -6,21 +6,19 @@ const PdfViewer = dynamic(() => import('../components/pdf-viewer'), {
   ssr: false, // Disable server-side rendering for this component
 });
 import { api } from "@src/trpc/server";
+import UserSettings from '@src/components/user-settings';
+import { SignInButton, SignOutButton, UserButton } from '@clerk/clerk-react';
 
 export default async function Page() {
   const hello = await api.post.hello({ text: "from tRPC" });
-  const user = await api.post.fetchUserHighlights({ user: "admin" });
-  const source = await api.post.fetchUserHighlights({ source: "https://arxiv.org/pdf/1708.08021.pdf" });
-  const user_and_source = await api.post.fetchUserHighlights({ user: "admin", source: "https://arxiv.org/pdf/1708.08021.pdf" });
-
+  // const helloPrivate = await api.post.helloPrivate({ text: "from logged in tRPC" });
 
   return (
-    <main className="h-screen w-screen grid grid-cols-2 gap-0">
+    <main className="">
 
-      <h1>{hello.greeting}</h1>
-      <pre className="text-red-500">{JSON.stringify(user, null, 2)}</pre>
-      <pre className="text-green-500">{JSON.stringify(source, null, 2)}</pre>
-      <pre className="text-blue-500">{JSON.stringify(user_and_source, null, 2)}</pre>
+      <h1 className="text-black">{hello.greeting}</h1>
+      {/* <h1 className="text-black">{helloPrivate?.greeting}</h1> */}
+      <UserSettings />
       {/* <PDFViewer /> */}
       {/* <Tree /> */}
     </main>

@@ -9,6 +9,7 @@
     "lint": "eslint . --max-warnings 0"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^4.30.7",
     "@clerk/nextjs": "^4.29.9",
     "@prisma/client": "^5.11.0",
     "@repo/ui": "workspace:*",

@@ -1,14 +1,26 @@
 import { z } from "zod";
 import { db } from "@src/lib/db";
-import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
+import {
+  createTRPCRouter,
+  protectedProcedure,
+  publicProcedure,
+} from "@src/server/api/trpc";
 import { IHighlightSchema } from "@src/app/pdf/ui/types";
 
 export const highlightsRouter = createTRPCRouter({
+  helloPrivate: protectedProcedure
+    .input(z.object({ text: z.string() }))
+    .query(({ ctx, input }) => {
+      return {
+        greeting: `Hello ${input.text} ${JSON.stringify(ctx.auth, null, 2)}`,
+      };
+    }),
+
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
     .query(({ ctx, input }) => {
       return {
-        greeting: `Hello ${input.text} ${ctx.auth?.userId}`,
+        greeting: `Hello ${input.text} ${JSON.stringify(ctx.auth, null, 2)}`,
       };
     }),
 
