@@ -21,7 +21,7 @@ export const highlightsRouter = createTRPCRouter({
         user: z.string(),
         source: z.string(),
         id: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       return await db.highlights.upsert({
@@ -46,7 +46,7 @@ export const highlightsRouter = createTRPCRouter({
    */
   fetchUserHighlights: publicProcedure
     .input(
-      z.object({ user: z.string().optional(), source: z.string().optional() })
+      z.object({ user: z.string().optional(), source: z.string().optional() }),
     )
     .query(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};

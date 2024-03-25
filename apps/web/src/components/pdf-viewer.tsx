@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 
+import { clientApi } from "@src/trpc/react";
 import {
   PdfLoader,
   PdfHighlighter,
@@ -12,17 +13,9 @@ import {
   Spinner,
   Sidebar,
 } from "../app/pdf/ui";
-
 import type { IHighlight, NewHighlight } from "../app/pdf/ui/types";
 
-import { testHighlights as _testHighlights } from "../app/pdf/data/test-highlights";
-
 import "../app/pdf/ui/style/main.css";
-import { clientApi } from "@src/trpc/react";
-import { ObjectId } from 'mongodb';
-
-
-const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
 
 const getNextId = () => String(Math.random()).slice(2);
 
@@ -47,14 +40,23 @@ const HighlightPopup = ({
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
 
-export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHighlightsId }: { loadedHighlights: IHighlight[], loadedSource: string, loadedUserHighlightsId: string }): JSX.Element {
-
+export default function PDFViewer({
+  loadedHighlights,
+  loadedSource,
+  loadedUserHighlightsId,
+}: {
+  loadedHighlights: IHighlight[];
+  loadedSource: string;
+  loadedUserHighlightsId: string;
+}): JSX.Element {
   const mutation = clientApi.post.addHighlight.useMutation();
-
-
-  const [userHighlightsId, setUserHighlightsId] = useState(loadedUserHighlightsId)
   const [url, setUrl] = useState(loadedSource);
-  const [highlights, setHighlights] = useState<Array<IHighlight>>(loadedHighlights);
+  const [highlight, setHighlight] = useState<IHighlight | undefined>(undefined);
+  const [highlights, setHighlights] = useState(loadedHighlights);
+
+  const getHighlightById = (id: string) => {
+    return highlights.find((highlight) => highlight.id === id);
+  };
 
   const resetHighlights = () => {
     setHighlights([]);
@@ -65,13 +67,14 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
       url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
 
     setUrl(newUrl);
-    setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
+    setHighlights([]);
   };
 
-  let scrollViewerTo = (highlight: any) => { };
+  let scrollViewerTo = (_highlight: any) => {};
 
   const scrollToHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
+    setHighlight(highlight);
 
     if (highlight) {
       scrollViewerTo(highlight);
@@ -79,7 +82,6 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
   };
 
   useEffect(() => {
-
     window.addEventListener("hashchange", scrollToHighlightFromHash, false);
 
     return () => {
@@ -91,29 +93,19 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
     };
   }, [highlights]);
 
-  const getHighlightById = (id: string) => {
-    return highlights.find((highlight) => highlight.id === id);
-  };
-
   const addHighlight = async (highlight: NewHighlight) => {
     console.log("Saving highlight", highlight);
 
-
-    const id = getNextId()
+    const id = getNextId();
     // If the highlights object doesn't exist, create it
-    const returnId: any = mutation.mutate({
+    mutation.mutate({
       user: "admin",
       highlights: [{ ...highlight, id }, ...highlights],
       source: url,
-      id: userHighlightsId
+      id: loadedUserHighlightsId,
     });
 
-    console.log({ returnId })
-
-    console.log('added highlight: ', returnId, 'loaded id', userHighlightsId);
     setHighlights([{ ...highlight, id }, ...highlights]);
-
-
   };
 
   const updateHighlight = (
@@ -121,7 +113,6 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
     position: Object,
     content: Object,
   ) => {
-
     console.log("Updating highlight", highlightId, position, content);
     const updatedHighlights = highlights.map((h) => {
       const {
@@ -132,24 +123,22 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
       } = h;
       return id === highlightId
         ? {
-          id,
-          position: { ...originalPosition, ...position },
-          content: { ...originalContent, ...content },
-          ...rest,
-        }
+            id,
+            position: { ...originalPosition, ...position },
+            content: { ...originalContent, ...content },
+            ...rest,
+          }
         : h;
     });
 
     setHighlights(updatedHighlights);
 
-    const returnId: any = mutation.mutate({
+    mutation.mutate({
       user: "admin",
       highlights: updatedHighlights,
       source: url,
-      id: userHighlightsId
+      id: loadedUserHighlightsId,
     });
-    console.log('added highlight: ', returnId, 'loaded id', userHighlightsId);
-
   };
 
   return (
@@ -181,14 +170,13 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
                 <Tip
                   onOpen={transformSelection}
                   onConfirm={(comment) => {
-                    console.log({ content })
                     addHighlight({
                       content: {
                         text: content.text,
-                        image: content.image
+                        image: content.image,
                       },
                       position,
-                      comment
+                      comment,
                     });
                     hideTipAndSelection();
                   }}
@@ -244,16 +232,15 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
           )}
         </PdfLoader>
       </div>
-      <Forest
-        highlights={highlights}
-        resetHighlights={resetHighlights}
-        toggleDocument={toggleDocument}
-      />
-      <Sidebar
-        highlights={highlights}
-        resetHighlights={resetHighlights}
-        toggleDocument={toggleDocument}
-      />
+      {highlight ? (
+        <Forest highlight={highlight} />
+      ) : (
+        <Sidebar
+          highlights={highlights}
+          resetHighlights={resetHighlights}
+          toggleDocument={toggleDocument}
+        />
+      )}
     </div>
   );
 }

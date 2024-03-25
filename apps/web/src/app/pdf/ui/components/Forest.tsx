@@ -13,26 +13,25 @@ import type { IHighlight } from "../types";
 import "reactflow/dist/style.css";
 
 interface Props {
-  highlights: Array<IHighlight>;
-  resetHighlights: () => void;
-  toggleDocument: () => void;
+  highlight: IHighlight;
 }
 
 const updateHash = (id: string) => {
   document.location.hash = `highlight-${id}`;
 };
 
-export function Forest({ highlights, toggleDocument, resetHighlights }: Props) {
-  console.log(highlights);
+export function Forest({ highlight }: Props) {
+  console.log(highlight);
 
   const [nodes, setNodes] = useState(() => {
-    if (!highlights || highlights?.length === 0) return [];
-    return highlights.map((highlight, index) => ({
-      id: highlight!.id,
-      position: { x: 0, y: index * 100 },
-      data: { label: highlight?.comment?.text },
-      type: "input",
-    }));
+    return [
+      {
+        id: highlight!.id,
+        position: { x: 0, y: 0 },
+        data: { label: highlight?.comment?.text },
+        type: "input",
+      },
+    ];
   });
   const [edges, setEdges] = useState([]);
 
@@ -49,7 +48,7 @@ export function Forest({ highlights, toggleDocument, resetHighlights }: Props) {
   );
 
   return (
-    <div style={{ width: "50vw", height: "100vh" }} >
+    <div style={{ width: "50vw", height: "100vh" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -62,6 +61,6 @@ export function Forest({ highlights, toggleDocument, resetHighlights }: Props) {
         <MiniMap />
         <Background variant={"dots" as BackgroundVariant} gap={12} size={1} />
       </ReactFlow>
-    </div >
+    </div>
   );
 }
