@@ -59,8 +59,10 @@ model highlights {
 }
 
 model users {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String   @unique
-  follows   String[]
-  followers String[]
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  email      String
+  first_name String
+  followers  String[]
+  follows    String[]
+  last_name  String
 }
