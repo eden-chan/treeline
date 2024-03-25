@@ -3,6 +3,7 @@
  * @see https://v0.dev/t/XDRzC3xKQnY
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
+'use client'
 import Link from "next/link";
 import { UserButton } from "@clerk/nextjs";
 
@@ -11,7 +12,7 @@ export default function Page(): JSX.Element {
     <div className="flex flex-col min-h-screen">
       <header className="p-4 space-y-4">
         <div className="container flex items-center justify-between px-4 mx-auto">
-          <Link className="flex space-x-2 font-bold" href="#">
+          <Link href="/sign-in" className="flex space-x-2 font-bold">
             <span>My</span>
             <span className="bg-gradient-to-r from-rose-500 to-pink-500 via-red-500 bg-clip-text text-transparent">
               /Space
@@ -48,7 +49,7 @@ export default function Page(): JSX.Element {
           <div className="flex flex-col gap-2 min-[400px]:flex-row">
             <Link
               className="inline-flex h-10 items-center justify-center rounded-md border border-gray-200 border-gray-200 bg-white px-8 text-sm font-medium shadow-sm gap-2 transition-colors hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-gray-950 dark:border-gray-800 dark:border-gray-800 dark:bg-gray-950 dark:hover:bg-gray-950 dark:hover:text-gray-50 dark:focus-visible:ring-gray-300 dark:text-white"
-              href="#"
+              href="/pdf"
             >
               Get started with My/Space
               <ChevronRightIcon className="w-4 h-4" />

@@ -1,4 +1,4 @@
-import { authMiddleware } from "@clerk/nextjs";
+import { authMiddleware, redirectToSignIn } from "@clerk/nextjs";
 
 // See https://clerk.com/docs/references/nextjs/auth-middleware
 // for more information about configuring your Middleware
@@ -9,8 +9,8 @@ export default authMiddleware({
   // Prevent the specified routes from accessing
   // authentication information:
   // ignoredRoutes: ['/no-auth-in-this-route'],
-  publicRoutes: ["/api/webhooks(.*)"],
-  ignoredRoutes: ["/((?!api|trpc))(_next.*|.+.[w]+$)", "/"],
+  publicRoutes: ["/api/webhooks(.*)", "/pdf", "/pdf/(.*)", "/", "/landing"],
+  ignoredRoutes: ["/((?!api|trpc))(_next.*|.+.[w]+$)"],
 });
 
 export const config = {
