@@ -5,7 +5,7 @@ import { WebhookEvent } from "@clerk/nextjs/server";
 export async function POST(req: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
   const WEBHOOK_SECRET = process.env.CLERK_WEBHOOK_SECRET;
-
+  console.log("Webhook triggered");
   if (!WEBHOOK_SECRET) {
     throw new Error(
       "Please add WEBHOOK_SECRET from Clerk Dashboard to .env or .env.local"
@@ -36,6 +36,7 @@ export async function POST(req: Request) {
 
   // Verify the payload with the headers
   try {
+    console.log("testing webhook");
     evt = wh.verify(body, {
       "svix-id": svix_id,
       "svix-timestamp": svix_timestamp,

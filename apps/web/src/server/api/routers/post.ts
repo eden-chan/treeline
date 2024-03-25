@@ -51,27 +51,27 @@ export const highlightsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};
       if (input.user) {
-        console.log("Filtering by user:", input.user);
+        // console.log("Filtering by user:", input.user);
         whereClause["user"] = input.user;
       }
       if (input.source) {
-        console.log("Filtering by source:", input.source);
+        // console.log("Filtering by source:", input.source);
         whereClause["source"] = input.source;
       }
       let result;
       try {
         const start = Date.now();
-        console.log("where clause", whereClause);
+        // console.log("where clause", whereClause);
         result = await db.highlights.findFirst({
           where: whereClause,
         });
         const end = Date.now();
-        console.log(`Query took ${end - start}ms`);
+        // console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
         return {};
       }
-      console.log("Fetched single highlights:", result);
+      // console.log("Fetched single highlights:", result);
       return result;
     }),
 });
