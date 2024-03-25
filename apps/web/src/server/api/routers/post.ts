@@ -6,9 +6,9 @@ import { IHighlightSchema } from "@src/app/pdf/ui/types";
 export const highlightsRouter = createTRPCRouter({
   hello: publicProcedure
     .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
+    .query(({ ctx, input }) => {
       return {
-        greeting: `Hello ${input.text}`,
+        greeting: `Hello ${input.text} ${ctx.auth?.userId}`,
       };
     }),
 
