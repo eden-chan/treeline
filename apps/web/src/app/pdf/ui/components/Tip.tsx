@@ -37,14 +37,25 @@ export class Tip extends Component<Props, State> {
     return (
       <div className="Tip">
         {compact ? (
-          <div
-            className="Tip__compact"
-            onClick={() => {
-              onOpen();
-              this.setState({ compact: false });
-            }}
-          >
-            Add highlight
+          <div className="flex">
+            <div
+              className="Tip__compact"
+              onClick={() => {
+                onOpen();
+                this.setState({ compact: false });
+              }}
+            >
+              Ask question
+            </div>
+            <div
+              className="Tip__compact"
+              onClick={() => {
+                onOpen();
+                this.setState({ compact: false });
+              }}
+            >
+              Add comment
+            </div>
           </div>
         ) : (
           <form
@@ -56,7 +67,7 @@ export class Tip extends Component<Props, State> {
           >
             <div>
               <textarea
-              className='text-black'
+                className="text-black"
                 placeholder="Your comment"
                 autoFocus
                 value={text}
