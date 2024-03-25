@@ -184,8 +184,9 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
                     console.log({ content })
                     addHighlight({
                       content: {
-                        text: content.text,
-                        image: content.image
+                        // Only include the key if it exists
+                        text: content?.text || '',
+                        image: content?.image || ''
                       },
                       position,
                       comment
@@ -203,10 +204,9 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
                 screenshot,
                 isScrolledTo,
               ) => {
-                const isTextHighlight = !(
-                  highlight.content && highlight.content.image
-                );
 
+                // content will have non-empty image if it's text, and non-empty text if it's an image
+                const isTextHighlight = highlight.content && highlight.content.image === ''
                 const component = isTextHighlight ? (
                   <Highlight
                     isScrolledTo={isScrolledTo}

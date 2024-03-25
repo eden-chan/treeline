@@ -118,8 +118,8 @@ export const ScaledPositionSchema = z.object({
 });
 
 export const ContentSchema = z.object({
-  text: z.string().optional().nullable(),
-  image: z.string().optional().nullable(),
+  text: z.string().optional(),
+  image: z.string().optional(),
 });
 
 export const HighlightContentSchema = z.object({

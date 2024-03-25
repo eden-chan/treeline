@@ -7,7 +7,7 @@ import {
 } from "@src/server/api/trpc";
 import { IHighlightSchema } from "@src/app/pdf/ui/types";
 
-export const highlightsRouter = createTRPCRouter({
+export const highlightsRouter: any = createTRPCRouter({
   helloPrivate: protectedProcedure
     .input(z.object({ text: z.string() }))
     .query(({ ctx, input }) => {
