@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Social Interactive PDF Annotator",
+  title: "Profile",
 };
 
 export default function RootLayout({
