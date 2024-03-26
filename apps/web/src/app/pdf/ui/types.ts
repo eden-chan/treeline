@@ -89,6 +89,19 @@ export interface PDFHighlightsWithProfile extends PDFHighlights {
   lastName: string;
 }
 
+export interface Account {
+  id: string;
+  handle: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  followers: string[];
+  follows: string[];
+}
+export interface AccountProfile extends Account {
+  profilePictureUrl: string;
+}
+
 export const LTWHSchema = z.object({
   left: z.number(),
   top: z.number(),

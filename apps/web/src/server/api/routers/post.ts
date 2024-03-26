@@ -80,17 +80,17 @@ export const highlightsRouter = createTRPCRouter({
     .query(async ({ ctx, input }) => {
       const whereClause: Record<string, any> = {};
 
-      console.log("Filtering by user:", input.userList);
+      // console.log("Filtering by user:", input.userList);
       whereClause["userId"] = { in: input.userList };
 
       if (input.source) {
-        console.log("Filtering by source:", input.source);
+        // console.log("Filtering by source:", input.source);
         whereClause["source"] = input.source;
       }
       let result;
       try {
         const start = Date.now();
-        console.log("where clause", whereClause);
+        // console.log("where clause", whereClause);
         result = await db.highlights.findMany({
           where: whereClause,
         });
@@ -100,12 +100,12 @@ export const highlightsRouter = createTRPCRouter({
         console.error("Failed to fetch highlights:", error);
         return {};
       }
-      console.log(
-        "Fetched highlights for users:",
-        input.userList.length > 0 ? input.userList : "all users",
-        "for",
-        input.source || "all sources"
-      );
+      // console.log(
+      //   "Fetched highlights for users:",
+      //   input.userList.length > 0 ? input.userList : "all users",
+      //   "for",
+      //   input.source || "all sources"
+      // );
       return result;
     }),
 });

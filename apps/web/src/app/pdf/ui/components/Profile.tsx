@@ -7,7 +7,7 @@ import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { PDFHighlights } from '../types';
+import { Account, PDFHighlights } from '../types';
 import Timeline from './Timeline';
 
 const userData = {
@@ -54,18 +54,18 @@ const curiousPeopleSection = {
     ]
 };
 
-export default function Profile({ timeline }: { timeline: PDFHighlights[] }) {
+export default function Profile({ timeline, userProfile }: { timeline: PDFHighlights[], userProfile: Account }) {
     return (
         <div className="bg-white min-h-screen">
             <header className="flex justify-between p-6 border-b">
                 <div className="flex items-center space-x-4">
                     <Avatar>
-                        <AvatarImage alt={userData.avatar.alt} src={userData.avatar.src} />
-                        <AvatarFallback>{userData.avatar.fallback}</AvatarFallback>
+                        <AvatarImage alt={userProfile.firstName} src={userProfile.profilePicture} />
+                        <AvatarFallback>{userProfile.handle}</AvatarFallback>
                     </Avatar>
                     <div>
-                        <h1 className="text-xl font-semibold">{userData.name}</h1>
-                        <p className="text-sm text-gray-500">{userData.username}</p>
+                        <h1 className="text-xl font-semibold">{userProfile.firstName}</h1>
+                        <p className="text-sm text-gray-500">{userProfile.handle}</p>
                     </div>
                 </div>
                 <div className="flex space-x-6">
