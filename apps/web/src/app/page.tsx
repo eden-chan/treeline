@@ -26,7 +26,7 @@ export default async function Page() {
   const defaultPdfURL = "https://arxiv.org/pdf/1706.03762.pdf"
 
   const timeline = await api.post.fetchAllHighlights({
-    // userId: currentUserEmail,
+    userList: userEmails,
     // source: defaultPdfURL,
   }) as PDFHighlights[];
 

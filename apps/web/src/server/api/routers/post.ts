@@ -75,14 +75,14 @@ export const highlightsRouter = createTRPCRouter({
     }),
   fetchAllHighlights: publicProcedure
     .input(
-      z.object({ userId: z.string().optional(), source: z.string().optional() })
+      z.object({ source: z.string().optional(), userList: z.array(z.string()) })
     )
     .query(async ({ ctx, input }) => {
-      const whereClause: Record<string, string> = {};
-      if (input.userId) {
-        console.log("Filtering by user:", input.userId);
-        whereClause["userId"] = input.userId;
-      }
+      const whereClause: Record<string, any> = {};
+
+      console.log("Filtering by user:", input.userList);
+      whereClause["userId"] = { in: input.userList };
+
       if (input.source) {
         console.log("Filtering by source:", input.source);
         whereClause["source"] = input.source;
@@ -100,7 +100,12 @@ export const highlightsRouter = createTRPCRouter({
         console.error("Failed to fetch highlights:", error);
         return {};
       }
-      console.log("Fetched all highlights:", result);
+      console.log(
+        "Fetched highlights for users:",
+        input.userList.length > 0 ? input.userList : "all users",
+        "for",
+        input.source || "all sources"
+      );
       return result;
     }),
 });

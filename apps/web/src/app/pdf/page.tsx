@@ -45,6 +45,12 @@ export default async function Page() {
   const { highlights = [], source = pdfUrl, id = new ObjectId().toString(), userId = userEmail } = data ?? {};
   console.log({ header_url, pdfUrl, source, user })
 
+
+  const allHighlights = await api.post.fetchAllHighlights({
+    source: pdfUrl,
+    userList: [userEmail]
+  }) as PDFHighlights[];
+
   return (
     <TRPCReactProvider>
       {/* <pre className="text-blue-500">{JSON.stringify(user_and_source, null, 2)}</pre> */}
@@ -53,6 +59,7 @@ export default async function Page() {
         loadedSource={source}
         loadedUserHighlightsId={id}
         userId={userId}
+        allHighlights={allHighlights}
       />
     </TRPCReactProvider>
   );
