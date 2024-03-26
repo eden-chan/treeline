@@ -21,8 +21,8 @@ type HighlightsHighlightsComment {
 }
 
 type HighlightsHighlightsContent {
-  image String?
-  text  String?
+  image String
+  text  String
 }
 
 type HighlightsHighlightsPosition {
@@ -56,4 +56,13 @@ model highlights {
   highlights HighlightsHighlights[]
   source     String
   user       String
+}
+
+model users {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  email      String
+  first_name String
+  followers  String[]
+  follows    String[]
+  last_name  String
 }

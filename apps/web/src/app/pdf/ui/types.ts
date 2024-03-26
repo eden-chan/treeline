@@ -91,7 +91,7 @@ export const LTWHSchema = z.object({
 });
 
 export const LTWHPSchema = LTWHSchema.extend({
-  pageNumber: z.number().optional(),
+  pageNumber: z.number(),
 });
 
 export const ScaledSchema = z.object({
@@ -118,8 +118,8 @@ export const ScaledPositionSchema = z.object({
 });
 
 export const ContentSchema = z.object({
-  text: z.string().optional().nullable(),
-  image: z.string().optional().nullable(),
+  text: z.string(),
+  image: z.string(),
 });
 
 export const HighlightContentSchema = z.object({
