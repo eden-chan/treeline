@@ -20,7 +20,6 @@ import { testHighlights as _testHighlights } from "../app/pdf/data/test-highligh
 
 import "../app/pdf/ui/style/main.css";
 import { clientApi } from "@src/trpc/react";
-import { ObjectId } from 'mongodb';
 import { SignIn, SignInButton, UserButton, useUser } from '@clerk/nextjs';
 import { useAuth } from "@clerk/nextjs";
 
@@ -57,22 +56,24 @@ export default function PDFViewer({ pdfUrl }: { pdfUrl: string }) {
     return <h1 className='text-black'>loading</h1>;
   }
   const emailAddress = user.emailAddresses[0]?.emailAddress || ''
-  const loadedHighlightsPayload = clientApi.post.fetchUserHighlights.useQuery({ user: emailAddress, source: pdfUrl });
-  const { highlights: loadedHighlights, id: loadedUserHighlightsId } = loadedHighlightsPayload.data || {}
 
-  console.log({ 'data': loadedHighlightsPayload.data })
+
+
+
+  // Reset to newly created ID
+  // const [userHighlightsId, setUserHighlightsId] = useState(null);
+  const [url, setUrl] = useState(pdfUrl);
+  // const [_, setHighlights] = useState<Array<IHighlight>>([]);
+
+  const { data } = clientApi.post.fetchUserHighlights.useQuery({ user: emailAddress, source: pdfUrl });
+
+
 
 
   const addHighlightAction = clientApi.post.addHighlight.useMutation();
 
-
-  // Reset to newly created ID
-  const [userHighlightsId, setUserHighlightsId] = useState(loadedUserHighlightsId);
-  const [url, setUrl] = useState(pdfUrl);
-  const [highlights, setHighlights] = useState<Array<IHighlight>>(loadedHighlights || []);
-
   const resetHighlights = () => {
-    setHighlights([]);
+    // setHighlights([]);
   };
 
   const toggleDocument = () => {
@@ -80,13 +81,13 @@ export default function PDFViewer({ pdfUrl }: { pdfUrl: string }) {
       url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
 
     setUrl(newUrl);
-    setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
+    // setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
   };
 
   let scrollViewerTo = (highlight: any) => { };
 
   const scrollToHighlightFromHash = () => {
-    const highlight = getHighlightById(parseIdFromHash());
+    const highlight = getHighlightById(parseIdFromHash(), data?.highlights as IHighlight[] || []);
 
     if (highlight) {
       scrollViewerTo(highlight);
@@ -104,10 +105,10 @@ export default function PDFViewer({ pdfUrl }: { pdfUrl: string }) {
         false,
       );
     };
-  }, [highlights]);
+  }, [data]);
 
-  const getHighlightById = (id: string) => {
-    return highlights.find((highlight) => highlight.id === id);
+  const getHighlightById = (id: string, s) => {
+    return data?.highlights.find((highlight) => highlight.id === id);
   };
 
   const addHighlight = async (highlight: NewHighlight) => {
@@ -118,13 +119,15 @@ export default function PDFViewer({ pdfUrl }: { pdfUrl: string }) {
     // If the highlights object doesn't exist, create it
     addHighlightAction.mutate({
       user: emailAddress,
-      highlights: [{ ...highlight, id }, ...highlights],
+      highlights: [{ ...highlight, id }, ...(data?.highlights ?? [])],
       source: url,
-      id: userHighlightsId
+      ...(data?.id ? { id: data.id } : {})
     });
 
 
-    setHighlights([{ ...highlight, id }, ...highlights]);
+    if (data?.highlights) {
+      // setHighlights([{ ...highlight, id }, ...data.highlights]);
+    }
   };
 
   const updateHighlight = (
@@ -134,7 +137,7 @@ export default function PDFViewer({ pdfUrl }: { pdfUrl: string }) {
   ) => {
 
     console.log("Updating highlight", highlightId, position, content);
-    const updatedHighlights = highlights.map((h) => {
+    const updatedHighlights = data.highlights.map((h) => {
       const {
         id,
         position: originalPosition,
@@ -151,13 +154,13 @@ export default function PDFViewer({ pdfUrl }: { pdfUrl: string }) {
         : h;
     });
 
-    setHighlights(updatedHighlights);
+    // setHighlights(updatedHighlights);
 
     addHighlightAction.mutate({
       user: emailAddress,
       highlights: updatedHighlights,
       source: url,
-      id: userHighlightsId
+      // id: userHighlightsId
     });
 
   };
@@ -250,18 +253,18 @@ export default function PDFViewer({ pdfUrl }: { pdfUrl: string }) {
                   />
                 );
               }}
-              highlights={highlights}
+              highlights={data?.highlights ?? []}
             />
           )}
         </PdfLoader>
       </div>
       <Forest
-        highlights={highlights}
+        highlights={data?.highlights ?? []}
         resetHighlights={resetHighlights}
         toggleDocument={toggleDocument}
       />
       <Sidebar
-        highlights={highlights}
+        highlights={data?.highlights ?? []}
         resetHighlights={resetHighlights}
         toggleDocument={toggleDocument}
       />
