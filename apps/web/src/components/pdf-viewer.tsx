@@ -13,6 +13,7 @@ import {
   Sidebar,
 } from "../app/pdf/ui";
 
+
 import type { IHighlight, NewHighlight } from "../app/pdf/ui/types";
 
 import { testHighlights as _testHighlights } from "../app/pdf/data/test-highlights";
@@ -20,7 +21,8 @@ import { testHighlights as _testHighlights } from "../app/pdf/data/test-highligh
 import "../app/pdf/ui/style/main.css";
 import { clientApi } from "@src/trpc/react";
 import { ObjectId } from 'mongodb';
-import { SignIn, SignInButton, UserButton } from '@clerk/nextjs';
+import { SignIn, SignInButton, UserButton, useUser } from '@clerk/nextjs';
+import { useAuth } from "@clerk/nextjs";
 
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
@@ -48,13 +50,26 @@ const HighlightPopup = ({
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
 
-export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHighlightsId }: { loadedHighlights: IHighlight[], loadedSource: string, loadedUserHighlightsId: string }): JSX.Element {
+export default function PDFViewer({ pdfUrl }: { pdfUrl: string }) {
 
-  const mutation = clientApi.post.addHighlight.useMutation();
+  const { isLoaded, isSignedIn, user } = useUser();
+  if (!isLoaded || !isSignedIn) {
+    return <h1 className='text-black'>loading</h1>;
+  }
+  const emailAddress = user.emailAddresses[0]?.emailAddress || ''
+  const loadedHighlightsPayload = clientApi.post.fetchUserHighlights.useQuery({ user: emailAddress, source: pdfUrl });
+  const { highlights: loadedHighlights, id: loadedUserHighlightsId } = loadedHighlightsPayload.data || {}
 
-  const [userHighlightsId, setUserHighlightsId] = useState(loadedUserHighlightsId)
-  const [url, setUrl] = useState(loadedSource);
-  const [highlights, setHighlights] = useState<Array<IHighlight>>(loadedHighlights);
+  console.log({ 'data': loadedHighlightsPayload.data })
+
+
+  const addHighlightAction = clientApi.post.addHighlight.useMutation();
+
+
+  // Reset to newly created ID
+  const [userHighlightsId, setUserHighlightsId] = useState(loadedUserHighlightsId);
+  const [url, setUrl] = useState(pdfUrl);
+  const [highlights, setHighlights] = useState<Array<IHighlight>>(loadedHighlights || []);
 
   const resetHighlights = () => {
     setHighlights([]);
@@ -101,19 +116,15 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
 
     const id = getNextId()
     // If the highlights object doesn't exist, create it
-    const returnId: any = mutation.mutate({
-      user: "admin",
+    addHighlightAction.mutate({
+      user: emailAddress,
       highlights: [{ ...highlight, id }, ...highlights],
       source: url,
       id: userHighlightsId
     });
 
-    console.log({ returnId })
 
-    console.log('added highlight: ', returnId, 'loaded id', userHighlightsId);
     setHighlights([{ ...highlight, id }, ...highlights]);
-
-
   };
 
   const updateHighlight = (
@@ -142,13 +153,12 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
 
     setHighlights(updatedHighlights);
 
-    const returnId: any = mutation.mutate({
-      user: "admin",
+    addHighlightAction.mutate({
+      user: emailAddress,
       highlights: updatedHighlights,
       source: url,
       id: userHighlightsId
     });
-    console.log('added highlight: ', returnId, 'loaded id', userHighlightsId);
 
   };
 
