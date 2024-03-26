@@ -13,7 +13,7 @@ import {
   Spinner,
   Sidebar,
 } from "../app/pdf/ui";
-import type { IHighlight, NewHighlight } from "../app/pdf/ui/types";
+import type { IHighlight, NewHighlight, PDFHighlights } from "../app/pdf/ui/types";
 
 import "../app/pdf/ui/style/main.css";
 
@@ -44,17 +44,19 @@ export default function PDFViewer({
   loadedHighlights,
   loadedSource,
   loadedUserHighlightsId,
-  userId
+  userId, allHighlights
 }: {
   loadedHighlights: IHighlight[];
   loadedSource: string;
   loadedUserHighlightsId: string;
   userId: string;
+  allHighlights: IHighlight[];
 }): JSX.Element {
   const mutation = clientApi.post.addHighlight.useMutation();
   const [url, setUrl] = useState(loadedSource);
   const [highlight, setHighlight] = useState<IHighlight | undefined>(undefined);
-  const [highlights, setHighlights] = useState(loadedHighlights);
+  const [highlights, setHighlights] = useState(allHighlights);
+
 
   const getHighlightById = (id: string) => {
     return highlights.find((highlight) => highlight.id === id);
@@ -143,6 +145,7 @@ export default function PDFViewer({
       id: loadedUserHighlightsId,
     });
   };
+
 
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>

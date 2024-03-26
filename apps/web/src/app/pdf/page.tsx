@@ -2,11 +2,11 @@ import React from "react";
 import { TRPCReactProvider } from "@src/trpc/react";
 
 import { api } from "@src/trpc/server";
-import { PDFHighlights } from "./ui";
+import { IHighlight, PDFHighlights } from "./ui";
 
 import dynamic from "next/dynamic";
 import { ObjectId } from "mongodb";
-import { auth, currentUser } from '@clerk/nextjs/server';
+import { auth, clerkClient, currentUser } from '@clerk/nextjs/server';
 import { headers } from 'next/headers';
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
@@ -46,10 +46,17 @@ export default async function Page() {
   console.log({ header_url, pdfUrl, source, user })
 
 
+  const users = await clerkClient.users.getUserList();
+  const userEmails = users.map(user => user!.emailAddresses[0].emailAddress);
+
+
+
   const allHighlights = await api.post.fetchAllHighlights({
-    source: pdfUrl,
-    userList: [userEmail]
-  }) as PDFHighlights[];
+    source: pdfUrl, userList: [...userEmails]
+  }) as PDFHighlights;
+  const mergedHighlights: IHighlight[] = allHighlights.reduce((acc, pdfHighlight) => {
+    return [...acc, ...pdfHighlight.highlights];
+  }, []);
 
   return (
     <TRPCReactProvider>
@@ -59,7 +66,7 @@ export default async function Page() {
         loadedSource={source}
         loadedUserHighlightsId={id}
         userId={userId}
-        allHighlights={allHighlights}
+        allHighlights={mergedHighlights}
       />
     </TRPCReactProvider>
   );
