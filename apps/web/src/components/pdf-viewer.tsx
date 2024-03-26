@@ -55,7 +55,7 @@ export default function PDFViewer({
   const mutation = clientApi.post.addHighlight.useMutation();
   const [url, setUrl] = useState(loadedSource);
   const [highlight, setHighlight] = useState<IHighlight | undefined>(undefined);
-  const [highlights, setHighlights] = useState(allHighlights);
+  const [highlights, setHighlights] = useState(loadedHighlights);
 
 
   const getHighlightById = (id: string) => {

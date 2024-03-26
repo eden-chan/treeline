@@ -87,7 +87,7 @@ function Timeline({ articles }: { articles: PDFHighlights[] }) {
         <main>
             {articles.map((article, index) => (
                 <article key={index} className="mb-6">
-                    <Link href={`/pdf?url=${encodeURIComponent(article.source)}`}>
+                    <Link href={`/pdf?url=${article.source}`}>
 
                         <h2 className="text-xl font-semibold mb-1">{article.userId}</h2>
                         <p className="text-gray-600 mb-2">{article.source}</p>
