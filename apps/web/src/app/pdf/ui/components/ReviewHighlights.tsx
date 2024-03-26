@@ -7,6 +7,8 @@ import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
+import { PDFHighlights } from '../types';
+import Timeline from './Timeline';
 
 const userData = {
     avatar: {
@@ -33,21 +35,6 @@ const readingSection = {
     ]
 };
 
-const mainContent = [
-    {
-        title: "The Bitter Lesson",
-        time: "1 hour ago 4 highlights",
-        description: "Enormous initial efforts went into avoiding search by taking advantage of human knowledge, or of the special features of the game, but all those efforts proved irrelevant, or worse, once search was applied effectively at scale."
-    },
-    {
-        title: "the tiny corp raised $5.1M | the singularity is nearer",
-        time: "6 hours ago 1 highlight"
-    },
-    {
-        title: "Cultivating Agency - by Charles Yang - Rough Drafts",
-        time: "1 day ago 2 highlights"
-    }
-];
 
 const friendsSection = {
     title: "Your friends",
@@ -67,7 +54,7 @@ const curiousPeopleSection = {
     ]
 };
 
-export default function ReviewHighlights() {
+export default function Profile({ timeline }: { timeline: PDFHighlights[] }) {
     return (
         <div className="bg-white min-h-screen">
             <header className="flex justify-between p-6 border-b">
@@ -112,15 +99,7 @@ export default function ReviewHighlights() {
                 </nav>
                 <main className="w-3/5 p-6">
                     <h2 className="text-lg font-semibold mb-4">Pages</h2>
-                    <ul className="space-y-4">
-                        {mainContent.map(content => (
-                            <li key={content.title}>
-                                <h3 className="text-md font-semibold">{content.title}</h3>
-                                <p className="text-sm text-gray-500">{content.time}</p>
-                                {content.description && <p className="text-sm">{content.description}</p>}
-                            </li>
-                        ))}
-                    </ul>
+                    <Timeline articles={timeline} />
                 </main>
                 <aside className="w-1/5 p-6">
                     <div className="mb-6">

@@ -55,7 +55,7 @@ model highlights {
   id         String                 @id @default(auto()) @map("_id") @db.ObjectId
   highlights HighlightsHighlights[]
   source     String
-  userId     String?
+  userId     String
 }
 
 model users {
@@ -64,5 +64,6 @@ model users {
   first_name String
   followers  String[]
   follows    String[]
+  handle     String
   last_name  String
 }
