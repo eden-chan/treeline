@@ -57,9 +57,7 @@ export const highlightsRouter: any = createTRPCRouter({
    * @returns {Promise<Array>} - The fetched highlights based on the applied filters.
    */
   fetchUserHighlights: publicProcedure
-    .input(
-      z.object({ user: z.string().optional(), source: z.string().optional() })
-    )
+    .input(z.object({ user: z.string(), source: z.string() }))
     .query(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};
       if (input.user) {

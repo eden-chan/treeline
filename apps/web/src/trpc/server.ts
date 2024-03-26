@@ -18,9 +18,9 @@ const createContext = cache(() => {
       cookie: cookies().toString(),
       "x-trpc-source": "rsc",
     }),
-    auth: { userId: "test" }, // getAuth doesn't work for /pdf/[slug],
+    // auth: { userId: "test" }, // getAuth doesn't work for /pdf/[slug],
     // auth: getAuth(
-    // new NextRequest("https://notused.com", { headers: headers() })
+    //   new NextRequest("https://notused.com", { headers: headers() })
     // ),
   });
 });

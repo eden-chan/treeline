@@ -20,6 +20,7 @@ import { testHighlights as _testHighlights } from "../app/pdf/data/test-highligh
 import "../app/pdf/ui/style/main.css";
 import { clientApi } from "@src/trpc/react";
 import { ObjectId } from 'mongodb';
+import { SignIn, SignInButton, UserButton } from '@clerk/nextjs';
 
 
 const testHighlights: Record<string, Array<IHighlight>> = _testHighlights;
@@ -50,7 +51,6 @@ const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
 export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHighlightsId }: { loadedHighlights: IHighlight[], loadedSource: string, loadedUserHighlightsId: string }): JSX.Element {
 
   const mutation = clientApi.post.addHighlight.useMutation();
-
 
   const [userHighlightsId, setUserHighlightsId] = useState(loadedUserHighlightsId)
   const [url, setUrl] = useState(loadedSource);
@@ -154,6 +154,7 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
 
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>
+      <SignInButton><button className='text-black'>Sign IN</button></SignInButton>
       <div
         style={{
           height: "100vh",
