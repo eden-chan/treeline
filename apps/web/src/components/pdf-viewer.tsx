@@ -66,11 +66,14 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
 
     setUrl(newUrl);
 
-    console.log('FETCHING TRPC ')
-    const data = { "0": { "json": { "text": "my message" } } }
-    const res = await fetch('http://localhost:3000/api/trpc/post.hello?batch=1&input=' + encodeURIComponent(JSON.stringify(data)), { method: 'GET' });
+    console.log('FETCHING TRPC ', { loadedSource, user })
+    const data = { "0": { "json": { "source": loadedSource, "user": user } } }
+    const res = await fetch('http://localhost:3000/api/trpc/post.fetchUserHighlights?batch=1&input=' + encodeURIComponent(JSON.stringify(data)), { method: 'GET' });
     const body = await res.json();
+
     console.log({ body })
+
+
 
     // const newHighlights = clientApi.post.fetchUserHighlights.useQuery({ source: newUrl, user: user });
     // console.log({ 'data': newHighlights.data })

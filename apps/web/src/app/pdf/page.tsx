@@ -28,6 +28,16 @@ export default async function Page() {
   }
   const { highlights = [], source = "https://arxiv.org/pdf/1706.03762.pdf", id = new ObjectId().toString(), user = '' } = data ?? {};
 
+
+
+  async function addHighlight() {
+    'use server'
+
+
+  }
+
+
+
   return (
     <TRPCReactProvider>
       <PDFViewer loadedHighlights={highlights} loadedSource={source} loadedUserHighlightsId={id} user={user} />
