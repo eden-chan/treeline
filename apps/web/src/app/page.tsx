@@ -23,14 +23,17 @@ export default async function Page() {
   const currentUserEmail = user?.emailAddresses?.[0]?.emailAddress || '';
 
 
-  const data = await api.post.fetchAllHighlights({
+  const defaultPdfURL = "https://arxiv.org/pdf/1706.03762.pdf"
+
+  const timeline = await api.post.fetchAllHighlights({
     // userId: currentUserEmail,
+    // source: defaultPdfURL,
   }) as PDFHighlights[];
 
-  console.log(data)
+
   return (
     <main className="h-screen w-screen gap-0">
-      <DiscoverHighlights />
+      <DiscoverHighlights timeline={timeline} />
       {/* 
       <SignIn />
       <UserButton />

@@ -5,6 +5,7 @@
  */
 
 import { CreateOrganization, UserButton } from '@clerk/nextjs'
+import { PDFHighlights } from '../types'
 
 
 const articles = [
@@ -52,43 +53,58 @@ const articles = [
     }
 ]
 
-export default function DiscoverHighlights() {
+function UserHeader() {
     return (
-        <div className="max-w-4xl mx-auto py-8 px-4 text-black">
-            <header className="flex justify-between items-center mb-10">
-                <h1 className="text-3xl font-bold">My/Space</h1>
-                <div className="flex space-x-4">
-                    <a className="text-gray-600 hover:text-gray-900" href="#">
-                        Search people
-                    </a>
-                    <a className="text-gray-600 hover:text-gray-900" href="#">
-                        My bookshelf
-                    </a>
-                    {/* <UserCircleIcon className="w-6 h-6 text-gray-600" /> */}
-                    <UserButton />
-                </div>
-            </header>
-            <nav className="flex space-x-8 mb-10">
-                <a className="text-gray-900 font-semibold" href="#">
-                    Today
+        <header className="flex justify-between items-center mb-10">
+            <h1 className="text-3xl font-bold">My/Space</h1>
+            <div className="flex space-x-4">
+                <a className="text-gray-600 hover:text-gray-900" href="#">
+                    Search people
                 </a>
                 <a className="text-gray-600 hover:text-gray-900" href="#">
-                    Explore
+                    My bookshelf
                 </a>
-            </nav>
-            <main>
+                {/* <UserCircleIcon className="w-6 h-6 text-gray-600" /> */}
+                <UserButton />
+            </div>
+        </header>)
+}
 
-                {articles.map((article, index) => (
-                    <article key={index} className="mb-6">
-                        <h2 className="text-xl font-semibold mb-1">{article.title}</h2>
-                        <p className="text-gray-600 mb-2">{article.url}</p>
-                        <p className="text-gray-500">{article.excerpt}</p>
-                        <p className="text-gray-400 text-sm mt-2">
-                            — {article.author} / {article.timestamp}
-                        </p>
-                    </article>
-                ))}
-            </main>
+function SearchTab() {
+    return (<nav className="flex space-x-8 mb-10">
+        <a className="text-gray-900 font-semibold" href="#">
+            Today
+        </a>
+        <a className="text-gray-600 hover:text-gray-900" href="#">
+            Explore
+        </a>
+    </nav>)
+}
+
+function Timeline({ articles }: { articles: PDFHighlights[] }) {
+    return (
+        <main>
+            {articles.map((article, index) => (
+                <article key={index} className="mb-6">
+                    <h2 className="text-xl font-semibold mb-1">{article.userId}</h2>
+                    <p className="text-gray-600 mb-2">{article.source}</p>
+                    <p className="text-gray-500">{article.highlights[0]?.content?.text || 'image'}</p>
+                    <p className="text-gray-400 text-sm mt-2">
+                        — {article.source} / {article.userId}
+                    </p>
+                </article>
+            ))}
+        </main>
+    )
+}
+export default function DiscoverHighlights({ timeline }: { timeline: PDFHighlights[] }) {
+
+    console.log(timeline)
+    return (
+        <div className="max-w-4xl mx-auto py-8 px-4 text-black">
+            <UserHeader />
+            <SearchTab />
+            <Timeline articles={timeline} />
         </div>
     )
 }
