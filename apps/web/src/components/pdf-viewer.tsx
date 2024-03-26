@@ -70,13 +70,14 @@ export default function PDFViewer({
     setHighlights([]);
   };
 
-  let scrollViewerTo = (_highlight: any) => { };
+  let scrollViewerTo = (highlight: any) => { };
 
   const scrollToHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
-    if (highlight) setHighlight(highlight);
 
     if (highlight) {
+      console.log('selected highlight', highlight?.content)
+      setHighlight(highlight);
       scrollViewerTo(highlight);
     }
   };
@@ -91,7 +92,7 @@ export default function PDFViewer({
         false,
       );
     };
-  }, [highlights]);
+  }, []);
 
   const addHighlight = async (highlight: NewHighlight) => {
     console.log("Saving highlight", highlight);
@@ -113,7 +114,7 @@ export default function PDFViewer({
     position: Object,
     content: Object,
   ) => {
-    console.log("Updating highlight", highlightId, position, content);
+
     const updatedHighlights = highlights.map((h) => {
       const {
         id,
