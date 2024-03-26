@@ -2,12 +2,13 @@ import React from "react";
 import { TRPCReactProvider } from "@src/trpc/react";
 
 import { api } from "@src/trpc/server";
-import { IHighlight, PDFHighlights } from "./ui";
+import { IHighlight, PDFHighlights, PDFHighlightsWithProfile } from "./ui";
 
 import dynamic from "next/dynamic";
 import { ObjectId } from "mongodb";
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server';
 import { headers } from 'next/headers';
+import FloatingProfiles from './ui/components/FloatingProfiles';
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
@@ -48,25 +49,36 @@ export default async function Page() {
 
   const users = await clerkClient.users.getUserList();
   const userEmails = users.map(user => user!.emailAddresses[0].emailAddress);
+  const emailToPicture = users.map(user => { return { email: user!.emailAddresses[0]?.emailAddress ?? '', imageUrl: user!.imageUrl, firstName: user!.firstName, lastName: user!.lastName } });
 
 
 
   const allHighlights = await api.post.fetchAllHighlights({
     source: pdfUrl, userList: [...userEmails]
-  }) as PDFHighlights;
-  const mergedHighlights: IHighlight[] = allHighlights.reduce((acc, pdfHighlight) => {
-    return [...acc, ...pdfHighlight.highlights];
-  }, []);
+  }) as PDFHighlights[];
 
+
+  const allHighlightsWithProfile: PDFHighlightsWithProfile[] = allHighlights.map((pdfHighlight) => {
+    return {
+      ...pdfHighlight,
+      userProfilePicture: emailToPicture.find((user) => user.email === pdfHighlight.userId)?.imageUrl,
+      firstName: emailToPicture.find((user) => user.email === pdfHighlight.userId)?.firstName,
+      lastName: emailToPicture.find((user) => user.email === pdfHighlight.userId)?.lastName,
+    }
+  })
+
+
+
+  console.log({ emailToPicture })
   return (
     <TRPCReactProvider>
-      {/* <pre className="text-blue-500">{JSON.stringify(user_and_source, null, 2)}</pre> */}
+
       <PDFViewer
         loadedHighlights={highlights}
         loadedSource={source}
         loadedUserHighlightsId={id}
         userId={userId}
-        allHighlights={mergedHighlights}
+        allHighlights={allHighlightsWithProfile}
       />
     </TRPCReactProvider>
   );

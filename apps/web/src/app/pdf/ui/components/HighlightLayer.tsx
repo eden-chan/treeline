@@ -32,6 +32,7 @@ interface HighlightLayerProps<T_HT> {
   screenshot: (position: LTWH, pageNumber: number) => string;
   showTip: (highlight: any, content: JSX.Element) => void;
   setState: (state: any) => void;
+  userId?: string;
 }
 
 export function HighlightLayer<T_HT extends IHighlight>({
@@ -46,6 +47,7 @@ export function HighlightLayer<T_HT extends IHighlight>({
   screenshot,
   showTip,
   setState,
+  userId
 }: HighlightLayerProps<T_HT>) {
   const currentHighlights = highlightsByPage[String(pageNumber)] || [];
   return (

@@ -83,6 +83,12 @@ export interface PDFHighlights {
   id: string;
 }
 
+export interface PDFHighlightsWithProfile extends PDFHighlights {
+  userProfilePicture: string;
+  firstName: string;
+  lastName: string;
+}
+
 export const LTWHSchema = z.object({
   left: z.number(),
   top: z.number(),

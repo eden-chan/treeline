@@ -16,6 +16,7 @@ import {
 import type { IHighlight, NewHighlight, PDFHighlights } from "../app/pdf/ui/types";
 
 import "../app/pdf/ui/style/main.css";
+import FloatingProfiles from '@src/app/pdf/ui/components/FloatingProfiles';
 
 const getNextId = () => String(Math.random()).slice(2);
 
@@ -50,12 +51,13 @@ export default function PDFViewer({
   loadedSource: string;
   loadedUserHighlightsId: string;
   userId: string;
-  allHighlights: IHighlight[];
+  allHighlights: PDFHighlightsWithProfile[];
 }): JSX.Element {
   const mutation = clientApi.post.addHighlight.useMutation();
   const [url, setUrl] = useState(loadedSource);
   const [highlight, setHighlight] = useState<IHighlight | undefined>(undefined);
   const [highlights, setHighlights] = useState(loadedHighlights);
+  const [displayHighlights, setDisplayHighlights] = useState<IHighlight[]>(loadedHighlights)
 
 
   const getHighlightById = (id: string) => {
@@ -149,6 +151,7 @@ export default function PDFViewer({
 
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>
+      <FloatingProfiles setDisplayHighlights={setDisplayHighlights} allHighlightsWithProfile={allHighlights} />
       <div
         style={{
           height: "100vh",
@@ -233,7 +236,7 @@ export default function PDFViewer({
                   />
                 );
               }}
-              highlights={highlights}
+              highlights={displayHighlights}
             />
           )}
         </PdfLoader>

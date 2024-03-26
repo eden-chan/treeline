@@ -117,7 +117,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   highlightRoots: {
     [page: number]: { reactRoot: Root; container: Element };
   } = {};
-  unsubscribe = () => {};
+  unsubscribe = () => { };
 
   constructor(props: Props<T_HT>) {
     super(props);
@@ -204,7 +204,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     }
 
     return findOrCreateContainerLayer(
-      textLayer.textLayerDiv, 
+      textLayer.textLayerDiv,
       "PdfHighlighter__highlight-layer"
     );
   }
@@ -388,7 +388,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         ...pageViewport.convertToPdfPoint(
           0,
           scaledToViewport(boundingRect, pageViewport, usePdfCoordinates).top -
-            scrollMargin
+          scrollMargin
         ),
         0,
       ],
@@ -667,6 +667,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         screenshot={this.screenshot.bind(this)}
         showTip={this.showTip.bind(this)}
         setState={this.setState.bind(this)}
+        userId={this.props.userId}
       />
     );
   }
