@@ -44,12 +44,12 @@ export default function PDFViewer({
   loadedHighlights,
   loadedSource,
   loadedUserHighlightsId,
-  user
+  userId
 }: {
   loadedHighlights: IHighlight[];
   loadedSource: string;
   loadedUserHighlightsId: string;
-  user: string;
+  userId: string;
 }): JSX.Element {
   const mutation = clientApi.post.addHighlight.useMutation();
   const [url, setUrl] = useState(loadedSource);
@@ -102,7 +102,7 @@ export default function PDFViewer({
     const id = getNextId();
     // If the highlights object doesn't exist, create it
     mutation.mutate({
-      user: user,
+      userId: userId,
       highlights: [{ ...highlight, id }, ...highlights],
       source: url,
       id: loadedUserHighlightsId,
@@ -137,7 +137,7 @@ export default function PDFViewer({
     setHighlights(updatedHighlights);
 
     mutation.mutate({
-      user: user,
+      userId: userId,
       highlights: updatedHighlights,
       source: url,
       id: loadedUserHighlightsId,

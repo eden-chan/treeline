@@ -18,7 +18,7 @@ export const highlightsRouter = createTRPCRouter({
     .input(
       z.object({
         highlights: z.array(IHighlightSchema),
-        user: z.string(),
+        userId: z.string(),
         source: z.string(),
         id: z.string(), // mongo id is provided ahead of time for new documents
       })
@@ -32,7 +32,7 @@ export const highlightsRouter = createTRPCRouter({
           highlights: input.highlights,
         },
         create: {
-          user: input.user,
+          userId: input.userId,
           source: input.source,
           highlights: input.highlights,
         },
@@ -46,13 +46,13 @@ export const highlightsRouter = createTRPCRouter({
    */
   fetchUserHighlights: publicProcedure
     .input(
-      z.object({ user: z.string().optional(), source: z.string().optional() })
+      z.object({ userId: z.string().optional(), source: z.string().optional() })
     )
     .query(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};
-      if (input.user) {
-        console.log("Filtering by user:", input.user);
-        whereClause["user"] = input.user;
+      if (input.userId) {
+        console.log("Filtering by user:", input.userId);
+        whereClause["userId"] = input.userId;
       }
       if (input.source) {
         console.log("Filtering by source:", input.source);

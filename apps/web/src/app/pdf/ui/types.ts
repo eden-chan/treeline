@@ -79,7 +79,7 @@ export interface Page {
 export interface PDFHighlights {
   highlights: IHighlight[];
   source: string;
-  user: string;
+  userId: string;
   id: string;
 }
 
@@ -172,6 +172,6 @@ export const PageSchema = z.object({
 export const PDFHighlightsSchema = z.object({
   highlights: z.array(IHighlightSchema),
   source: z.string(),
-  user: z.string(),
+  userId: z.string(),
   id: z.string(),
 });

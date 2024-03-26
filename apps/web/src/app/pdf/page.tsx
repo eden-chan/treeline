@@ -22,28 +22,27 @@ export default async function Page() {
 
   const urlParams = new URLSearchParams(header_url.split('?')[1]);
   const defaultPdfURL = "https://arxiv.org/pdf/1706.03762.pdf"
+  const defaultUserId = 'admin'
   const pdfUrl = urlParams.get('url') || defaultPdfURL;
 
-  let userEmail = 'admin';
-  const { userId } = auth();
-  let data: PDFHighlights | {} = {}
-  if (userId) {
-    const user = await currentUser();
-    userEmail = user?.emailAddresses?.[0]?.emailAddress || '';
+  let userEmail = defaultUserId
 
-    console.log({ userEmail });
-    try {
-      data = await api.post.fetchUserHighlights({
-        user: userEmail,
-        source: pdfUrl,
-      }) as PDFHighlights;
-    } catch (error) {
-      console.error("Error fetching user highlights:", error);
-    }
+  let data: PDFHighlights | {} = {}
+
+  const user = await currentUser();
+  userEmail = user?.emailAddresses?.[0]?.emailAddress || '';
+
+  try {
+    data = await api.post.fetchUserHighlights({
+      userId: userEmail,
+      source: pdfUrl,
+    }) as PDFHighlights;
+  } catch (error) {
+    console.error("Error fetching user highlights:", error);
   }
 
   // If highlights aren't found, use the default pdf and logged in user email
-  const { highlights = [], source = pdfUrl, id = new ObjectId().toString(), user = userEmail } = data ?? {};
+  const { highlights = [], source = pdfUrl, id = new ObjectId().toString(), userId = userEmail } = data ?? {};
   console.log({ header_url, pdfUrl, source, user })
 
   return (
@@ -53,7 +52,7 @@ export default async function Page() {
         loadedHighlights={highlights}
         loadedSource={source}
         loadedUserHighlightsId={id}
-        user={user}
+        userId={userId}
       />
     </TRPCReactProvider>
   );
