@@ -48,7 +48,7 @@ const HighlightPopup = ({
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
 
-export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHighlightsId }: { loadedHighlights: IHighlight[], loadedSource: string, loadedUserHighlightsId: string }): JSX.Element {
+export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHighlightsId, user }: { loadedHighlights: IHighlight[], loadedSource: string, loadedUserHighlightsId: string, user: string }): JSX.Element {
 
   const mutation = clientApi.post.addHighlight.useMutation();
 
@@ -60,12 +60,21 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
     setHighlights([]);
   };
 
-  const toggleDocument = () => {
+  const toggleDocument = async () => {
     const newUrl =
       url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
 
     setUrl(newUrl);
-    setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
+
+    console.log('FETCHING TRPC ')
+    const data = { "0": { "json": { "text": "my message" } } }
+    const res = await fetch('http://localhost:3000/api/trpc/post.hello?batch=1&input=' + encodeURIComponent(JSON.stringify(data)), { method: 'GET' });
+    const body = await res.json();
+    console.log({ body })
+
+    // const newHighlights = clientApi.post.fetchUserHighlights.useQuery({ source: newUrl, user: user });
+    // console.log({ 'data': newHighlights.data })
+    // setHighlights(newHighlights.data?.highlights || []);
   };
 
   let scrollViewerTo = (highlight: any) => { };

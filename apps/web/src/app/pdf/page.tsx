@@ -26,11 +26,11 @@ export default async function Page() {
       console.error("Error fetching user highlights:", error);
     }
   }
-  const { highlights = [], source = "https://arxiv.org/pdf/1706.03762.pdf", id = new ObjectId().toString() } = data ?? {};
+  const { highlights = [], source = "https://arxiv.org/pdf/1706.03762.pdf", id = new ObjectId().toString(), user = '' } = data ?? {};
 
   return (
     <TRPCReactProvider>
-      <PDFViewer loadedHighlights={highlights} loadedSource={source} loadedUserHighlightsId={id} />
+      <PDFViewer loadedHighlights={highlights} loadedSource={source} loadedUserHighlightsId={id} user={user} />
     </TRPCReactProvider>
   );
 }
