@@ -6,23 +6,38 @@ const PdfViewer = dynamic(() => import('../components/pdf-viewer'), {
   ssr: false, // Disable server-side rendering for this component
 });
 import { api } from "@src/trpc/server";
+import { CreateOrganization, OrganizationList, OrganizationProfile, OrganizationSwitcher, SignIn, UserButton, clerkClient } from '@clerk/nextjs';
+import DiscoverHighlights from './pdf/ui/components/DiscoverHighlights';
+import { PDFHighlights } from './pdf/ui/types';
+import { currentUser } from '@clerk/nextjs/server';
 
 export default async function Page() {
-  const hello = await api.post.hello({ text: "from tRPC" });
-  const user = await api.post.fetchUserHighlights({ user: "admin" });
-  const source = await api.post.fetchUserHighlights({ source: "https://arxiv.org/pdf/1708.08021.pdf" });
-  const user_and_source = await api.post.fetchUserHighlights({ user: "admin", source: "https://arxiv.org/pdf/1708.08021.pdf" });
+  // If these filters are included, the response will contain only users that own any of these emails and/or phone numbers.
+  const users = await clerkClient.users.getUserList();
+  const userEmails = users.map(user => user!.emailAddresses[0].emailAddress);
+  console.log({ userEmails })
 
 
+
+  const user = await currentUser();
+  const currentUserEmail = user?.emailAddresses?.[0]?.emailAddress || '';
+
+
+  const data = await api.post.fetchAllHighlights({
+    // userId: currentUserEmail,
+  }) as PDFHighlights[];
+
+  console.log(data)
   return (
-    <main className="h-screen w-screen grid grid-cols-2 gap-0">
-
-      <h1>{hello.greeting}</h1>
-      <pre className="text-red-500">{JSON.stringify(user, null, 2)}</pre>
-      <pre className="text-green-500">{JSON.stringify(source, null, 2)}</pre>
-      <pre className="text-blue-500">{JSON.stringify(user_and_source, null, 2)}</pre>
-      {/* <PDFViewer /> */}
-      {/* <Tree /> */}
+    <main className="h-screen w-screen gap-0">
+      <DiscoverHighlights />
+      {/* 
+      <SignIn />
+      <UserButton />
+      <CreateOrganization />
+      <OrganizationProfile />
+      <OrganizationSwitcher />
+      <OrganizationList /> */}
     </main>
   );
 }

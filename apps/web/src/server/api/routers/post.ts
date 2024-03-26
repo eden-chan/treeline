@@ -61,7 +61,6 @@ export const highlightsRouter = createTRPCRouter({
       let result;
       try {
         const start = Date.now();
-        console.log("where clause", whereClause);
         result = await db.highlights.findFirst({
           where: whereClause,
         });
@@ -72,6 +71,36 @@ export const highlightsRouter = createTRPCRouter({
         return {};
       }
       console.log("Fetched single highlights:", result);
+      return result;
+    }),
+  fetchAllHighlights: publicProcedure
+    .input(
+      z.object({ userId: z.string().optional(), source: z.string().optional() })
+    )
+    .query(async ({ ctx, input }) => {
+      const whereClause: Record<string, string> = {};
+      if (input.userId) {
+        console.log("Filtering by user:", input.userId);
+        whereClause["userId"] = input.userId;
+      }
+      if (input.source) {
+        console.log("Filtering by source:", input.source);
+        whereClause["source"] = input.source;
+      }
+      let result;
+      try {
+        const start = Date.now();
+        console.log("where clause", whereClause);
+        result = await db.highlights.findMany({
+          where: whereClause,
+        });
+        const end = Date.now();
+        console.log(`Query took ${end - start}ms`);
+      } catch (error) {
+        console.error("Failed to fetch highlights:", error);
+        return {};
+      }
+      console.log("Fetched all highlights:", result);
       return result;
     }),
 });
