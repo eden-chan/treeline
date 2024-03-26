@@ -32,23 +32,34 @@ export const highlightsRouter: any = createTRPCRouter({
         highlights: z.array(IHighlightSchema),
         user: z.string(),
         source: z.string(),
-        id: z.string(),
       })
     )
     .mutation(async ({ ctx, input }) => {
-      return await db.highlights.upsert({
+      const existingHighlight = await db.highlights.findFirst({
         where: {
-          id: input.id,
-        },
-        update: {
-          highlights: input.highlights,
-        },
-        create: {
           user: input.user,
           source: input.source,
-          highlights: input.highlights,
         },
       });
+
+      if (existingHighlight) {
+        return await db.highlights.update({
+          where: {
+            id: existingHighlight.id,
+          },
+          data: {
+            highlights: input.highlights,
+          },
+        });
+      } else {
+        return await db.highlights.create({
+          data: {
+            user: input.user,
+            source: input.source,
+            highlights: input.highlights,
+          },
+        });
+      }
     }),
   /**
    * Fetches user highlights based on optional user and source filters.

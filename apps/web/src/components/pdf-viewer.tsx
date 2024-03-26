@@ -66,18 +66,17 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
 
     setUrl(newUrl);
 
-    console.log('FETCHING TRPC ', { loadedSource, user })
-    const data = { "0": { "json": { "source": loadedSource, "user": user } } }
+    console.log('FETCHING TRPC ', { newUrl, user })
+    const data = { "0": { "json": { "source": newUrl, "user": user } } }
     const res = await fetch('http://localhost:3000/api/trpc/post.fetchUserHighlights?batch=1&input=' + encodeURIComponent(JSON.stringify(data)), { method: 'GET' });
     const body = await res.json();
 
-    console.log({ body })
+    const highlightPayload = body[0].result.data.json ?? {}
 
-
-
-    // const newHighlights = clientApi.post.fetchUserHighlights.useQuery({ source: newUrl, user: user });
-    // console.log({ 'data': newHighlights.data })
-    // setHighlights(newHighlights.data?.highlights || []);
+    const { highlights = [], id = null, user: newUser, source } = highlightPayload ?? {}
+    console.log({ highlights, id, newUser, source })
+    setUserHighlightsId(id)
+    setHighlights(highlights)
   };
 
   let scrollViewerTo = (highlight: any) => { };
@@ -114,10 +113,9 @@ export default function PDFViewer({ loadedHighlights, loadedSource, loadedUserHi
     const id = getNextId()
     // If the highlights object doesn't exist, create it
     const returnId: any = mutation.mutate({
-      user: "admin",
       highlights: [{ ...highlight, id }, ...highlights],
       source: url,
-      id: userHighlightsId
+      user: user
     });
 
     console.log({ returnId })
