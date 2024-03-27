@@ -9,6 +9,7 @@ import { SearchTab, UserHeader } from '../pdf/ui/components/ExplorePage';
 import Timeline from '../pdf/ui/components/Timeline';
 import { highlights, users } from '@prisma/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import Profile from '../pdf/ui/components/ProfilePage';
 
 
 export default async function Page({ params }: { params: { id: string } }) {
@@ -36,17 +37,10 @@ export default async function Page({ params }: { params: { id: string } }) {
     }) as highlights[]
 
     return (
-        <main className="h-screen w-screen gap-0 bg-[#E9E5DD]">
-            <div className="max-w-4xl mx-auto py-8 px-4 text-black">
-
+        <main className="h-screen w-screen gap-0 bg-[##f8f7f6]">
+            <div className="mx-auto py-8 px-4 text-black">
                 <UserHeader users={users} />
-                <div>
-                    <Avatar>
-                        <AvatarImage src={searchedUser?.imageUrl} />
-                        <AvatarFallback>{searchedUser?.firstName}</AvatarFallback>
-                    </Avatar>                <SearchTab />
-                </div>
-                <Timeline articles={timeline} />
+                <Profile timeline={timeline} userProfile={user} />
             </div>
         </main>
     );

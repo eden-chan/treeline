@@ -49,7 +49,7 @@ const curiousPeopleSection = {
 
 export default function Profile({ timeline, userProfile }: { timeline: highlights[], userProfile: users }) {
     return (
-        <div className="bg-white min-h-screen">
+        <div className="min-h-screen">
 
             <div className="flex">
                 <nav className="w-1/5 p-6">
