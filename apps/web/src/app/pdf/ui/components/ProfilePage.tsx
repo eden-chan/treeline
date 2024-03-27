@@ -101,7 +101,7 @@ export default async function Profile({ users, timeline, searchedUser, loggedInU
                         <ul className="space-y-2">
                             {friendsSection.friends.map(friend => (
                                 <li key={friend.first_name}>
-                                    <Link className="block" href="#">
+                                    <Link className="block" href={`/${friend.handle}`}>
                                         <span className="font-medium">{friend.first_name}</span>
                                         <span className="text-sm text-gray-500"> {calculateTimeAgo(friend.recentPaper?.highlights?.slice(-1)[0]?.timestamp ?? new Date())} </span>
                                         <p className="text-sm text-gray-500">{friend.recentPaper?.source}</p>
