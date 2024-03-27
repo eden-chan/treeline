@@ -157,6 +157,7 @@ export const NewHighlightSchema = z.object({
   content: ContentSchema,
   comments: z.array(CommentSchema),
   position: ScaledPositionSchema,
+  timestamp: z.date(),
 });
 
 export const IHighlightSchema = NewHighlightSchema.extend({

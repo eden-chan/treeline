@@ -13,6 +13,7 @@ type HighlightsHighlights {
   content  HighlightsHighlightsContent
   id       String
   position HighlightsHighlightsPosition
+  timestamp DateTime
 }
 
 type HighlightsHighlightsComment {
