@@ -14,7 +14,7 @@ export default function FloatingProfiles({ setDisplayHighlights, allHighlightsWi
     return (
         <div className="fixed top-0 right-0 z-50 flex items-center space-x-2">
             {allHighlightsWithProfile?.map((profile, index) => (
-                <div className="relative" onClick={() => setDisplayHighlights(profile.highlights)}>
+                <div key={`profile-${index}`} className="relative" onClick={() => setDisplayHighlights(profile.highlights)}>
                     <Avatar>
                         <AvatarImage src={profile.userProfilePicture} />
                         <AvatarFallback>CN</AvatarFallback>

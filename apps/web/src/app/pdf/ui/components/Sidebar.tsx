@@ -36,9 +36,9 @@ export function Sidebar({
       </div>
 
       <ul className="sidebar__highlights">
-        {highlights.map((highlight, index) => (
-          <li
-            key={index}
+        {highlights.map((highlight) => (
+          <div
+            key={highlight.id}
             className="sidebar__highlight"
             onClick={() => {
               updateHash(highlight);
@@ -46,7 +46,7 @@ export function Sidebar({
           >
             <div>
               {highlight.comments.map((comment, commentIndex) => (
-                <li key={commentIndex}>{comment.text}</li>
+                <div key={`${highlight.id}-comment-${commentIndex}`}>{comment.text}</div>
               ))}
               {highlight.content.text ? (
                 <blockquote style={{ marginTop: "0.5rem" }}>
@@ -65,7 +65,7 @@ export function Sidebar({
             <div className="highlight__location">
               Page {highlight.position.pageNumber}
             </div>
-          </li>
+          </div>
         ))}
       </ul>
       <div style={{ padding: "1rem" }}>

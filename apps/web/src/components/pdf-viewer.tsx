@@ -13,7 +13,7 @@ import {
   Spinner,
   Sidebar,
 } from "../app/pdf/ui";
-import type { HighlightComment, HighlightContent, IHighlight, NewHighlight, PDFHighlights, PDFHighlightsWithProfile, Position } from "../app/pdf/ui/types";
+import type { Comment, HighlightContent, IHighlight, NewHighlight, PDFHighlights, PDFHighlightsWithProfile, Position } from "../app/pdf/ui/types";
 
 import "../app/pdf/ui/style/main.css";
 import FloatingProfiles from '@src/app/pdf/ui/components/FloatingProfiles';
@@ -30,11 +30,11 @@ const resetHash = () => {
 const HighlightPopup = ({
   comments,
 }: {
-  comments: HighlightComment[];
+  comments: Comment[];
 }) =>
-  comments.map((comment) =>
+  comments.map((comment, index) =>
     comment.text ? (
-      <div className="Highlight__popup">
+      <div key={`highlight-comment-${index}`} className="Highlight__popup">
         {comment.emoji} {comment.text}
       </div>
     ) : null
