@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { PDFHighlights } from '../types';
 
-export default function Timeline({ articles }: { articles: PDFHighlights[] }) {
+import { highlights } from '@prisma/client';
+
+export default function Timeline({ articles }: { articles: highlights[] }) {
     return (
         <main>
             {articles.map((article, index) => (

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { Account, PDFHighlights } from '../types';
 import Timeline from './Timeline';
+import { highlights, users } from '@prisma/client';
 
 
 
@@ -46,25 +47,10 @@ const curiousPeopleSection = {
     ]
 };
 
-export default function Profile({ timeline, userProfile }: { timeline: PDFHighlights[], userProfile: Account }) {
+export default function Profile({ timeline, userProfile }: { timeline: highlights[], userProfile: users }) {
     return (
         <div className="bg-white min-h-screen">
-            <header className="flex justify-between p-6 border-b">
-                <div className="flex items-center space-x-4">
-                    <Avatar>
-                        <AvatarImage alt={userProfile.firstName} src={userProfile.profilePicture} />
-                        <AvatarFallback>{userProfile.handle}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                        <h1 className="text-xl font-semibold">{userProfile.firstName}</h1>
-                        <p className="text-sm text-gray-500">{userProfile.handle}</p>
-                    </div>
-                </div>
-                <div className="flex space-x-6">
-                    <Input className="w-80" placeholder="Search bookmarks on My/Space" type="search" />
-                    <Button variant="outline">My bookshelf</Button>
-                </div>
-            </header>
+
             <div className="flex">
                 <nav className="w-1/5 p-6">
                     <ul className="space-y-1">

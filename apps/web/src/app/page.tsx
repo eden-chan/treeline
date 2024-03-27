@@ -1,10 +1,9 @@
 import React from "react";
 import { api } from "@src/trpc/server";
 import { SearchTab, UserHeader } from './pdf/ui/components/ExplorePage';
-import { PDFHighlights } from './pdf/ui/types';
 import { clerkClient } from '@clerk/nextjs/server';
 import Timeline from './pdf/ui/components/Timeline';
-import { users } from '@prisma/client';
+import { highlights, users } from '@prisma/client';
 
 export default async function Page() {
   // If these filters are included, the response will contain only users that own any of these emails and/or phone numbers.
@@ -18,10 +17,10 @@ export default async function Page() {
   }
   const users = await api.user.fetchUsers({ userEmailList: userEmails }) as users[]
 
-  const timelineData = await api.post.fetchAllHighlights({
+  const timeline = await api.post.fetchAllHighlights({
     userList: userEmails
-  });
-  const timeline = timelineData as PDFHighlights[];
+  }) as highlights[];
+
 
   return (
     <main className="h-screen w-screen gap-0">
