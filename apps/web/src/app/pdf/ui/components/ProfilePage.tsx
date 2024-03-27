@@ -31,14 +31,9 @@ const readingSection = {
 };
 
 
-const friendsSection = {
-    title: "Your friends",
-    friends: [
-        { name: "Eden Chan", context: " in Zorbing - Wikipedia", time: "1 hour ago" },
-        { name: "Charles Liu", context: " in The Art of Coding", time: "2 hours ago" },
-        { name: "Kenson Hui", context: " in Machine Learning Basics", time: "3 hours ago" }
-    ]
-};
+import { useMemo } from 'react';
+import { calculateTimeAgo } from '@src/lib/utils';
+
 
 const curiousPeopleSection = {
     title: "Some curious people",
@@ -49,7 +44,18 @@ const curiousPeopleSection = {
     ]
 };
 
-export default async function Profile({ timeline, searchedUser, loggedInUser, searchedUserImageUrl }: { timeline: highlights[], searchedUser: users, loggedInUser: users, searchedUserImageUrl: string }) {
+export default async function Profile({ users, timeline, searchedUser, loggedInUser, searchedUserImageUrl }: { users: users[], timeline: highlights[], searchedUser: users, loggedInUser: users, searchedUserImageUrl: string }) {
+
+
+    const userHighlights = useMemo(() => users.map(user => {
+        const userHighlight = timeline.find(highlight => highlight.userId === user.email);
+        return { ...user, recentPaper: userHighlight };
+    }), [users, timeline]);
+
+    const friendsSection = {
+        title: "Your friends",
+        friends: userHighlights
+    };
     return (
         <div className="min-h-screen">
 
@@ -94,12 +100,12 @@ export default async function Profile({ timeline, searchedUser, loggedInUser, se
                         <h2 className="text-lg font-semibold mb-4">{friendsSection.title}</h2>
                         <ul className="space-y-2">
                             {friendsSection.friends.map(friend => (
-                                <li key={friend.name}>
+                                <li key={friend.first_name}>
                                     <Link className="block" href="#">
-                                        <span className="font-medium">{friend.name}</span>
-                                        <span className="text-sm text-gray-500">{friend.context}</span>
+                                        <span className="font-medium">{friend.first_name}</span>
+                                        <span className="text-sm text-gray-500"> {calculateTimeAgo(friend.recentPaper?.highlights?.slice(-1)[0]?.timestamp ?? new Date())} </span>
+                                        <p className="text-sm text-gray-500">{friend.recentPaper?.source}</p>
                                     </Link>
-                                    <p className="text-sm text-gray-500">{friend.time}</p>
                                 </li>
                             ))}
                         </ul>

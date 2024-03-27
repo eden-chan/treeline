@@ -11,7 +11,6 @@ export default function FollowButton({ user1, user2 }: { user1: users, user2: us
     const [error, setError] = useState(null);
 
     // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
-
     const [isFollowing, setIsFollowing] = useState(user1.follows.includes(user2.email))
 
     const handleFollow = async () => {

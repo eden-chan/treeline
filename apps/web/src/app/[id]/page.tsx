@@ -4,13 +4,14 @@ import dynamic from "next/dynamic";
 import { EmailAddress, User, auth, clerkClient, currentUser, currentUser as getCurrentUser } from '@clerk/nextjs/server';
 import { headers } from 'next/headers';
 import { UserButton } from '@clerk/nextjs';
-import { SearchTab, UserHeader } from '../pdf/ui/components/ExplorePage';
+import { SearchTab, UserHeader } from '../pdf/ui/components/SearchTab';
 
 import Timeline from '../pdf/ui/components/Timeline';
 import { highlights, users } from '@prisma/client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Profile from '../pdf/ui/components/ProfilePage';
 import { UserWithProfile } from '../pdf/ui/types';
+import Navbar from '../pdf/ui/components/Navbar';
 
 
 export default async function Page({ params }: { params: { id: string } }) {
@@ -61,8 +62,8 @@ export default async function Page({ params }: { params: { id: string } }) {
     return (
         <main className="h-screen w-screen gap-0 bg-[##f8f7f6]">
             <div className="mx-auto py-8 px-4 text-black">
-                <UserHeader users={users} loggedInUser={loggedInUser} />
-                <Profile timeline={timeline} searchedUser={searchedUser} searchedUserImageUrl={searchedUserClerk?.imageUrl as string} loggedInUser={loggedInUser} />
+                <Navbar users={users} loggedInUser={loggedInUser} />
+                <Profile users={users} timeline={timeline} searchedUser={searchedUser} searchedUserImageUrl={searchedUserClerk?.imageUrl as string} loggedInUser={loggedInUser} />
             </div>
         </main>
     );

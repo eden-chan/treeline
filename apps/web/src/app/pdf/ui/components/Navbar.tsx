@@ -9,7 +9,7 @@ import Link from 'next/link'
 import SearchWithAutocomplete from './SearchWithAutocomplete'
 import type { users } from '@prisma/client'
 
-export function UserHeader({ users, loggedInUser }: { users: users[], loggedInUser: users }) {
+export default function Navbar({ users, loggedInUser }: { users: users[], loggedInUser: users }) {
     // note: the id field is mandatory
     const items = users.map((user) => ({
         id: user.id,
@@ -30,15 +30,3 @@ export function UserHeader({ users, loggedInUser }: { users: users[], loggedInUs
             </div>
         </header>)
 }
-
-export function SearchTab() {
-    return (<nav className="flex space-x-8 mb-10">
-        <a className="text-gray-900 font-semibold" href="#">
-            Today
-        </a>
-        <a className="text-gray-600 hover:text-gray-900" href="#">
-            Explore
-        </a>
-    </nav>)
-}
-
