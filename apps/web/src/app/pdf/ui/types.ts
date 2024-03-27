@@ -46,22 +46,23 @@ export interface HighlightContent {
 export interface Comment {
   text: string;
   emoji: string;
+  timestamp: Date;
+  userId: string;
 }
 
-export interface HighlightComment {
-  comment: Comment;
-}
-
-export interface NewHighlight extends HighlightContent, HighlightComment {
+export interface NewHighlight extends HighlightContent {
   position: ScaledPosition;
+  timestamp: Date;
+  comments: Array<Comment>;
 }
 
 export interface IHighlight extends NewHighlight {
   id: string;
 }
 
-export interface ViewportHighlight extends HighlightContent, HighlightComment {
+export interface ViewportHighlight extends HighlightContent {
   position: Position;
+  comments: Array<Comment>;
 }
 
 export interface Viewport {
@@ -148,15 +149,13 @@ export const HighlightContentSchema = z.object({
 export const CommentSchema = z.object({
   text: z.string(),
   emoji: z.string(),
-});
-
-export const HighlightCommentSchema = z.object({
-  comment: CommentSchema,
+  timestamp: z.date(),
+  userId: z.string(),
 });
 
 export const NewHighlightSchema = z.object({
   content: ContentSchema,
-  comment: CommentSchema,
+  comments: z.array(CommentSchema),
   position: ScaledPositionSchema,
 });
 
@@ -166,7 +165,7 @@ export const IHighlightSchema = NewHighlightSchema.extend({
 
 export const ViewportHighlightSchema = z.object({
   content: ContentSchema,
-  comment: CommentSchema,
+  comments: z.array(CommentSchema),
   position: PositionSchema,
 });
 

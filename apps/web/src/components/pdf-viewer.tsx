@@ -13,7 +13,7 @@ import {
   Spinner,
   Sidebar,
 } from "../app/pdf/ui";
-import type { IHighlight, NewHighlight, PDFHighlights } from "../app/pdf/ui/types";
+import type { HighlightComment, HighlightContent, IHighlight, NewHighlight, PDFHighlights, PDFHighlightsWithProfile, Position } from "../app/pdf/ui/types";
 
 import "../app/pdf/ui/style/main.css";
 import FloatingProfiles from '@src/app/pdf/ui/components/FloatingProfiles';
@@ -28,15 +28,17 @@ const resetHash = () => {
 };
 
 const HighlightPopup = ({
-  comment,
+  comments,
 }: {
-  comment: { text: string; emoji: string };
+  comments: HighlightComment[];
 }) =>
-  comment.text ? (
-    <div className="Highlight__popup">
-      {comment.emoji} {comment.text}
-    </div>
-  ) : null;
+  comments.map((comment) =>
+    comment.text ? (
+      <div className="Highlight__popup">
+        {comment.emoji} {comment.text}
+      </div>
+    ) : null
+  );
 
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
@@ -117,8 +119,8 @@ export default function PDFViewer({
 
   const updateHighlight = (
     highlightId: string,
-    position: Object,
-    content: Object,
+    position: Position,
+    content: HighlightContent,
   ) => {
 
     const updatedHighlights = highlights.map((h) => {
@@ -126,14 +128,16 @@ export default function PDFViewer({
         id,
         position: originalPosition,
         content: originalContent,
-        ...rest
+        comments: originalComments,
+        timestamp: originalTimestamp
       } = h;
       return id === highlightId
         ? {
           id,
           position: { ...originalPosition, ...position },
           content: { ...originalContent, ...content },
-          ...rest,
+          comments: { ...originalComments },
+          timestamp: new Date(),
         }
         : h;
     });
@@ -181,11 +185,12 @@ export default function PDFViewer({
                   onConfirm={(comment) => {
                     addHighlight({
                       content: {
-                        text: content.text || '',
-                        image: content.image || '',
+                        text: content?.text ?? '',
+                        image: content?.image ?? '',
                       },
                       position,
-                      comment,
+                      comments: [{ ...comment, timestamp: new Date(), userId: userId }],
+                      timestamp: new Date(),
                     });
                     hideTipAndSelection();
                   }}
@@ -208,7 +213,7 @@ export default function PDFViewer({
                   <Highlight
                     isScrolledTo={isScrolledTo}
                     position={highlight.position}
-                    comment={highlight.comment}
+                    comments={highlight.comments}
                   />
                 ) : (
                   <AreaHighlight

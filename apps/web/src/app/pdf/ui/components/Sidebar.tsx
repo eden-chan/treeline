@@ -45,7 +45,9 @@ export function Sidebar({
             }}
           >
             <div>
-              <strong>{highlight.comment.text}</strong>
+              {highlight.comments.map((comment, commentIndex) => (
+                <li key={commentIndex}>{comment.text}</li>
+              ))}
               {highlight.content.text ? (
                 <blockquote style={{ marginTop: "0.5rem" }}>
                   {`${highlight.content.text.slice(0, 90).trim()}…`}

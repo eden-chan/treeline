@@ -9,7 +9,7 @@ datasource db {
 }
 
 type HighlightsHighlights {
-  comment  HighlightsHighlightsComment
+  comments  HighlightsHighlightsComment[]
   content  HighlightsHighlightsContent
   id       String
   position HighlightsHighlightsPosition
@@ -18,6 +18,8 @@ type HighlightsHighlights {
 type HighlightsHighlightsComment {
   emoji String
   text  String
+  timestamp DateTime
+  userId String
 }
 
 type HighlightsHighlightsContent {
