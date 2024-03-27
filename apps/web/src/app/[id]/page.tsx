@@ -1,21 +1,14 @@
 import React from "react";
-import { TRPCReactProvider } from "@src/trpc/react";
-
 import { api } from "@src/trpc/server";
-import { Account, IHighlight, PDFHighlights, PDFHighlightsWithProfile } from "../pdf/ui/types";
-
 import dynamic from "next/dynamic";
-import { ObjectId } from "mongodb";
-import { auth, clerkClient, currentUser as getCurrentUser } from '@clerk/nextjs/server';
+import { User, auth, clerkClient, currentUser as getCurrentUser } from '@clerk/nextjs/server';
 import { headers } from 'next/headers';
 import { UserButton } from '@clerk/nextjs';
-import ExplorePage, { SearchTab, UserHeader } from '../pdf/ui/components/ExplorePage';
-import Profile from '../pdf/ui/components/ProfilePage';
+import { SearchTab, UserHeader } from '../pdf/ui/components/ExplorePage';
+
 import Timeline from '../pdf/ui/components/Timeline';
 import { highlights, users } from '@prisma/client';
-const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
-    ssr: false, // Disable server-side rendering for this component
-});
+
 
 export default async function Page() {
 
@@ -24,8 +17,7 @@ export default async function Page() {
     const header_url = headersList.get('x-url') || "";
     const urlParams = new URLSearchParams(header_url.split('?')[1]);
 
-
-
+    // Check which user we should load
     const loggedInUser = await getCurrentUser();
     const loggedInUserEmail = loggedInUser?.emailAddresses?.[0]?.emailAddress || '';
 
@@ -49,9 +41,8 @@ export default async function Page() {
         return <div className="h-screen w-screen gap-0 text-black">Profile {handle} does not exist</div>
     }
 
-
     // If these filters are included, the response will contain only users that own any of these emails and/or phone numbers.
-    const clerkUsers = await clerkClient.users.getUserList();
+    const clerkUsers = await clerkClient.users.getUserList() as User[];
 
     let userEmails = [];
     for (let i = 0; i < clerkUsers.length; i++) {
@@ -61,13 +52,13 @@ export default async function Page() {
     }
     const users = await api.user.fetchUsers({ userEmailList: userEmails }) as users[]
 
-    const timelineData = await api.post.fetchAllHighlights({
+    const timeline = await api.post.fetchAllHighlights({
         userList: userEmails
-    });
-    const timeline = timelineData as PDFHighlights[];
+    }) as highlights[]
+
 
     return (
-        <main className="h-screen w-screen gap-0">
+        <main className="h-screen w-screen gap-0 bg-[#E9E5DD]">
             <div className="max-w-4xl mx-auto py-8 px-4 text-black">
                 <UserHeader users={users} />
                 <SearchTab />

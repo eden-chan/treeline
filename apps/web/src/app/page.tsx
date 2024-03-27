@@ -6,7 +6,7 @@ import Timeline from './pdf/ui/components/Timeline';
 import { highlights, users } from '@prisma/client';
 
 export default async function Page() {
-  // If these filters are included, the response will contain only users that own any of these emails and/or phone numbers.
+  // Populate search bar for users
   const clerkUsers = await clerkClient.users.getUserList();
 
   let userEmails = [];
@@ -17,6 +17,7 @@ export default async function Page() {
   }
   const users = await api.user.fetchUsers({ userEmailList: userEmails }) as users[]
 
+  // Populate timeline with highlights of all users. TODO: filter by followed users
   const timeline = await api.post.fetchAllHighlights({
     userList: userEmails
   }) as highlights[];
