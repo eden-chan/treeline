@@ -1,5 +1,5 @@
 import { z } from "zod";
-
+import { HighlightsHighlights, highlights } from "@prisma/client";
 export interface LTWH {
   left: number;
   top: number;
@@ -77,14 +77,7 @@ export interface Page {
   number: number;
 }
 
-export interface PDFHighlights {
-  highlights: IHighlight[];
-  source: string;
-  userId: string;
-  id: string;
-}
-
-export interface PDFHighlightsWithProfile extends PDFHighlights {
+export interface PDFHighlightsWithProfile extends HighlightsHighlights {
   userProfilePicture: string;
   firstName: string;
   lastName: string;

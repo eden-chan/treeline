@@ -12,8 +12,12 @@ import {
   AreaHighlight,
   Spinner,
   Sidebar,
+  PDFHighlightsWithProfile,
+  NewHighlight,
+  Position,
+  HighlightContent,
 } from "../app/pdf/ui";
-import type { Comment, HighlightContent, IHighlight, NewHighlight, PDFHighlights, PDFHighlightsWithProfile, Position } from "../app/pdf/ui/types";
+import { HighlightsHighlights, highlights } from '@prisma/client'
 
 import "../app/pdf/ui/style/main.css";
 import FloatingProfiles from '@src/app/pdf/ui/components/FloatingProfiles';
@@ -49,7 +53,7 @@ export default function PDFViewer({
   loadedUserHighlightsId,
   userId, allHighlights
 }: {
-  loadedHighlights: IHighlight[];
+  loadedHighlights: HighlightsHighlights[];
   loadedSource: string;
   loadedUserHighlightsId: string;
   userId: string;
@@ -57,9 +61,9 @@ export default function PDFViewer({
 }): JSX.Element {
   const mutation = clientApi.post.addHighlight.useMutation();
   const [url, setUrl] = useState(loadedSource);
-  const [highlight, setHighlight] = useState<IHighlight | undefined>(undefined);
+  const [highlight, setHighlight] = useState<highlights | undefined>(undefined);
   const [highlights, setHighlights] = useState(loadedHighlights);
-  const [displayHighlights, setDisplayHighlights] = useState<IHighlight[]>(loadedHighlights)
+  const [displayHighlights, setDisplayHighlights] = useState<HighlightsHighlights[]>(loadedHighlights)
 
 
   const getHighlightById = (id: string) => {
