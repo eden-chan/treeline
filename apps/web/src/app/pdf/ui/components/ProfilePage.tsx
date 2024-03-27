@@ -7,9 +7,11 @@ import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
-import { Account, PDFHighlights } from '../types';
+import { UserWithProfile } from '../types';
 import Timeline from './Timeline';
 import { highlights, users } from '@prisma/client';
+import { EmailAddress, currentUser } from '@clerk/nextjs/server';
+import FollowButton from './FollowButton';
 
 
 
@@ -47,12 +49,20 @@ const curiousPeopleSection = {
     ]
 };
 
-export default function Profile({ timeline, userProfile }: { timeline: highlights[], userProfile: users }) {
+export default async function Profile({ timeline, searchedUser, loggedInUser, searchedUserImageUrl }: { timeline: highlights[], searchedUser: users, loggedInUser: users, searchedUserImageUrl: string }) {
     return (
         <div className="min-h-screen">
 
             <div className="flex">
+
                 <nav className="w-1/5 p-6">
+                    <div className="w-10"> {/* Fixed width */}
+                        <Avatar>
+                            <AvatarImage src={searchedUserImageUrl} />
+                            <AvatarFallback>CN</AvatarFallback>
+                        </Avatar>
+                        <FollowButton user1={loggedInUser} user2={searchedUser} />
+                    </div>
                     <ul className="space-y-1">
                         {navLinks.map(link => (
                             <li key={link.name}>

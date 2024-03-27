@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { HighlightsHighlights, highlights } from "@prisma/client";
+import { HighlightsHighlights, highlights, users } from "@prisma/client";
 export interface LTWH {
   left: number;
   top: number;
@@ -83,17 +83,8 @@ export interface PDFHighlightsWithProfile extends HighlightsHighlights {
   lastName: string;
 }
 
-export interface Account {
-  id: string;
-  handle: string;
-  email: string;
-  firstName: string;
-  lastName: string;
-  followers: string[];
-  follows: string[];
-}
-export interface AccountProfile extends Account {
-  profilePictureUrl: string;
+export interface UserWithProfile extends users {
+  imageUrl: string;
 }
 
 export const LTWHSchema = z.object({
@@ -186,4 +177,14 @@ export const PDFHighlightsSchema = z.object({
   source: z.string(),
   userId: z.string(),
   id: z.string(),
+});
+
+export const UserSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  first_name: z.string(),
+  followers: z.array(z.string()),
+  follows: z.array(z.string()),
+  handle: z.string(),
+  last_name: z.string(),
 });
