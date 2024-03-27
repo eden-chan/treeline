@@ -23,13 +23,12 @@ const Timeline = memo(({ articles }: { articles: highlights[] }) => {
                 {memoizedArticles.map((article, index) => (
                     <article key={index} className="mb-6">
                         <Link href={`/pdf?url=${article.source}`}>
-
-                            <h2 className="text-xl font-semibold mb-1">{article.highlights[0]?.content?.text.slice(0, 200)} </h2>
-                            <p className="text-gray-600 mb-2">{article.source}</p>
-                            <p className="text-gray-600 mb-2">{article.highlights.length} highlights</p>
+                            {/* TODO: add LLM parsed data of the pdf */}
+                            <h2 className="text-xl font-semibold mb-1">{article.highlights[0]?.content?.text.slice(0, 50)} </h2>
+                            <p className="text-gray-600 mb-2"> {article.timeAgoCalculation} {article.highlights.length} highlights</p>
                             <p className="text-gray-500">{article.highlights[0]?.content?.text}</p>
                             <p className="text-gray-400 text-sm mt-2">
-                                — {article.userId} / {article.timeAgoCalculation}
+                                {article.userId}
                             </p>
 
                         </Link>
