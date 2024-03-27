@@ -31,6 +31,7 @@
     "react-dom": "^18.2.0",
     "react-pdf": "^7.7.1",
     "react-rnd": "^10.1.10",
+    "react-search-autocomplete": "^8.5.2",
     "reactflow": "^11.10.4",
     "server-only": "^0.0.1",
     "superjson": "^2.2.1",

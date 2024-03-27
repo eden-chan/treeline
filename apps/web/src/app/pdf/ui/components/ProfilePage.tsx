@@ -10,15 +10,7 @@ import Link from "next/link"
 import { Account, PDFHighlights } from '../types';
 import Timeline from './Timeline';
 
-const userData = {
-    avatar: {
-        alt: "@edenchan",
-        src: "https://github.com/eden-chan.png",
-        fallback: "CN"
-    },
-    name: "Eden Chan",
-    username: "@edenchan"
-};
+
 
 const navLinks = [
     { name: "Pages", href: "#" },

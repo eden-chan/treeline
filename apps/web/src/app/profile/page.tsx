@@ -9,8 +9,8 @@ import { ObjectId } from "mongodb";
 import { auth, clerkClient, currentUser as getCurrentUser } from '@clerk/nextjs/server';
 import { headers } from 'next/headers';
 import { UserButton } from '@clerk/nextjs';
-import DiscoverHighlights from '../pdf/ui/components/DiscoverHighlights';
-import Profile from '../pdf/ui/components/Profile';
+import ExplorePage from '../pdf/ui/components/ExplorePage';
+import Profile from '../pdf/ui/components/ProfilePage';
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
     ssr: false, // Disable server-side rendering for this component
 });

@@ -1,46 +1,36 @@
-
 import React from "react";
-import Tree from "@src/components/tree";
-import dynamic from 'next/dynamic';
-const PdfViewer = dynamic(() => import('../components/pdf-viewer'), {
-  ssr: false, // Disable server-side rendering for this component
-});
 import { api } from "@src/trpc/server";
-import { CreateOrganization, OrganizationList, OrganizationProfile, OrganizationSwitcher, SignIn, UserButton, clerkClient } from '@clerk/nextjs';
-import DiscoverHighlights from './pdf/ui/components/DiscoverHighlights';
+import { SearchTab, UserHeader } from './pdf/ui/components/ExplorePage';
 import { PDFHighlights } from './pdf/ui/types';
-import { currentUser } from '@clerk/nextjs/server';
+import { clerkClient } from '@clerk/nextjs/server';
+import Timeline from './pdf/ui/components/Timeline';
+import { users } from '@prisma/client';
 
 export default async function Page() {
   // If these filters are included, the response will contain only users that own any of these emails and/or phone numbers.
-  const users = await clerkClient.users.getUserList();
-  const userEmails = users.map(user => user!.emailAddresses[0].emailAddress);
-  console.log({ userEmails })
+  const clerkUsers = await clerkClient.users.getUserList();
 
+  let userEmails = [];
+  for (let i = 0; i < clerkUsers.length; i++) {
+    if (clerkUsers[i]?.emailAddresses?.[0]?.emailAddress) {
+      userEmails.push(clerkUsers[i]?.emailAddresses?.[0]?.emailAddress as string);
+    }
+  }
+  const users = await api.user.fetchUsers({ userEmailList: userEmails }) as users[]
 
-
-  const user = await currentUser();
-  const currentUserEmail = user?.emailAddresses?.[0]?.emailAddress || '';
-
-
-  const defaultPdfURL = "https://arxiv.org/pdf/1706.03762.pdf"
-
-  const timeline = await api.post.fetchAllHighlights({
-    userList: userEmails,
-    // source: defaultPdfURL,
-  }) as PDFHighlights[];
-
+  const timelineData = await api.post.fetchAllHighlights({
+    userList: userEmails
+  });
+  const timeline = timelineData as PDFHighlights[];
 
   return (
     <main className="h-screen w-screen gap-0">
-      <DiscoverHighlights timeline={timeline} />
-      {/* 
-      <SignIn />
-      <UserButton />
-      <CreateOrganization />
-      <OrganizationProfile />
-      <OrganizationSwitcher />
-      <OrganizationList /> */}
+      <div className="max-w-4xl mx-auto py-8 px-4 text-black">
+        <UserHeader users={users} />
+        <SearchTab />
+        <Timeline articles={timeline} />
+      </div>
     </main>
   );
 }
+
