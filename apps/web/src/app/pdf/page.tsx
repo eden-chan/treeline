@@ -48,8 +48,6 @@ export default async function Page() {
   const userEmails = users.map(user => user!.emailAddresses[0].emailAddress);
   const emailToPicture = users.map(user => { return { email: user!.emailAddresses[0]?.emailAddress ?? '', imageUrl: user!.imageUrl, firstName: user!.firstName, lastName: user!.lastName } });
 
-
-
   const allHighlights = await api.post.fetchAllHighlights({
     source: pdfUrl, userList: [...userEmails]
   }) as highlights[];
