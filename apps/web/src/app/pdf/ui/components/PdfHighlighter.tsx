@@ -69,6 +69,7 @@ interface Props<T_HT> {
     isScrolledTo: boolean
   ) => JSX.Element;
   highlights: Array<T_HT>;
+  displayHighlights: Array<T_HT>;
   onScrollChange: () => void;
   scrollRef: (scrollTo: (highlight: T_HT) => void) => void;
   pdfDocument: PDFDocumentProxy;
@@ -652,23 +653,38 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   }
 
   private renderHighlightLayer(root: Root, pageNumber: number) {
-    const { highlightTransform, highlights } = this.props;
+    const { highlightTransform, highlights, displayHighlights } = this.props;
     const { tip, scrolledToHighlightId } = this.state;
     root.render(
-      <HighlightLayer
-        highlightsByPage={this.groupHighlightsByPage(highlights)}
-        pageNumber={pageNumber.toString()}
-        scrolledToHighlightId={scrolledToHighlightId}
-        highlightTransform={highlightTransform}
-        tip={tip}
-        scaledPositionToViewport={this.scaledPositionToViewport.bind(this)}
-        hideTipAndSelection={this.hideTipAndSelection.bind(this)}
-        viewer={this.viewer}
-        screenshot={this.screenshot.bind(this)}
-        showTip={this.showTip.bind(this)}
-        setState={this.setState.bind(this)}
-        userId={this.props.userId}
-      />
+      <>
+        <HighlightLayer
+          highlightsByPage={this.groupHighlightsByPage(highlights)}
+          pageNumber={pageNumber.toString()}
+          scrolledToHighlightId={scrolledToHighlightId}
+          highlightTransform={highlightTransform}
+          tip={tip}
+          scaledPositionToViewport={this.scaledPositionToViewport.bind(this)}
+          hideTipAndSelection={this.hideTipAndSelection.bind(this)}
+          viewer={this.viewer}
+          screenshot={this.screenshot.bind(this)}
+          showTip={this.showTip.bind(this)}
+          setState={this.setState.bind(this)}
+        />
+        <HighlightLayer
+          displayOnly={true}
+          highlightsByPage={this.groupHighlightsByPage(displayHighlights)}
+          pageNumber={pageNumber.toString()}
+          scrolledToHighlightId={scrolledToHighlightId}
+          highlightTransform={highlightTransform}
+          tip={tip}
+          scaledPositionToViewport={this.scaledPositionToViewport.bind(this)}
+          hideTipAndSelection={this.hideTipAndSelection.bind(this)}
+          viewer={this.viewer}
+          screenshot={this.screenshot.bind(this)}
+          showTip={this.showTip.bind(this)}
+          setState={this.setState.bind(this)}
+        />
+      </>
     );
   }
 }

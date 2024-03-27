@@ -9,12 +9,12 @@ import { IHighlight, PDFHighlightsWithProfile } from '../types'
 import { SetStateAction } from 'react'
 
 
-export default function FloatingProfiles({ setDisplayHighlights, allHighlightsWithProfile }: { setDisplayHighlights: SetStateAction<IHighlight[]>, allHighlightsWithProfile: PDFHighlightsWithProfile[] }) {
+export default function FloatingProfiles({ setDisplayHighlights, allHighlightsWithProfile }: { setDisplayHighlights: any, allHighlightsWithProfile: PDFHighlightsWithProfile[] }) {
 
     return (
         <div className="fixed top-0 right-0 z-50 flex items-center space-x-2">
             {allHighlightsWithProfile?.map((profile, index) => (
-                <div key={`profile-${index}`} className="relative" onClick={() => setDisplayHighlights(profile.highlights)}>
+                <div key={`profile-${index}`} className="relative" onClick={() => { setDisplayHighlights(profile.highlights) }}>
                     <Avatar>
                         <AvatarImage src={profile.userProfilePicture} />
                         <AvatarFallback>CN</AvatarFallback>

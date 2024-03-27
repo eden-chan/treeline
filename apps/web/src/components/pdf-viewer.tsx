@@ -241,7 +241,8 @@ export default function PDFViewer({
                   />
                 );
               }}
-              highlights={displayHighlights}
+              highlights={highlights}
+              displayHighlights={displayHighlights}
             />
           )}
         </PdfLoader>
