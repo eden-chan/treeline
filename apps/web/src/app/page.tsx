@@ -4,7 +4,7 @@ import { SearchTab } from './pdf/ui/components/SearchTab';
 import { clerkClient } from '@clerk/nextjs/server';
 import Timeline from './pdf/ui/components/Timeline';
 import { highlights, users } from '@prisma/client';
-import { currentUser } from '@clerk/nextjs';
+import { SignIn, currentUser } from '@clerk/nextjs';
 import Navbar from './pdf/ui/components/Navbar';
 
 export default async function Page() {
@@ -14,11 +14,14 @@ export default async function Page() {
   const loggedInUserEmail = _loggedInUser?.emailAddresses[0]?.emailAddress as string
   const loggedInUser = await api.user.fetchUser({ email: loggedInUserEmail }) as users
 
-  //  Get logged in user friends
+  if (!_loggedInUser) {
+    //  Get logged in user friends
+    return <div><SignIn /> </div>
+  }
   const followedUsers = await api.user.fetchUsers({ userEmailList: loggedInUser?.follows ?? [] }) as users[]
   // Populate timeline with highlights of user and follows.
   const timeline = await api.post.fetchAllHighlights({
-    userList: [loggedInUser.email, ...loggedInUser.follows]
+    userList: [loggedInUser.email, ...loggedInUser?.follows ?? []]
   }) as highlights[];
 
 
