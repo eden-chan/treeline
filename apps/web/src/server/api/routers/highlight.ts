@@ -4,14 +4,6 @@ import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { IHighlightSchema } from "@src/app/pdf/ui/types";
 
 export const highlightsRouter = createTRPCRouter({
-  hello: publicProcedure
-    .input(z.object({ text: z.string() }))
-    .query(({ input }) => {
-      return {
-        greeting: `Hello ${input.text}`,
-      };
-    }),
-
   // Create new highlight object if doesn't exist
   // Otherwise, update the highlight objects
   addHighlight: publicProcedure
@@ -21,7 +13,7 @@ export const highlightsRouter = createTRPCRouter({
         userId: z.string(),
         source: z.string(),
         id: z.string(), // mongo id is provided ahead of time for new documents
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       return await db.highlights.upsert({
@@ -46,7 +38,10 @@ export const highlightsRouter = createTRPCRouter({
    */
   fetchUserHighlights: publicProcedure
     .input(
-      z.object({ userId: z.string().optional(), source: z.string().optional() })
+      z.object({
+        userId: z.string().optional(),
+        source: z.string().optional(),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};
@@ -75,7 +70,10 @@ export const highlightsRouter = createTRPCRouter({
     }),
   fetchAllHighlights: publicProcedure
     .input(
-      z.object({ source: z.string().optional(), userList: z.array(z.string()) })
+      z.object({
+        source: z.string().optional(),
+        userList: z.array(z.string()),
+      }),
     )
     .query(async ({ ctx, input }) => {
       const whereClause: Record<string, any> = {};

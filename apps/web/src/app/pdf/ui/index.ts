@@ -1,5 +1,5 @@
 export { PdfHighlighter } from "./components/PdfHighlighter";
-export { Tip } from "./components/Tip";
+export { Tip } from "./components/tip/Tip";
 export { Forest } from "./components/Forest";
 export { Highlight } from "./components/Highlight";
 export { Popup } from "./components/Popup";
