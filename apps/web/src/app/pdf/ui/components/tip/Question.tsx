@@ -1,29 +1,35 @@
+"use client";
 import React, { useState } from "react";
 
 import "../../style/Tip.css";
 
 type QuestionProps = {
-  onConfirm: (arg: { text: string }) => void;
+  input: string;
+  handleInputChange: (
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLTextAreaElement>,
+  ) => void;
+  handleSubmit: (
+    e: React.FormEvent<HTMLFormElement>,
+    chatRequestOptions?: any,
+  ) => void;
 };
 
-export const Question = ({ onConfirm }: QuestionProps) => {
-  const [text, setText] = useState("");
-
+export const Question = ({
+  input,
+  handleInputChange,
+  handleSubmit,
+}: QuestionProps) => {
   return (
-    <form
-      className="Tip__card"
-      onSubmit={(event) => {
-        event.preventDefault();
-        onConfirm({ text });
-      }}
-    >
+    <form className="Tip__card" onSubmit={handleSubmit}>
       <div>
         <textarea
           className="text-black"
           placeholder="Your question"
           autoFocus
-          value={text}
-          onChange={(e) => setText(e.target.value)}
+          value={input}
+          onChange={handleInputChange}
           ref={(node) => {
             if (node) {
               node.focus();

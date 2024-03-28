@@ -198,7 +198,7 @@ export default function PDFViewer({
                     });
                     hideTipAndSelection();
                   }}
-                  onPromptComment={() => {}}
+                  onPromptConfirm={() => null}
                 />
               )}
               highlightTransform={(
