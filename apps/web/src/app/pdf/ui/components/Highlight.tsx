@@ -33,18 +33,6 @@ export class Highlight extends Component<Props> {
       <div
         className={`Highlight ${isScrolledTo ? "Highlight--scrolledTo" : ""}`}
       >
-        {comments && comments.map((comment, index) => (
-          <li
-            key={index}
-            className="Highlight__emoji"
-            style={{
-              left: 20,
-              top: boundingRect.top,
-            }}
-          >
-            {comment.text}
-          </li>
-        ))}
         <div className="Highlight__parts">
           {rects.map((rect, index) => (
             <div
