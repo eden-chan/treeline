@@ -15,7 +15,7 @@ export default async function Page() {
   const loggedInUser = await api.user.fetchUser({ email: loggedInUserEmail }) as users
 
   //  Get logged in user friends
-  const followedUsers = await api.user.fetchUsers({ userEmailList: loggedInUser.follows }) as users[]
+  const followedUsers = await api.user.fetchUsers({ userEmailList: loggedInUser?.follows ?? [] }) as users[]
   // Populate timeline with highlights of user and follows.
   const timeline = await api.post.fetchAllHighlights({
     userList: [loggedInUser.email, ...loggedInUser.follows]

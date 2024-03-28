@@ -53,12 +53,6 @@ export default async function Page({ params }: { params: { id: string } }) {
     const loggedInUser = await api.user.fetchUser({ email: loggedInUserEmail }) as users
 
 
-
-
-
-
-
-
     return (
         <main className="h-screen w-screen gap-0 bg-[##f8f7f6]">
             <div className="mx-auto py-8 px-4 text-black">
