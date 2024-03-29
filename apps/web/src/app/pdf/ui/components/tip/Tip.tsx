@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { useChat } from "ai/react";
 
+import { useAskHighlight } from "@src/context/ask-highlight-context";
 import { Comment } from "./Comment";
 import { Question } from "./Question";
 
@@ -22,11 +22,7 @@ export const Tip = ({ onCommentConfirm, onPromptConfirm, onOpen }: Props) => {
     input: questionInput,
     handleInputChange: questionHandleInputChange,
     handleSubmit: questionHandleSubmit,
-  } = useChat();
-
-  // useEffect(() => {
-  //   console.log("messages", messages);
-  // }, [messages]);
+  } = useAskHighlight();
 
   return (
     <div className="Tip">
