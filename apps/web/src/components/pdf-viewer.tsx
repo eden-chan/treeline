@@ -111,28 +111,27 @@ export default function PDFViewer({
     });
   };
 
+  let scrollToHighlightId = (highlight: AnnotatedPdfHighlights) => {};
+
   const setHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
 
     if (highlight) {
       setHighlight(highlight);
+      scrollToHighlightId(highlight);
     }
   };
 
+  // Todo: This useEffect reruns on every state update since scrollToHighlight changes reference on every render.
+  // However, we need to keep an updated version of scrollToHighlightId after it gets assigned in PDFHighlighter.
+  // Find a more elegant solution.
   useEffect(() => {
     window.addEventListener("hashchange", setHighlightFromHash, false);
 
     return () => {
       window.removeEventListener("hashchange", setHighlightFromHash, false);
     };
-  }, [highlights]);
-
-  useEffect(() => {
-    // Todo: This is a hack to make sure the highlight is scroll to after the pdf viewer is done rendering. Fix later.
-    setTimeout(() => {
-      setHighlightFromHash();
-    }, 500);
-  }, []);
+  }, [highlights, scrollToHighlightId]);
 
   const addHighlight = async (
     highlight: Omit<AnnotatedPdfHighlights, "id">,
@@ -202,6 +201,9 @@ export default function PDFViewer({
               enableAreaSelection={(event) => event.altKey}
               onScrollChange={resetHash}
               highlight={highlight}
+              scrollRef={(scrollTo) => {
+                scrollToHighlightId = scrollTo;
+              }}
               onSelectionFinished={(
                 position,
                 content,

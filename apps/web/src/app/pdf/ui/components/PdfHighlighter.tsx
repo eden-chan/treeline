@@ -72,6 +72,7 @@ interface Props<T_HT> {
   highlights: Array<AnnotatedPdfHighlights>;
   displayHighlights: Array<AnnotatedPdfHighlights>;
   onScrollChange: () => void;
+  scrollRef: (scrollTo: (highlight: AnnotatedPdfHighlights) => void) => void;
   highlight: AnnotatedPdfHighlights | undefined;
   pdfDocument: PDFDocumentProxy;
   pdfScaleValue: string;
@@ -417,7 +418,11 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   };
 
   onDocumentReady = () => {
+    const { scrollRef } = this.props;
+
     this.handleScaleValue();
+
+    scrollRef(this.scrollTo);
   };
 
   onSelectionChange = () => {
