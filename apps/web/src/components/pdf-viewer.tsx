@@ -13,7 +13,6 @@ import {
   Spinner,
   Sidebar,
   PDFHighlightsWithProfile,
-  NewHighlight,
   Position,
   HighlightContent,
 } from "../app/pdf/ui";

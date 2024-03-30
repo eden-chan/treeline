@@ -11,7 +11,7 @@ export const annotatedPdfRouter = createTRPCRouter({
   upsertAnnotatedPdf: publicProcedure
     .input(
       z.object({
-        // todo: fix zox schema compatibility with complex prisma types
+        // todo: fix zod schema compatibility with complex prisma types
         highlights: z.array(IHighlightSchema),
         userId: z.string(),
         source: z.string(),
