@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { users } from "@prisma/client";
+import { User } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
@@ -16,7 +16,7 @@ export const userRouter = createTRPCRouter({
 
       if (isUser1FollowingUser2) {
         // If user1 is following user2, remove user2 from user1's follows list.
-        await db.users.update({
+        await db.user.update({
           where: { id: input.user1.id },
           data: {
             follows: {
@@ -30,7 +30,7 @@ export const userRouter = createTRPCRouter({
           `User1 unfollowed User2: ${input.user1.email} unfollowed ${input.user2.email}`,
         );
         // Remove user1 from user2's followers list.
-        await db.users.update({
+        await db.user.update({
           where: { id: input.user2.id },
           data: {
             followers: {
@@ -45,7 +45,7 @@ export const userRouter = createTRPCRouter({
         );
       } else {
         // If user1 is not following user2, add user2 to user1's follows list.
-        await db.users.update({
+        await db.user.update({
           where: { id: input.user1.id },
           data: {
             follows: {
@@ -57,7 +57,7 @@ export const userRouter = createTRPCRouter({
           `User1 followed User2: ${input.user1.email} followed ${input.user2.email}`,
         );
         // Add user1 to user2's followers list.
-        await db.users.update({
+        await db.user.update({
           where: { id: input.user2.id },
           data: {
             followers: {
@@ -74,7 +74,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({ email: z.string().optional(), handle: z.string().optional() }),
     )
-    .query<users | undefined>(async ({ ctx, input }) => {
+    .query<User | undefined>(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};
       if (input.email) {
         whereClause["email"] = input.email;
@@ -86,7 +86,7 @@ export const userRouter = createTRPCRouter({
       let result;
       try {
         const start = Date.now();
-        result = await db.users.findFirst({
+        result = await db.user.findFirst({
           where: whereClause,
         });
         const end = Date.now();
@@ -103,7 +103,7 @@ export const userRouter = createTRPCRouter({
     }),
   fetchUsers: publicProcedure
     .input(z.object({ userEmailList: z.array(z.string()) }))
-    .query<users[] | undefined>(async ({ ctx, input }) => {
+    .query<User[] | undefined>(async ({ ctx, input }) => {
       const whereClause: Record<string, any> = {};
       if (input.userEmailList) {
         whereClause["email"] = { in: input.userEmailList };
@@ -112,7 +112,7 @@ export const userRouter = createTRPCRouter({
       let result;
       try {
         const start = Date.now();
-        result = await db.users.findMany({
+        result = await db.user.findMany({
           where: whereClause,
         });
         const end = Date.now();

@@ -8,7 +8,7 @@ import dynamic from "next/dynamic";
 import { ObjectId } from "mongodb";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
-import { highlights } from "@prisma/client";
+import { AnnotatedPdf } from "@prisma/client";
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
@@ -24,7 +24,7 @@ export default async function Page() {
 
   let userEmail = defaultUserId;
 
-  let newUserData: highlights = {
+  let newUserData: AnnotatedPdf = {
     id: new ObjectId().toString(),
     highlights: [],
     source: pdfUrl,
@@ -36,10 +36,10 @@ export default async function Page() {
 
   let { id, highlights, source, userId } = newUserData;
   try {
-    const data = (await api.post.fetchUserHighlights({
+    const data = await api.annotatedPdf.fetchUserHighlights({
       userId: userEmail,
       source: pdfUrl,
-    })) as highlights;
+    });
 
     if (data) {
       id = data.id;
@@ -64,7 +64,7 @@ export default async function Page() {
     };
   });
 
-  const allHighlights = await api.post.fetchAllHighlights({
+  const allHighlights = await api.annotatedPdf.fetchAllHighlights({
     source: pdfUrl,
     userList: userEmails,
   });

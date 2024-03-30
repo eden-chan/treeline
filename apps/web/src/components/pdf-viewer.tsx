@@ -18,8 +18,8 @@ import {
   HighlightContent,
 } from "../app/pdf/ui";
 import {
-  HighlightsHighlights,
-  HighlightsHighlightsComment,
+  AnnotatedPdfHighlights,
+  AnnotatedPdfHighlightsComments,
 } from "@prisma/client";
 
 import "../app/pdf/ui/style/main.css";
@@ -37,7 +37,7 @@ const resetHash = () => {
 const HighlightPopup = ({
   comments,
 }: {
-  comments: HighlightsHighlightsComment[];
+  comments: AnnotatedPdfHighlightsComments[];
 }) =>
   comments.map((comment, index) =>
     comment.text ? (
@@ -58,19 +58,19 @@ export default function PDFViewer({
   allHighlights,
 }: {
   annotatedPdfId: string;
-  loadedHighlights: HighlightsHighlights[];
+  loadedHighlights: AnnotatedPdfHighlights[];
   loadedSource: string;
   userId: string;
   allHighlights: PDFHighlightsWithProfile[];
 }): JSX.Element {
-  const mutation = clientApi.post.addHighlight.useMutation();
+  const mutation = clientApi.annotatedPdf.addHighlight.useMutation();
   const [url, setUrl] = useState(loadedSource);
-  const [highlight, setHighlight] = useState<HighlightsHighlights | undefined>(
-    undefined,
-  );
+  const [highlight, setHighlight] = useState<
+    AnnotatedPdfHighlights | undefined
+  >(undefined);
   const [highlights, setHighlights] = useState(loadedHighlights);
   const [displayHighlights, setDisplayHighlights] =
-    useState<HighlightsHighlights[]>(loadedHighlights);
+    useState<AnnotatedPdfHighlights[]>(loadedHighlights);
 
   const getHighlightById = (id: string) => {
     return highlights.find((highlight) => highlight.id === id);

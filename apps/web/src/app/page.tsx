@@ -2,7 +2,6 @@ import React from "react";
 import { api } from "@src/trpc/server";
 import { SearchTab } from "./pdf/ui/components/SearchTab";
 import Timeline from "./pdf/ui/components/Timeline";
-import { highlights, users } from "@prisma/client";
 import { SignIn, currentUser } from "@clerk/nextjs";
 import Navbar from "./pdf/ui/components/Navbar";
 
@@ -22,13 +21,15 @@ export default async function Page() {
     );
   }
 
-  const followedUsers = (await api.user.fetchUsers({
-    userEmailList: loggedInUser?.follows ?? [],
-  })) as users[];
+  const followedUsers =
+    (await api.user.fetchUsers({
+      userEmailList: loggedInUser?.follows ?? [],
+    })) ?? [];
   // Populate timeline with highlights of user and follows.
-  const timeline = (await api.post.fetchAllHighlights({
-    userList: [loggedInUser.email, ...(loggedInUser?.follows ?? [])],
-  })) as highlights[];
+  const timeline =
+    (await api.annotatedPdf.fetchAllHighlights({
+      userList: [loggedInUser.email, ...(loggedInUser?.follows ?? [])],
+    })) ?? [];
 
   return (
     <main className="h-screen w-screen gap-0">

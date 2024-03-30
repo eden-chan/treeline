@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { HighlightsHighlights, highlights, users } from "@prisma/client";
+import { AnnotatedPdf, User } from "@prisma/client";
 export interface LTWH {
   left: number;
   top: number;
@@ -44,8 +44,8 @@ export interface HighlightContent {
 }
 
 export interface Comment {
-  text: string;
-  emoji: string;
+  text?: string;
+  emoji?: string;
   timestamp: Date;
   userId: string;
 }
@@ -77,13 +77,13 @@ export interface Page {
   number: number;
 }
 
-export interface PDFHighlightsWithProfile extends highlights {
+export interface PDFHighlightsWithProfile extends AnnotatedPdf {
   userProfilePicture: string;
   firstName: string;
   lastName: string;
 }
 
-export interface UserWithProfile extends users {
+export interface UserWithProfile extends User {
   imageUrl: string;
 }
 

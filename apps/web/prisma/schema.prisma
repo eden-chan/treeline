@@ -8,33 +8,33 @@ datasource db {
   relationMode = "prisma"
 }
 
-type HighlightsHighlights {
-  comments  HighlightsHighlightsComment[]
-  content  HighlightsHighlightsContent
-  id       String
-  position HighlightsHighlightsPosition
-  timestamp DateTime
+type AnnotatedPdfHighlights {
+  comments  AnnotatedPdfHighlightsComments[]
+  content   AnnotatedPdfHighlightsContent
+  id        String
+  position  AnnotatedPdfHighlightsPosition
+  timestamp DateTime                         @db.Date
 }
 
-type HighlightsHighlightsComment {
-  emoji String
-  text  String
-  timestamp DateTime
-  userId String
+type AnnotatedPdfHighlightsComments {
+  emoji     String
+  text      String
+  timestamp DateTime @db.Date
+  userId    String
 }
 
-type HighlightsHighlightsContent {
-  image String
-  text  String
+type AnnotatedPdfHighlightsContent {
+  image String?
+  text  String?
 }
 
-type HighlightsHighlightsPosition {
-  boundingRect HighlightsHighlightsPositionBoundingRect
+type AnnotatedPdfHighlightsPosition {
+  boundingRect AnnotatedPdfHighlightsPositionBoundingRect
   pageNumber   Int
-  rects        HighlightsHighlightsPositionRects[]
+  rects        AnnotatedPdfHighlightsPositionRects[]
 }
 
-type HighlightsHighlightsPositionBoundingRect {
+type AnnotatedPdfHighlightsPositionBoundingRect {
   height     Float
   pageNumber Int
   width      Float
@@ -44,7 +44,7 @@ type HighlightsHighlightsPositionBoundingRect {
   y2         Float
 }
 
-type HighlightsHighlightsPositionRects {
+type AnnotatedPdfHighlightsPositionRects {
   height     Float
   pageNumber Int
   width      Float
@@ -54,14 +54,14 @@ type HighlightsHighlightsPositionRects {
   y2         Float
 }
 
-model highlights {
-  id         String                 @id @default(auto()) @map("_id") @db.ObjectId
-  highlights HighlightsHighlights[]
+model AnnotatedPdf {
+  id         String                   @id @default(auto()) @map("_id") @db.ObjectId
+  highlights AnnotatedPdfHighlights[]
   source     String
   userId     String
 }
 
-model users {
+model User {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
   email      String
   first_name String

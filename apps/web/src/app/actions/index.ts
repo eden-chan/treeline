@@ -1,13 +1,10 @@
 "use server";
 
-import { users } from "@prisma/client";
+import { User } from "@prisma/client";
 import { api } from "@src/trpc/server";
 
 // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
-export const followAction = async (
-  searchedUser: users,
-  loggedInUser: users
-) => {
+export const followAction = async (searchedUser: User, loggedInUser: User) => {
   "use server";
 
   console.log("follow action");
