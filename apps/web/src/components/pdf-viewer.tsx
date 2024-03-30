@@ -67,7 +67,8 @@ export default function PDFViewer({
   const [highlight, setHighlight] = useState<
     AnnotatedPdfHighlights | undefined
   >(undefined);
-  const [highlights, setHighlights] = useState(loadedHighlights);
+  const [highlights, setHighlights] =
+    useState<AnnotatedPdfHighlights[]>(loadedHighlights);
   const [displayHighlights, setDisplayHighlights] =
     useState<AnnotatedPdfHighlights[]>(loadedHighlights);
 

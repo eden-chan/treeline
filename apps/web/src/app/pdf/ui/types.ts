@@ -105,7 +105,7 @@ export const ScaledSchema = z.object({
   y2: z.number(),
   width: z.number(),
   height: z.number(),
-  pageNumber: z.number().optional(),
+  pageNumber: z.number().optional().or(z.null()),
 });
 
 export const PositionSchema = z.object({
@@ -122,8 +122,8 @@ export const ScaledPositionSchema = z.object({
 });
 
 export const ContentSchema = z.object({
-  text: z.string().optional(),
-  image: z.string().optional(),
+  text: z.string().optional().or(z.null()),
+  image: z.string().optional().or(z.null()),
 });
 
 export const HighlightContentSchema = z.object({
@@ -131,8 +131,8 @@ export const HighlightContentSchema = z.object({
 });
 
 export const CommentSchema = z.object({
-  text: z.string().optional(),
-  emoji: z.string().optional(),
+  text: z.string().optional().or(z.null()),
+  emoji: z.string().optional().or(z.null()),
   timestamp: z.date(),
   userId: z.string(),
 });
