@@ -26,7 +26,7 @@
     "lucide-react": "^0.363.0",
     "mongodb": "^6.5.0",
     "next": "^14.1.1",
-    "pdfjs-dist": "2.16.105",
+    "pdfjs-dist": "3.0.279",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-pdf": "^7.7.1",
