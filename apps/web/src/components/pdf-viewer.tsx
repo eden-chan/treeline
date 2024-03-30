@@ -111,7 +111,9 @@ export default function PDFViewer({
     };
   }, []);
 
-  const addHighlight = async (highlight: NewHighlight) => {
+  const addHighlight = async (
+    highlight: Omit<AnnotatedPdfHighlights, "id">,
+  ) => {
     console.log("Saving highlight", highlight);
 
     const id = getNextId();

@@ -1,13 +1,13 @@
 import React from "react";
-import type { IHighlight } from "../types";
+import { AnnotatedPdfHighlights } from "@prisma/client";
 
 interface Props {
-  highlights: Array<IHighlight>;
+  highlights: Array<AnnotatedPdfHighlights>;
   resetHighlights: () => void;
   toggleDocument: () => void;
 }
 
-const updateHash = (highlight: IHighlight) => {
+const updateHash = (highlight: AnnotatedPdfHighlights) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 
@@ -46,7 +46,9 @@ export function Sidebar({
           >
             <div>
               {highlight.comments.map((comment, commentIndex) => (
-                <div key={`${highlight.id}-comment-${commentIndex}`}>{comment.text}</div>
+                <div key={`${highlight.id}-comment-${commentIndex}`}>
+                  {comment.text}
+                </div>
               ))}
               {highlight.content.text ? (
                 <blockquote style={{ marginTop: "0.5rem" }}>

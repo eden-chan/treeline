@@ -35,8 +35,8 @@ export interface ScaledPosition {
 }
 
 export interface Content {
-  text?: string;
-  image?: string;
+  text?: string | null;
+  image?: string | null;
 }
 
 export interface HighlightContent {
@@ -44,8 +44,8 @@ export interface HighlightContent {
 }
 
 export interface Comment {
-  text?: string;
-  emoji?: string;
+  text?: string | null;
+  emoji?: string | null;
   timestamp: Date;
   userId: string;
 }
@@ -122,8 +122,8 @@ export const ScaledPositionSchema = z.object({
 });
 
 export const ContentSchema = z.object({
-  text: z.string(),
-  image: z.string(),
+  text: z.string().optional(),
+  image: z.string().optional(),
 });
 
 export const HighlightContentSchema = z.object({
@@ -131,8 +131,8 @@ export const HighlightContentSchema = z.object({
 });
 
 export const CommentSchema = z.object({
-  text: z.string(),
-  emoji: z.string(),
+  text: z.string().optional(),
+  emoji: z.string().optional(),
   timestamp: z.date(),
   userId: z.string(),
 });

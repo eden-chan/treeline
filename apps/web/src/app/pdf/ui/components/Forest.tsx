@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from "react";
+import { AnnotatedPdfHighlights } from "@prisma/client";
 
 import { Button } from "@/components/ui/button";
 import ReactFlow, {
@@ -11,11 +12,10 @@ import ReactFlow, {
   OnNodesChange,
   OnEdgesChange,
 } from "reactflow";
-import type { IHighlight } from "../types";
 import "reactflow/dist/style.css";
 
 interface Props {
-  highlight: IHighlight;
+  highlight: AnnotatedPdfHighlights;
   returnHome: () => void;
 }
 
@@ -24,14 +24,12 @@ const updateHash = (id: string) => {
 };
 
 export function Forest({ highlight, returnHome }: Props) {
-
-
   const [nodes, setNodes] = useState(() => {
     return [
       {
         id: highlight!.id,
         position: { x: 0, y: 0 },
-        data: { label: highlight?.comment?.text },
+        data: { label: highlight?.comments[0]?.text },
         type: "input",
       },
     ];

@@ -17,7 +17,7 @@ type AnnotatedPdfHighlights {
 }
 
 type AnnotatedPdfHighlightsComments {
-  emoji     String
+  emoji     String?
   text      String
   timestamp DateTime @db.Date
   userId    String
