@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { highlights } from "@prisma/client";
+
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { IHighlightSchema } from "@src/app/pdf/ui/types";
@@ -75,20 +77,17 @@ export const highlightsRouter = createTRPCRouter({
         userList: z.array(z.string()),
       }),
     )
-    .query(async ({ ctx, input }) => {
+    .query<highlights[] | undefined>(async ({ ctx, input }) => {
       const whereClause: Record<string, any> = {};
 
-      // console.log("Filtering by user:", input.userList);
       whereClause["userId"] = { in: input.userList };
 
       if (input.source) {
-        // console.log("Filtering by source:", input.source);
         whereClause["source"] = input.source;
       }
       let result;
       try {
         const start = Date.now();
-        // console.log("where clause", whereClause);
         result = await db.highlights.findMany({
           where: whereClause,
         });
@@ -96,14 +95,9 @@ export const highlightsRouter = createTRPCRouter({
         console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
-        return {};
+        return undefined;
       }
-      // console.log(
-      //   "Fetched highlights for users:",
-      //   input.userList.length > 0 ? input.userList : "all users",
-      //   "for",
-      //   input.source || "all sources"
-      // );
+
       return result;
     }),
 });

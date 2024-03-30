@@ -17,7 +17,10 @@ import {
   Position,
   HighlightContent,
 } from "../app/pdf/ui";
-import { HighlightsHighlights, highlights } from "@prisma/client";
+import {
+  HighlightsHighlights,
+  HighlightsHighlightsComment,
+} from "@prisma/client";
 
 import "../app/pdf/ui/style/main.css";
 import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
@@ -31,7 +34,11 @@ const resetHash = () => {
   document.location.hash = "";
 };
 
-const HighlightPopup = ({ comments }: { comments: Comment[] }) =>
+const HighlightPopup = ({
+  comments,
+}: {
+  comments: HighlightsHighlightsComment[];
+}) =>
   comments.map((comment, index) =>
     comment.text ? (
       <div key={`highlight-comment-${index}`} className="Highlight__popup">
@@ -44,21 +51,23 @@ const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480.pdf";
 
 export default function PDFViewer({
+  annotatedPdfId,
   loadedHighlights,
   loadedSource,
-  loadedUserHighlightsId,
   userId,
   allHighlights,
 }: {
+  annotatedPdfId: string;
   loadedHighlights: HighlightsHighlights[];
   loadedSource: string;
-  loadedUserHighlightsId: string;
   userId: string;
   allHighlights: PDFHighlightsWithProfile[];
 }): JSX.Element {
   const mutation = clientApi.post.addHighlight.useMutation();
   const [url, setUrl] = useState(loadedSource);
-  const [highlight, setHighlight] = useState<highlights | undefined>(undefined);
+  const [highlight, setHighlight] = useState<HighlightsHighlights | undefined>(
+    undefined,
+  );
   const [highlights, setHighlights] = useState(loadedHighlights);
   const [displayHighlights, setDisplayHighlights] =
     useState<HighlightsHighlights[]>(loadedHighlights);
@@ -85,7 +94,6 @@ export default function PDFViewer({
     const highlight = getHighlightById(parseIdFromHash());
 
     if (highlight) {
-      console.log("selected highlight", highlight?.content);
       setHighlight(highlight);
       scrollViewerTo(highlight);
     }
@@ -112,7 +120,7 @@ export default function PDFViewer({
       userId: userId,
       highlights: [{ ...highlight, id }, ...highlights],
       source: url,
-      id: loadedUserHighlightsId,
+      id: annotatedPdfId,
     });
 
     setHighlights([{ ...highlight, id }, ...highlights]);
@@ -133,6 +141,7 @@ export default function PDFViewer({
       } = h;
       return id === highlightId
         ? {
+            ...h,
             id,
             position: { ...originalPosition, ...position },
             content: { ...originalContent, ...content },
@@ -148,7 +157,7 @@ export default function PDFViewer({
       userId: userId,
       highlights: updatedHighlights,
       source: url,
-      id: loadedUserHighlightsId,
+      id: annotatedPdfId,
     });
   };
 

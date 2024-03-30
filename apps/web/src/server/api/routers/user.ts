@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { users } from "@prisma/client";
+
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { UserSchema } from "@src/app/pdf/ui/types";
@@ -72,7 +74,7 @@ export const userRouter = createTRPCRouter({
     .input(
       z.object({ email: z.string().optional(), handle: z.string().optional() }),
     )
-    .query(async ({ ctx, input }) => {
+    .query<users | undefined>(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};
       if (input.email) {
         whereClause["email"] = input.email;
@@ -84,15 +86,17 @@ export const userRouter = createTRPCRouter({
       let result;
       try {
         const start = Date.now();
-        console.log({ whereClause });
         result = await db.users.findFirst({
           where: whereClause,
         });
         const end = Date.now();
         console.log(`Query took ${end - start}ms`);
+        if (!result) {
+          return undefined;
+        }
       } catch (error) {
         console.error("Failed to fetch user:", error);
-        return {};
+        return undefined;
       }
       console.log("Fetched user:", result);
       return result;

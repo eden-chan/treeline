@@ -77,7 +77,7 @@ export interface Page {
   number: number;
 }
 
-export interface PDFHighlightsWithProfile extends HighlightsHighlights {
+export interface PDFHighlightsWithProfile extends highlights {
   userProfilePicture: string;
   firstName: string;
   lastName: string;
