@@ -103,7 +103,7 @@ export const userRouter = createTRPCRouter({
     }),
   fetchUsers: publicProcedure
     .input(z.object({ userEmailList: z.array(z.string()) }))
-    .query(async ({ ctx, input }) => {
+    .query<users[] | undefined>(async ({ ctx, input }) => {
       const whereClause: Record<string, any> = {};
       if (input.userEmailList) {
         whereClause["email"] = { in: input.userEmailList };
@@ -119,7 +119,7 @@ export const userRouter = createTRPCRouter({
         console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
-        return {};
+        return undefined;
       }
       console.log("Fetched user:", result);
       return result;
