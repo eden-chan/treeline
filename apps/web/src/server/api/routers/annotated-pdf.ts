@@ -8,7 +8,7 @@ import { IHighlightSchema } from "@src/app/pdf/ui/types";
 export const annotatedPdfRouter = createTRPCRouter({
   // Create new highlight object if doesn't exist
   // Otherwise, update the highlight objects
-  addHighlight: publicProcedure
+  upsertAnnotatedPdf: publicProcedure
     .input(
       z.object({
         // todo: fix zox schema compatibility with complex prisma types
@@ -39,7 +39,7 @@ export const annotatedPdfRouter = createTRPCRouter({
    * @param {Object} input - Contains optional user and source strings to filter the highlights.
    * @returns {Promise<Array>} - The fetched highlights based on the applied filters.
    */
-  fetchUserHighlights: publicProcedure
+  fetchAnnotatedPdf: publicProcedure
     .input(
       z.object({
         userId: z.string().optional(),
@@ -74,7 +74,7 @@ export const annotatedPdfRouter = createTRPCRouter({
       console.log("Fetched single highlights:", result);
       return result;
     }),
-  fetchAllHighlights: publicProcedure
+  fetchAllAnnotatedPdfs: publicProcedure
     .input(
       z.object({
         source: z.string().optional(),

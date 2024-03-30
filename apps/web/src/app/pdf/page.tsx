@@ -36,7 +36,7 @@ export default async function Page() {
 
   let { id, highlights, source, userId } = newUserData;
   try {
-    const data = await api.annotatedPdf.fetchUserHighlights({
+    const data = await api.annotatedPdf.fetchAnnotatedPdf({
       userId: userEmail,
       source: pdfUrl,
     });
@@ -64,7 +64,7 @@ export default async function Page() {
     };
   });
 
-  const allHighlights = await api.annotatedPdf.fetchAllHighlights({
+  const allHighlights = await api.annotatedPdf.fetchAllAnnotatedPdfs({
     source: pdfUrl,
     userList: userEmails,
   });

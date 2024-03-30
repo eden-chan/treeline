@@ -27,7 +27,7 @@ export default async function Page() {
     })) ?? [];
   // Populate timeline with highlights of user and follows.
   const timeline =
-    (await api.annotatedPdf.fetchAllHighlights({
+    (await api.annotatedPdf.fetchAllAnnotatedPdfs({
       userList: [loggedInUser.email, ...(loggedInUser?.follows ?? [])],
     })) ?? [];
 

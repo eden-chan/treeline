@@ -63,7 +63,7 @@ export default function PDFViewer({
   userId: string;
   allHighlights: PDFHighlightsWithProfile[];
 }): JSX.Element {
-  const mutation = clientApi.annotatedPdf.addHighlight.useMutation();
+  const mutation = clientApi.annotatedPdf.upsertAnnotatedPdf.useMutation();
   const [url, setUrl] = useState(loadedSource);
   const [highlight, setHighlight] = useState<
     AnnotatedPdfHighlights | undefined
