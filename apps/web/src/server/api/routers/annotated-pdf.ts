@@ -18,27 +18,28 @@ export const annotatedPdfRouter = createTRPCRouter({
         id: z.string(), // mongo id is provided ahead of time for new documents
       }),
     )
-    .mutation(async ({ ctx, input }) => {
-      return await db.annotatedPdf.upsert({
-        where: {
-          id: input.id,
-        },
-        update: {
-          highlights: input.highlights,
-        },
-        create: {
-          userId: input.userId,
-          source: input.source,
-          highlights: input.highlights,
-        },
-      });
+    .mutation<AnnotatedPdf | undefined>(async ({ ctx, input }) => {
+      let res: AnnotatedPdf;
+      try {
+        res = await db.annotatedPdf.upsert({
+          where: {
+            id: input.id,
+          },
+          update: {
+            highlights: input.highlights,
+          },
+          create: {
+            userId: input.userId,
+            source: input.source,
+            highlights: input.highlights,
+          },
+        });
+      } catch (error) {
+        console.error("Failed to upsert highlights:", error);
+        return undefined;
+      }
+      return res;
     }),
-  /**
-   * Fetches user highlights based on optional user and source filters.
-   * It attempts to retrieve highlights from the database and handles any errors that might occur during the fetch.
-   * @param {Object} input - Contains optional user and source strings to filter the highlights.
-   * @returns {Promise<Array>} - The fetched highlights based on the applied filters.
-   */
   fetchAnnotatedPdf: publicProcedure
     .input(
       z.object({

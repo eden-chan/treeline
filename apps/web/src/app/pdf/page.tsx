@@ -8,12 +8,12 @@ import dynamic from "next/dynamic";
 import { ObjectId } from "mongodb";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
-import { AnnotatedPdf } from "@prisma/client";
+import { AnnotatedPdf, AnnotatedPdfHighlights } from "@prisma/client";
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
 
-export default async function Page() {
+export default async function Page({ params }) {
   const headersList = headers();
   const header_url = headersList.get("x-url") || "";
 
@@ -35,6 +35,7 @@ export default async function Page() {
   userEmail = user?.emailAddresses?.[0]?.emailAddress || "";
 
   let { id, highlights, source, userId } = newUserData;
+  let currentHighlight: AnnotatedPdfHighlights | undefined = undefined;
   try {
     const data = await api.annotatedPdf.fetchAnnotatedPdf({
       userId: userEmail,
@@ -47,6 +48,8 @@ export default async function Page() {
       source = data.source;
       userId = data.userId;
     }
+
+    console.log({ params });
   } catch (error) {
     console.error("Error fetching user highlights:", error);
   }
@@ -90,9 +93,9 @@ export default async function Page() {
     <TRPCReactProvider>
       <PDFViewer
         annotatedPdfId={id}
-        loadedHighlights={highlights}
         loadedSource={source}
         userId={userId}
+        userHighlights={highlights}
         allHighlights={allHighlightsWithProfile}
       />
     </TRPCReactProvider>

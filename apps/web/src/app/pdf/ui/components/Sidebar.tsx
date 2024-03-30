@@ -4,18 +4,13 @@ import { AnnotatedPdfHighlights } from "@prisma/client";
 interface Props {
   highlights: Array<AnnotatedPdfHighlights>;
   resetHighlights: () => void;
-  toggleDocument: () => void;
 }
 
 const updateHash = (highlight: AnnotatedPdfHighlights) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 
-export function Sidebar({
-  highlights,
-  toggleDocument,
-  resetHighlights,
-}: Props) {
+export function Sidebar({ highlights, resetHighlights }: Props) {
   return (
     <div className="sidebar" style={{ width: "50vw" }}>
       <div className="description" style={{ padding: "1rem" }}>
@@ -70,9 +65,6 @@ export function Sidebar({
           </div>
         ))}
       </ul>
-      <div style={{ padding: "1rem" }}>
-        <button onClick={toggleDocument}>Toggle PDF document</button>
-      </div>
       {highlights.length > 0 ? (
         <div style={{ padding: "1rem" }}>
           <button onClick={resetHighlights}>Reset highlights</button>
