@@ -17,10 +17,10 @@ import {
   Position,
   HighlightContent,
 } from "../app/pdf/ui";
-import { HighlightsHighlights, highlights } from '@prisma/client'
+import { HighlightsHighlights, highlights } from "@prisma/client";
 
 import "../app/pdf/ui/style/main.css";
-import FloatingProfiles from '@src/app/pdf/ui/components/FloatingProfiles';
+import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 
 const getNextId = () => String(Math.random()).slice(2);
 
@@ -31,17 +31,13 @@ const resetHash = () => {
   document.location.hash = "";
 };
 
-const HighlightPopup = ({
-  comments,
-}: {
-  comments: Comment[];
-}) =>
+const HighlightPopup = ({ comments }: { comments: Comment[] }) =>
   comments.map((comment, index) =>
     comment.text ? (
       <div key={`highlight-comment-${index}`} className="Highlight__popup">
         {comment.emoji} {comment.text}
       </div>
-    ) : null
+    ) : null,
   );
 
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021.pdf";
@@ -51,7 +47,8 @@ export default function PDFViewer({
   loadedHighlights,
   loadedSource,
   loadedUserHighlightsId,
-  userId, allHighlights
+  userId,
+  allHighlights,
 }: {
   loadedHighlights: HighlightsHighlights[];
   loadedSource: string;
@@ -63,8 +60,8 @@ export default function PDFViewer({
   const [url, setUrl] = useState(loadedSource);
   const [highlight, setHighlight] = useState<highlights | undefined>(undefined);
   const [highlights, setHighlights] = useState(loadedHighlights);
-  const [displayHighlights, setDisplayHighlights] = useState<HighlightsHighlights[]>(loadedHighlights)
-
+  const [displayHighlights, setDisplayHighlights] =
+    useState<HighlightsHighlights[]>(loadedHighlights);
 
   const getHighlightById = (id: string) => {
     return highlights.find((highlight) => highlight.id === id);
@@ -82,13 +79,13 @@ export default function PDFViewer({
     setHighlights([]);
   };
 
-  let scrollViewerTo = (highlight: any) => { };
+  let scrollViewerTo = (highlight: any) => {};
 
   const scrollToHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
 
     if (highlight) {
-      console.log('selected highlight', highlight?.content)
+      console.log("selected highlight", highlight?.content);
       setHighlight(highlight);
       scrollViewerTo(highlight);
     }
@@ -126,23 +123,22 @@ export default function PDFViewer({
     position: Position,
     content: HighlightContent,
   ) => {
-
     const updatedHighlights = highlights.map((h) => {
       const {
         id,
         position: originalPosition,
         content: originalContent,
         comments: originalComments,
-        timestamp: originalTimestamp
+        timestamp: originalTimestamp,
       } = h;
       return id === highlightId
         ? {
-          id,
-          position: { ...originalPosition, ...position },
-          content: { ...originalContent, ...content },
-          comments: { ...originalComments },
-          timestamp: new Date(),
-        }
+            id,
+            position: { ...originalPosition, ...position },
+            content: { ...originalContent, ...content },
+            comments: { ...originalComments },
+            timestamp: new Date(),
+          }
         : h;
     });
 
@@ -156,10 +152,12 @@ export default function PDFViewer({
     });
   };
 
-
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>
-      <FloatingProfiles setDisplayHighlights={setDisplayHighlights} allHighlightsWithProfile={allHighlights} />
+      <FloatingProfiles
+        setDisplayHighlights={setDisplayHighlights}
+        allHighlightsWithProfile={allHighlights}
+      />
       <div
         style={{
           height: "100vh",
@@ -186,18 +184,21 @@ export default function PDFViewer({
               ) => (
                 <Tip
                   onOpen={transformSelection}
-                  onConfirm={(comment) => {
+                  onCommentConfirm={(comment) => {
                     addHighlight({
                       content: {
-                        text: content?.text ?? '',
-                        image: content?.image ?? '',
+                        text: content?.text ?? "",
+                        image: content?.image ?? "",
                       },
                       position,
-                      comments: [{ ...comment, timestamp: new Date(), userId: userId }],
+                      comments: [
+                        { ...comment, timestamp: new Date(), userId: userId },
+                      ],
                       timestamp: new Date(),
                     });
                     hideTipAndSelection();
                   }}
+                  onPromptConfirm={() => null}
                 />
               )}
               highlightTransform={(
