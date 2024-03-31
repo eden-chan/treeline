@@ -46,7 +46,7 @@ type AnnotatedPdfHighlightsPositionBoundingRect {
 
 type AnnotatedPdfHighlightsPositionRects {
   height     Float
-  pageNumber Int
+  pageNumber Int?
   width      Float
   x1         Float
   x2         Float
