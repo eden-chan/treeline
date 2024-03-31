@@ -63,6 +63,7 @@ model AnnotatedPdf {
 
 model User {
   id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  clerk_id   String
   email      String
   first_name String
   followers  String[]
