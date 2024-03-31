@@ -37,6 +37,7 @@
     "reactflow": "^11.10.4",
     "server-only": "^0.0.1",
     "superjson": "^2.2.1",
+    "svix": "^1.21.0",
     "tailwind-merge": "^2.2.2",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^9.0.1",

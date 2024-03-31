@@ -20,7 +20,7 @@ import { NextResponse } from "next/server";
 
 export default authMiddleware({
   // Allow signed out users to access the specified routes:
-  // publicRoutes: ['/anyone-can-visit-this-route'],
+  publicRoutes: ["/api/webhooks(.*)"],
   // Prevent the specified routes from accessing
   // authentication information:
   // ignoredRoutes: ['/no-auth-in-this-route'],
@@ -51,14 +51,14 @@ export default authMiddleware({
         },
       });
     }
-
+    
     // Allow users visiting public routes to access them
     return NextResponse.next({
       request: {
-        // Apply new request headers
-        headers: requestHeaders,
-      },
-    });
+          // Apply new request headers
+          headers: requestHeaders,
+        },
+      });
   },
 });
 
