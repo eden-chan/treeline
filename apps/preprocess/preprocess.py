@@ -1,14 +1,19 @@
 import os
+from typing import List
 from extract_fact_descriptor import extract_fact_descriptor
 from utils import extract_between_tags
 from db import mongo_client, save_to_db
-from models import FactDescriptor, ClientType
+from models import ExtractFactDescriptor, FactDescriptor, ClientType
 
 from llmsherpa.readers import LayoutPDFReader
 import anthropic
 import instructor
-from openai import OpenAI
+from openai import OpenAI, Embedding
 import time
+import argparse
+import hashlib
+import pickle
+import os
 
 
 def get_client(client_type: ClientType):
@@ -20,8 +25,18 @@ def get_client(client_type: ClientType):
         raise ValueError("Unsupported client type")
 
 # Extract structured data from natural language
+client = OpenAI()
+def get_embedding(text):
+    response = client.embeddings.create(
+    input="Your text string goes here",
+    model="text-embedding-3-small"
+    )
+    embedding = response.data[0].embedding
+    return embedding
 
-def create_message_with_text(user_text, client_type: ClientType):
+
+
+def chat(user_text, client_type: ClientType, response_model):
     client = get_client(client_type)
     
     if client_type == ClientType.OPENAI:
@@ -30,7 +45,7 @@ def create_message_with_text(user_text, client_type: ClientType):
             model="gpt-3.5-turbo",
             max_tokens=1024,
             max_retries=3,
-            response_model=FactDescriptor, 
+            response_model=response_model,
             messages=[
                 {
                     "role": "user",
@@ -40,7 +55,7 @@ def create_message_with_text(user_text, client_type: ClientType):
         )
     elif client_type == ClientType.ANTHROPIC:
         resp = client(
-            model="claude-3-opus-20240229",
+            model="claude-3-haiku-20240307",
             max_tokens=1024,
             max_retries=5,
             messages=[
@@ -49,7 +64,7 @@ def create_message_with_text(user_text, client_type: ClientType):
                     "content": user_text
                 }, 
             ],
-            response_model=FactDescriptor,
+            response_model=response_model,
         )
     else:
         raise ValueError("Unsupported client type")
@@ -60,7 +75,7 @@ def create_message_with_text(user_text, client_type: ClientType):
 
 COLLECTION_NAME="PreprocessedPdf"
 DATABASE_NAME = "paper"
-import argparse
+
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Process PDFs and extract structured data.")
     parser.add_argument("--pdf_url", type=str, required=True, help="URL of the PDF to process")
@@ -70,11 +85,24 @@ def parse_arguments():
 
 
 def preprocess_pdf(pdf_url, client_type):
-    llmsherpa_api_url = "https://readers.llmsherpa.com/api/document/developer/parseDocument?renderFormat=all"
+    cache_dir = "cache"
+    os.makedirs(cache_dir, exist_ok=True)
+    cache_key = hashlib.md5(pdf_url.encode('utf-8')).hexdigest()
+    cache_path = os.path.join(cache_dir, f"{cache_key}.pkl")
+
     start_time = time.time()
-    pdf_reader = LayoutPDFReader(llmsherpa_api_url)
-    doc = pdf_reader.read_pdf(pdf_url)
+    
+    if os.path.exists(cache_path):
+        with open(cache_path, "rb") as cache_file:
+            doc = pickle.load(cache_file)
+    else:
+        llmsherpa_api_url = "https://readers.llmsherpa.com/api/document/developer/parseDocument?renderFormat=all"
+        pdf_reader = LayoutPDFReader(llmsherpa_api_url)
+        doc = pdf_reader.read_pdf(pdf_url)
+        with open(cache_path, "wb") as cache_file:
+            pickle.dump(doc, cache_file)
     end_time = time.time()
+    
     print(f"PDF reading took {end_time - start_time} seconds.")
     
     # assume first section.title is the name of the paper
@@ -84,20 +112,30 @@ def preprocess_pdf(pdf_url, client_type):
         # extract the abstract. TODO: clean up abstract and use abstract as context for parsing other sections
         src = section.to_text(include_children=True, recurse=False)
         if 'Abstract' in src:
-            src = src.split('Abstract')[-1] # start the text after Abstract
-            # lines = src.split('\n')
-            # cleaned_lines = [line for line in lines if not line.startswith(('†', '*'))]
-            # src = '\n'.join(cleaned_lines)
+            src = src.split('Abstract')[-1] # start the text after Abstract. TODO: clean up abstract
             start_time = time.time()
-            # response = create_message_with_text(user_text=src, client_type=client_type)
-            response = extract_fact_descriptor(src)
-            print(response)
-            # import pdb; pdb.set_trace()
+            if client_type == ClientType.OPENAI:
+                response = chat(user_text=src, client_type=client_type, response_model=ExtractFactDescriptor)
+            # elif client_type == ClientType.ANTHROPIC: TODO: add support for Claude
+            #     response = extract_fact_descriptor(src)
+            #     for fact_obj in response: 
+            #         # DO embeddings
+            #         pass 
+            else:
+                raise ValueError("Unsupported client type")
+            
+                
+
+            import pdb; pdb.set_trace()
+
+            fact_descriptors = [{**x.dict(), 'descriptor_embedding': get_embedding(x.nextSource + x.expectedInfo)} for x in response.fact_descriptors]
+                
+            
             
             end_time = time.time()
             print(f"Message creation took {end_time - start_time} seconds.") 
             
-            data = {"url": pdf_url,"text": src, "response": response}
+            data = {"url": pdf_url,"text": src, "facts": fact_descriptors}
             with mongo_client(db_name=DATABASE_NAME, collection_name=COLLECTION_NAME) as collection: 
                 result = collection.insert_one(data)
             

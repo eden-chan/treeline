@@ -1,11 +1,13 @@
 
-from pydantic import BaseModel, Field
+from typing import List
+from pydantic import BaseModel, Field, conlist
 from enum import Enum, auto
 
 # Define data models using Pydantic for type validation and settings
 class User(BaseModel):
     name: str
     age: int
+
 
 class FactDescriptor(BaseModel):
     fact: str = Field(description="Provide information directly relevant to the question (or where to find more information in the text) - either supplementary data, facts, or where the answer might be located, like pages and sections. Add definitions and other context from the page into the fact, so it's self-explanatory")
@@ -22,6 +24,11 @@ class FactDescriptor(BaseModel):
                 "expectedInfo": "Detailed explanation of the attention mechanism used in the model."
             }
         }
+
+class ExtractFactDescriptor(BaseModel):
+    fact_descriptors : List[FactDescriptor]=  Field(min_length=4, max_length=7)
+
+
 
 class ClientType(Enum):
     ANTHROPIC = auto()
