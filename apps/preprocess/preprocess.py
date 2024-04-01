@@ -92,7 +92,7 @@ def preprocess_pdf(pdf_url, client_type):
             # response = create_message_with_text(user_text=src, client_type=client_type)
             response = extract_fact_descriptor(src)
             print(response)
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             
             end_time = time.time()
             print(f"Message creation took {end_time - start_time} seconds.") 
