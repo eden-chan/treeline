@@ -7,7 +7,7 @@ import Navbar from "./pdf/ui/components/Navbar";
 
 export default async function Page() {
   const clerkUser = await currentUser();
-  
+
   if (!clerkUser) {
     return (
       <div>
@@ -20,8 +20,6 @@ export default async function Page() {
   const user = await api.user.fetchUser({
     email: clerkUserEmail,
   });
-
-  console.log(user, clerkUserEmail);
 
   const followedUsers =
     (await api.user.fetchUsers({

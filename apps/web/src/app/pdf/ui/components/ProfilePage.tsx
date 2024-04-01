@@ -51,11 +51,11 @@ export default async function Profile({
     () =>
       users.map((user) => {
         const userHighlight = timeline.find(
-          (highlight) => highlight.userId === user.email,
+          (highlight) => highlight.userId === user.email
         );
         return { ...user, recentPaper: userHighlight };
       }),
-    [users, timeline],
+    [users, timeline]
   );
 
   const friendsSection = {
@@ -108,14 +108,14 @@ export default async function Profile({
             </h2>
             <ul className="space-y-2">
               {friendsSection.friends.map((friend) => (
-                <li key={friend.first_name}>
+                <li key={friend.clerk_id}>
                   <Link className="block" href={`/${friend.handle}`}>
                     <span className="font-medium">{friend.first_name}</span>
                     <span className="text-sm text-gray-500">
                       {" "}
                       {calculateTimeAgo(
                         friend.recentPaper?.highlights?.slice(-1)[0]
-                          ?.timestamp ?? new Date(),
+                          ?.timestamp ?? new Date()
                       )}{" "}
                     </span>
                     <p className="text-sm text-gray-500">
@@ -132,7 +132,7 @@ export default async function Profile({
             </h2>
             <ul className="space-y-2">
               {curiousPeopleSection.people.map((person) => (
-                <li key={person.name}>
+                <li key={person.name + "-" + person.mutuals}>
                   <Link className="block" href="#">
                     <span className="font-medium">{person.name}</span>
                     <span className="text-sm text-gray-500">
