@@ -34,9 +34,9 @@ export function Forest({ highlight, returnHome }: Props) {
         id: highlight!.id,
         position: { x: 0, y: 0 },
         data: {
-          comment: highlight?.comments[0]?.text ?? "",
+          comment: highlight?.comments[0]?.text,
           question: highlight?.prompt,
-          answer: highlight?.response ?? "",
+          answer: highlight?.response,
         },
         type: "question",
       },

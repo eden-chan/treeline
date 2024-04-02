@@ -163,13 +163,12 @@ export default function PDFViewer({
     if (!question || !response) return;
 
     if (question == highlight.prompt) {
-      setHighlight((highlight) => {
-        if (!highlight) return highlight;
-        return {
-          ...highlight,
-          response: response,
-        };
-      });
+      const newHighlight = {
+        ...highlight,
+        response: response,
+      };
+
+      setHighlight(newHighlight);
     }
   }, [messages, isLoading]);
 
