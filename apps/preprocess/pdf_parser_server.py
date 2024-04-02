@@ -77,8 +77,9 @@ async def parse_pdf(pdf_url):
                     print(f"An error occurred while updating the database: {e}")
 
     outline = [section.title for section in doc.sections()]
+    title=doc.sections()[0].title
     return_text['outline'] = outline    
-    data = {"url": pdf_url,"text": return_text}
+    data = {"url": pdf_url,"text": return_text, "title": title}
     try:
         with mongo_client(db_name='paper', collection_name='ParsedPapers') as collection: 
             result = collection.update_one({'url': pdf_url}, {'$set': data}, upsert=True)
@@ -96,11 +97,11 @@ def process_section(section, pdf_url):
     src = section.to_text(include_children=True, recurse=False)
     if 'abstract' in src.lower():
         src = src.lower().split('abstract')[-1]
-        return_text['abstract'] = {'text': src}
+        return_text['abstract'] = {'text': src, 'page': section.page_idx}
         response : ExtractFactDescriptor= chat(user_text=src, response_model=ExtractFactDescriptor)
         if response:
             return_text['abstract']['facts'] = [x.dict() for x in response.fact_descriptors]
-            section_data = {"url": pdf_url,"text": return_text}
+            section_data = {"url": pdf_url,"text": return_text, 'page': section.page_idx}
     
     section_title_lower = section.title.lower()
     return_text[section_title_lower] = {}
@@ -111,6 +112,8 @@ def process_section(section, pdf_url):
             return_text[section_title_lower]['text'] += " " + source
         else:
             return_text[section_title_lower]['text'] = source
+        return_text[section_title_lower]['page'] = chunk.page_idx
+            
     
     if 'text' in return_text[section_title_lower]:
         src = return_text[section_title_lower]['text']
