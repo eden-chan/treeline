@@ -30,7 +30,7 @@ const nodeTypes: NodeTypes = {
 
 const defaultViewPort = {
   x: 50,
-  y: 40,
+  y: 60,
   zoom: 0.85,
 };
 
