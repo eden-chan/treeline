@@ -28,6 +28,12 @@ const nodeTypes: NodeTypes = {
   question: QuestionNode,
 };
 
+const defaultViewPort = {
+  x: 50,
+  y: 40,
+  zoom: 0.85,
+};
+
 export function Forest({ highlight, returnHome }: Props) {
   const nodes = [
     {
@@ -74,8 +80,8 @@ export function Forest({ highlight, returnHome }: Props) {
         // onNodesChange={onNodesChange}
         // onEdgesChange={onEdgesChange}
         onNodeClick={(_, node) => updateHash(node.id)}
-        fitView
         nodeTypes={nodeTypes}
+        defaultViewport={defaultViewPort}
       >
         <Controls />
         <MiniMap />
