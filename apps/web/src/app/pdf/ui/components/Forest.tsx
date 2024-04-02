@@ -34,8 +34,9 @@ export function Forest({ highlight, returnHome }: Props) {
         id: highlight!.id,
         position: { x: 0, y: 0 },
         data: {
-          question: highlight?.comments[0]?.text,
-          answer: "",
+          comment: highlight?.comments[0]?.text ?? "",
+          question: highlight?.prompt,
+          answer: highlight?.response ?? "",
         },
         type: "question",
       },
@@ -46,13 +47,13 @@ export function Forest({ highlight, returnHome }: Props) {
   const onNodesChange: OnNodesChange = useCallback(
     // @ts-ignore
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
+    [],
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
     // @ts-ignore
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
+    [],
   );
 
   return (
