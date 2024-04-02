@@ -35,11 +35,17 @@ export function Forest({ highlight, returnHome }: Props) {
         id: highlight!.id,
         position: { x: 0, y: 0 },
         data: {
-          comment: highlight?.comments[0]?.text,
-          question: highlight?.prompt,
-          answer: highlight?.response,
+          ...(highlight?.prompt
+            ? {
+                comment: highlight?.comments[0]?.text ?? "",
+                question: highlight?.prompt,
+                answer: highlight?.response ?? "",
+              }
+            : {
+                label: highlight?.comments[0]?.text,
+              }),
         },
-        type: "question",
+        type: highlight.prompt ? "question" : "input",
       },
     ];
   });
@@ -48,13 +54,13 @@ export function Forest({ highlight, returnHome }: Props) {
   const onNodesChange: OnNodesChange = useCallback(
     // @ts-ignore
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [],
+    []
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
     // @ts-ignore
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [],
+    []
   );
 
   return (
