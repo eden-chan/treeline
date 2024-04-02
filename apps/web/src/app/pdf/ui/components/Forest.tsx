@@ -11,6 +11,7 @@ import ReactFlow, {
   applyEdgeChanges,
   OnNodesChange,
   OnEdgesChange,
+  NodeTypes,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
@@ -23,7 +24,7 @@ const updateHash = (id: string) => {
   document.location.hash = `highlight-${id}`;
 };
 
-const nodeTypes = {
+const nodeTypes: NodeTypes = {
   question: QuestionNode,
 };
 

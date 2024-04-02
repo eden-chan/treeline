@@ -1,13 +1,16 @@
+import { Node, NodeProps } from "reactflow";
 import { useCallback } from "react";
 import { Handle, Position } from "reactflow";
 
 const handleStyle = { left: 10 };
 
-function QuestionNode({ data, isConnectable }) {
+type NodeData = {
+  question: string;
+  answer: string;
+};
+
+function QuestionNode({ data, isConnectable }: NodeProps<NodeData>) {
   const { question, answer } = data;
-  const onChange = useCallback((evt) => {
-    console.log(evt.target.value);
-  }, []);
 
   return (
     <div className="border-2 bg-white px-5 py-3">
@@ -43,5 +46,4 @@ function QuestionNode({ data, isConnectable }) {
     </div>
   );
 }
-
 export default QuestionNode;
