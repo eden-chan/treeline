@@ -168,6 +168,16 @@ export default function PDFViewer({
         response: response,
       };
 
+      mutation.mutate({
+        userId: userId,
+        highlights: [
+          newHighlight,
+          ...highlights.filter((h) => h.id !== highlight.id),
+        ],
+        source: loadedSource,
+        id: annotatedPdfId,
+      });
+
       setHighlight(newHighlight);
     }
   }, [messages, isLoading]);
@@ -283,7 +293,10 @@ export default function PDFViewer({
       {highlight ? (
         <Forest
           highlight={highlight}
-          returnHome={() => setHighlight(undefined)}
+          returnHome={() => {
+            document.location.hash = "";
+            setHighlight(undefined);
+          }}
         />
       ) : (
         <Sidebar

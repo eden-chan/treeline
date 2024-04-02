@@ -139,6 +139,8 @@ export const CommentSchema = z.object({
 
 export const NewHighlightSchema = z.object({
   content: ContentSchema,
+  prompt: z.string().optional().or(z.null()),
+  response: z.string().optional().or(z.null()),
   comments: z.array(CommentSchema),
   position: ScaledPositionSchema,
   timestamp: z.date(),
