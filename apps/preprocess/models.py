@@ -26,7 +26,7 @@ class FactDescriptor(BaseModel):
         }
 
 class ExtractFactDescriptor(BaseModel):
-    fact_descriptors : List[FactDescriptor]=  Field(min_length=4, max_length=7)
+    fact_descriptors : List[FactDescriptor]=  Field(min_length=1, max_length=7)
 
 
 
