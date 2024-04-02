@@ -1,19 +1,22 @@
 import os
 from typing import List
+from similarity_search import add_documents_to_choma, similarity_search
 from extract_fact_descriptor import extract_fact_descriptor
-from utils import extract_between_tags
+from utils import extract_between_tags, COLLECTION_NAME, DATABASE_NAME, get_embedding
 from db import mongo_client, save_to_db
 from models import ExtractFactDescriptor, FactDescriptor, ClientType
 
 from llmsherpa.readers import LayoutPDFReader
 import anthropic
 import instructor
-from openai import OpenAI, Embedding
+from openai import OpenAI
 import time
 import argparse
 import hashlib
 import pickle
 import os
+
+
 
 
 def get_client(client_type: ClientType):
@@ -23,17 +26,6 @@ def get_client(client_type: ClientType):
         return instructor.patch(OpenAI())
     else:
         raise ValueError("Unsupported client type")
-
-# Extract structured data from natural language
-client = OpenAI()
-def get_embedding(text):
-    response = client.embeddings.create(
-    input="Your text string goes here",
-    model="text-embedding-3-small"
-    )
-    embedding = response.data[0].embedding
-    return embedding
-
 
 
 def chat(user_text, client_type: ClientType, response_model):
@@ -70,11 +62,6 @@ def chat(user_text, client_type: ClientType, response_model):
         raise ValueError("Unsupported client type")
     
     return resp 
-
-
-
-COLLECTION_NAME="PreprocessedPdf"
-DATABASE_NAME = "paper"
 
 def parse_arguments():
     parser = argparse.ArgumentParser(description="Process PDFs and extract structured data.")
@@ -123,15 +110,10 @@ def preprocess_pdf(pdf_url, client_type):
             #         pass 
             else:
                 raise ValueError("Unsupported client type")
-            
-                
-
             import pdb; pdb.set_trace()
 
             fact_descriptors = [{**x.dict(), 'descriptor_embedding': get_embedding(x.nextSource + x.expectedInfo)} for x in response.fact_descriptors]
-                
-            
-            
+
             end_time = time.time()
             print(f"Message creation took {end_time - start_time} seconds.") 
             
@@ -147,18 +129,22 @@ def preprocess_pdf(pdf_url, client_type):
                 # TODO: generate descriptors and facts
                 # TODO: embed descriptors, and store in mongo
 
-# NOTE: openai is a lot more reliable with json forming. 
+
+
+
 if __name__ == "__main__":
     pdf_url, client_type_str = parse_arguments()
     client_type = ClientType[client_type_str]
-    preprocess_pdf(pdf_url, client_type)
+    query = "Details on the performance of the Transformer model"
+    # load into memory
+    add_documents_to_choma()
+    results = similarity_search(query, n_results=3)    
+    
+    relevant_facts = results['documents'][0]
+    relevant_metadata = results['metadatas'][0]
+    print(relevant_facts)
+    
     
 
+
     
-    
-
-
-
-
-
-
