@@ -29,40 +29,36 @@ const nodeTypes: NodeTypes = {
 };
 
 export function Forest({ highlight, returnHome }: Props) {
-  console.log(highlight);
-  const [nodes, setNodes] = useState(() => {
-    return [
-      {
-        id: highlight!.id,
-        position: { x: 0, y: 0 },
-        data: {
-          ...(highlight?.prompt
-            ? {
-                comment: highlight?.comments[0]?.text ?? "",
-                question: highlight?.prompt,
-                answer: highlight?.response ?? "",
-              }
-            : {
-                label: highlight?.comments[0]?.text,
-              }),
-        },
-        type: highlight.prompt ? "question" : "input",
+  const nodes = [
+    {
+      id: highlight!.id,
+      position: { x: 0, y: 0 },
+      data: {
+        ...(highlight?.prompt
+          ? {
+              question: highlight?.prompt,
+              answer: highlight?.response,
+            }
+          : {
+              label: highlight?.comments[0]?.text,
+            }),
       },
-    ];
-  });
+      type: highlight.prompt ? "question" : "input",
+    },
+  ];
   const [edges, setEdges] = useState([]);
 
-  const onNodesChange: OnNodesChange = useCallback(
-    // @ts-ignore
-    (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    []
-  );
-
-  const onEdgesChange: OnEdgesChange = useCallback(
-    // @ts-ignore
-    (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    []
-  );
+  // const onNodesChange: OnNodesChange = useCallback(
+  //   // @ts-ignore
+  //   (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
+  //   [],
+  // );
+  //
+  // const onEdgesChange: OnEdgesChange = useCallback(
+  //   // @ts-ignore
+  //   (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
+  //   [],
+  // );
 
   return (
     <div style={{ width: "50vw", height: "100vh", position: "relative" }}>
@@ -75,8 +71,8 @@ export function Forest({ highlight, returnHome }: Props) {
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
+        // onNodesChange={onNodesChange}
+        // onEdgesChange={onEdgesChange}
         onNodeClick={(_, node) => updateHash(node.id)}
         fitView
         nodeTypes={nodeTypes}

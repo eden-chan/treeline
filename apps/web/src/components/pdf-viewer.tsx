@@ -220,7 +220,9 @@ export default function PDFViewer({
                         image: content?.image ?? "",
                       },
                       position,
-                      comments: [],
+                      comments: [
+                        { ...comment, timestamp: new Date(), userId: userId },
+                      ],
                       timestamp: new Date(),
                     });
                     hideTipAndSelection();
@@ -228,8 +230,8 @@ export default function PDFViewer({
                   onPromptConfirm={(prompt: string) => {
                     addHighlight({
                       content: {
-                        text: prompt,
-                        image: null,
+                        text: content?.text ?? "",
+                        image: content?.image ?? "",
                       },
                       prompt,
                       position,
