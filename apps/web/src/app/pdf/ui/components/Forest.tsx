@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from "react";
 import { AnnotatedPdfHighlights } from "@prisma/client";
-
+import QuestionNode from "./flownodes/QuestionNode";
 import { Button } from "@/components/ui/button";
 import ReactFlow, {
   MiniMap,
@@ -13,7 +13,6 @@ import ReactFlow, {
   OnEdgesChange,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { useAskHighlight } from "@src/context/ask-highlight-context";
 
 interface Props {
   highlight: AnnotatedPdfHighlights;
@@ -24,14 +23,21 @@ const updateHash = (id: string) => {
   document.location.hash = `highlight-${id}`;
 };
 
+const nodeTypes = {
+  question: QuestionNode,
+};
+
 export function Forest({ highlight, returnHome }: Props) {
   const [nodes, setNodes] = useState(() => {
     return [
       {
         id: highlight!.id,
         position: { x: 0, y: 0 },
-        data: { label: highlight?.content.text ?? highlight.prompt ?? "" },
-        type: "input",
+        data: {
+          question: highlight?.comments[0]?.text,
+          answer: "",
+        },
+        type: "question",
       },
     ];
   });
@@ -40,13 +46,13 @@ export function Forest({ highlight, returnHome }: Props) {
   const onNodesChange: OnNodesChange = useCallback(
     // @ts-ignore
     (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-    [],
+    []
   );
 
   const onEdgesChange: OnEdgesChange = useCallback(
     // @ts-ignore
     (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-    [],
+    []
   );
 
   return (
@@ -64,6 +70,7 @@ export function Forest({ highlight, returnHome }: Props) {
         onEdgesChange={onEdgesChange}
         onNodeClick={(_, node) => updateHash(node.id)}
         fitView
+        nodeTypes={nodeTypes}
       >
         <Controls />
         <MiniMap />
