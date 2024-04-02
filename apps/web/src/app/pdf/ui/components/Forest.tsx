@@ -28,6 +28,7 @@ const nodeTypes = {
 };
 
 export function Forest({ highlight, returnHome }: Props) {
+  console.log(highlight);
   const [nodes, setNodes] = useState(() => {
     return [
       {
