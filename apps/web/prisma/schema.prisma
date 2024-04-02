@@ -10,6 +10,8 @@ datasource db {
 
 type AnnotatedPdfHighlights {
   comments  AnnotatedPdfHighlightsComments[]
+  prompt    String?
+  response  String?
   content   AnnotatedPdfHighlightsContent
   id        String
   position  AnnotatedPdfHighlightsPosition

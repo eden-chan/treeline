@@ -9,7 +9,7 @@ import "../../style/Tip.css";
 
 interface Props {
   onCommentConfirm: (comment: { text: string; emoji: string }) => void;
-  onPromptConfirm: () => void;
+  onPromptConfirm: (prompt: string) => void;
   onOpen: () => void;
 }
 
@@ -17,22 +17,10 @@ export const Tip = ({ onCommentConfirm, onPromptConfirm, onOpen }: Props) => {
   const [state, setState] = useState<"compact" | "question" | "comment">(
     "compact",
   );
-  const {
-    messages,
-    input: questionInput,
-    handleInputChange: questionHandleInputChange,
-    handleSubmit: questionHandleSubmit,
-  } = useAskHighlight();
 
   return (
     <div className="Tip">
-      {state === "question" && (
-        <Question
-          input={questionInput}
-          handleInputChange={questionHandleInputChange}
-          handleSubmit={questionHandleSubmit}
-        />
-      )}
+      {state === "question" && <Question handleSubmit={onPromptConfirm} />}
       {state === "comment" && <Comment onConfirm={onCommentConfirm} />}
       {state === "compact" && (
         <div className="flex">

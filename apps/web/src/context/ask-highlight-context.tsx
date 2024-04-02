@@ -4,7 +4,9 @@ import { useChat, Message } from "ai/react";
 
 export type ContextProps = {
   messages: Message[];
+  reload: (chatRequestOptions?: any) => Promise<string | null | undefined>;
   input: string;
+  setInput: React.Dispatch<React.SetStateAction<string>>;
   handleInputChange: (
     e:
       | React.ChangeEvent<HTMLInputElement>
@@ -14,6 +16,7 @@ export type ContextProps = {
     e: React.FormEvent<HTMLFormElement>,
     chatRequestOptions?: any,
   ) => void;
+  isLoading: boolean;
 };
 
 export const useAskHighlight = () => {
@@ -22,7 +25,10 @@ export const useAskHighlight = () => {
 
 export const AskHighlightContext = React.createContext<ContextProps>({
   messages: [],
+  reload: async () => null,
   input: "",
+  isLoading: false,
+  setInput: () => null,
   handleInputChange: () => {},
   handleSubmit: () => {},
 });
@@ -30,13 +36,24 @@ export const AskHighlightContext = React.createContext<ContextProps>({
 export const AskHighlightProvider: FC<{
   children: ReactNode;
 }> = ({ children }) => {
-  const { messages, input, handleInputChange, handleSubmit } = useChat();
+  const {
+    messages,
+    input,
+    setInput,
+    reload,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+  } = useChat();
 
   const value = {
     messages,
+    reload,
     input,
+    setInput,
     handleInputChange,
     handleSubmit,
+    isLoading,
   };
 
   return (

@@ -1,35 +1,32 @@
 "use client";
 import React, { useState } from "react";
 
+import { useAskHighlight } from "@src/context/ask-highlight-context";
+
 import "../../style/Tip.css";
 
 type QuestionProps = {
-  input: string;
-  handleInputChange: (
-    e:
-      | React.ChangeEvent<HTMLInputElement>
-      | React.ChangeEvent<HTMLTextAreaElement>,
-  ) => void;
-  handleSubmit: (
-    e: React.FormEvent<HTMLFormElement>,
-    chatRequestOptions?: any,
-  ) => void;
+  handleSubmit: (prompt: string) => void;
 };
 
-export const Question = ({
-  input,
-  handleInputChange,
-  handleSubmit,
-}: QuestionProps) => {
+export const Question = ({ handleSubmit }: QuestionProps) => {
+  const { input, handleInputChange, handleSubmit: askAi } = useAskHighlight();
+
   return (
-    <form className="Tip__card" onSubmit={handleSubmit}>
+    <form
+      className="Tip__card"
+      onSubmit={(e) => {
+        askAi(e);
+        handleSubmit(input);
+      }}
+    >
       <div>
         <textarea
           className="text-black"
           placeholder="Your question"
-          autoFocus
           value={input}
           onChange={handleInputChange}
+          autoFocus
           ref={(node) => {
             if (node) {
               node.focus();

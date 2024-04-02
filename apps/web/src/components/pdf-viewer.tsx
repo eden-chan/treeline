@@ -1,5 +1,6 @@
 "use client";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
+import { v4 as uuidv4 } from "uuid";
 
 import { clientApi } from "@src/trpc/react";
 import {
@@ -21,10 +22,11 @@ import {
   AnnotatedPdfHighlights,
   AnnotatedPdfHighlightsComments,
 } from "@prisma/client";
-import { v4 as uuidv4 } from "uuid";
+
+import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
+import { useAskHighlight } from "@src/context/ask-highlight-context";
 
 import "../app/pdf/ui/style/main.css";
-import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -97,6 +99,7 @@ export default function PDFViewer({
   const [friendHighlights, setFriendHighlights] = useState<
     AnnotatedPdfHighlights[]
   >([]);
+  const { messages, isLoading } = useAskHighlight();
 
   const getHighlightById = (id: string) => {
     return highlights.find((highlight) => highlight.id === id);
@@ -144,42 +147,31 @@ export default function PDFViewer({
       source: loadedSource,
       id: annotatedPdfId,
     });
+
+    // Set react flow to display the new highlight if it's a question
+    if (highlight.prompt) {
+      setHighlight({ ...highlight, id });
+    }
   };
 
-  // const updateHighlight = (
-  //   highlightId: string,
-  //   position: Position,
-  //   content: HighlightContent,
-  // ) => {
-  //   const updatedHighlights = highlights.map((h) => {
-  //     const {
-  //       id,
-  //       position: originalPosition,
-  //       content: originalContent,
-  //       comments: originalComments,
-  //       timestamp: originalTimestamp,
-  //     } = h;
-  //     return id === highlightId
-  //       ? {
-  //           ...h,
-  //           id,
-  //           position: { ...originalPosition, ...position },
-  //           content: { ...originalContent, ...content },
-  //           comments: { ...originalComments },
-  //           timestamp: new Date(),
-  //         }
-  //       : h;
-  //   });
-  //
-  //   setHighlights(updatedHighlights);
-  //
-  //   mutation.mutate({
-  //     userId: userId,
-  //     highlights: updatedHighlights,
-  //     source: url,
-  //     id: annotatedPdfId,
-  //   });
-  // };
+  useEffect(() => {
+    if (messages.length < 2 || !highlight?.prompt) return;
+
+    const question = messages[messages.length - 2]?.content;
+    const response = messages[messages.length - 1]?.content;
+
+    if (!question || !response) return;
+
+    if (question == highlight.prompt) {
+      setHighlight((highlight) => {
+        if (!highlight) return highlight;
+        return {
+          ...highlight,
+          response: response,
+        };
+      });
+    }
+  }, [messages, isLoading]);
 
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>
@@ -219,14 +211,23 @@ export default function PDFViewer({
                         image: content?.image ?? "",
                       },
                       position,
-                      comments: [
-                        { ...comment, timestamp: new Date(), userId: userId },
-                      ],
+                      comments: [],
                       timestamp: new Date(),
                     });
                     hideTipAndSelection();
                   }}
-                  onPromptConfirm={() => null}
+                  onPromptConfirm={(prompt: string) => {
+                    addHighlight({
+                      content: {
+                        text: prompt,
+                        image: null,
+                      },
+                      prompt,
+                      position,
+                      comments: [],
+                      timestamp: new Date(),
+                    });
+                  }}
                 />
               )}
               highlightTransform={(

@@ -13,6 +13,7 @@ import ReactFlow, {
   OnEdgesChange,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import { useAskHighlight } from "@src/context/ask-highlight-context";
 
 interface Props {
   highlight: AnnotatedPdfHighlights;
@@ -29,7 +30,7 @@ export function Forest({ highlight, returnHome }: Props) {
       {
         id: highlight!.id,
         position: { x: 0, y: 0 },
-        data: { label: highlight?.comments[0]?.text },
+        data: { label: highlight?.content.text ?? highlight.prompt ?? "" },
         type: "input",
       },
     ];
