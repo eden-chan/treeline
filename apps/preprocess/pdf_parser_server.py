@@ -56,7 +56,9 @@ async def parse_pdf(pdf_url):
     
     print(f"PDF reading took {end_time - start_time} seconds.")
     
-    return_text = {}
+    outline = [section.title for section in doc.sections()]
+    title=doc.sections()[0].title    
+    return_text = {'title':title,'outline':outline, 'sections':[]}
     tasks = []
     overall_start_time = time.time()  # Start timing the overall process
     with ThreadPoolExecutor(max_workers=5) as executor:
@@ -67,18 +69,10 @@ async def parse_pdf(pdf_url):
             tasks.append(executor.submit(process_section, section, pdf_url))
 
         for future in as_completed(tasks):
-            section_text, section_data = future.result()
-            return_text.update(section_text)
-            if section_data:
-                try:
-                    with mongo_client(db_name='paper', collection_name='ParsedPapers') as collection: 
-                        result = collection.update_one({'url': pdf_url}, {'$set': section_data}, upsert=True)
-                except Exception as e:
-                    print(f"An error occurred while updating the database: {e}")
+            parsed_section = future.result()
+            return_text['sections'].append(parsed_section)
 
-    outline = [section.title for section in doc.sections()]
-    title=doc.sections()[0].title
-    return_text['outline'] = outline    
+
     data = {"url": pdf_url,"text": return_text, "title": title}
     try:
         with mongo_client(db_name='paper', collection_name='ParsedPapers') as collection: 
@@ -92,38 +86,36 @@ async def parse_pdf(pdf_url):
 
 def process_section(section, pdf_url):
     start_time = time.time()  # Start timing the process_section function
-    return_text = {}
-    section_data = None
+    return_content = {} # TODO: fix this BS
+
     src = section.to_text(include_children=True, recurse=False)
-    if 'abstract' in src.lower():
-        src = src.lower().split('abstract')[-1]
-        return_text['abstract'] = {'text': src, 'page': section.page_idx}
-        response : ExtractFactDescriptor= chat(user_text=src, response_model=ExtractFactDescriptor)
-        if response:
-            return_text['abstract']['facts'] = [x.dict() for x in response.fact_descriptors]
-            section_data = {"url": pdf_url,"text": return_text, 'page': section.page_idx}
+    # if 'abstract' in src.lower():
+    #     src = src.lower().split('abstract')[-1]
+        # response : ExtractFactDescriptor= chat(user_text=src, response_model=ExtractFactDescriptor)
+        # abstract_section = {'name': 'abstract', 'text': src, 'page': section.page_idx, 'facts': [x.dict() for x in response.fact_descriptors] }
+        # if response:
+        #     abstract_section['facts'] = [x.dict() for x in response.fact_descriptors]
+        #     section_data = {"url": pdf_url, "text": abstract_section, 'page': section.page_idx}
+        # return_content.append(abstract_section)
     
     section_title_lower = section.title.lower()
-    return_text[section_title_lower] = {}
+    section_content = {'name': section_title_lower, 'text': '', 'page': section.page_idx, 'facts': [] }
     
     for chunk in section.chunks():
         source = chunk.to_text()
-        if 'text' in return_text[section_title_lower]:
-            return_text[section_title_lower]['text'] += " " + source
-        else:
-            return_text[section_title_lower]['text'] = source
-        return_text[section_title_lower]['page'] = chunk.page_idx
+        section_content['text'] += " " + source if section_content['text'] else source
+        # section_content['page'] = chunk.page_idx
             
-    
-    if 'text' in return_text[section_title_lower]:
-        src = return_text[section_title_lower]['text']
-        response : ExtractFactDescriptor= chat(user_text=src, response_model=ExtractFactDescriptor)
-        return_text[section_title_lower]['facts'] = [x.dict() for x in response.fact_descriptors]
+    # if section_content['text']:
+    src = section_content['text']
+    response : ExtractFactDescriptor= chat(user_text=src, response_model=ExtractFactDescriptor)
+    section_content['facts'] = [x.dict() for x in response.fact_descriptors]
+    # return_text.append(section_content)
 
     end_time = time.time()  # End timing the process_section function
     print(f"Processing {section.title} took {end_time - start_time} seconds.")  # Print out how long it took
 
-    return return_text, section_data
+    return section_content
 
     
 app = FastAPI()
