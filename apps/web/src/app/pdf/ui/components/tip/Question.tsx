@@ -7,16 +7,38 @@ import "../../style/Tip.css";
 
 type QuestionProps = {
   handleSubmit: (prompt: string) => void;
+  content: { text?: string; emoji?: string };
 };
 
-export const Question = ({ handleSubmit }: QuestionProps) => {
-  const { input, handleInputChange, handleSubmit: askAi } = useAskHighlight();
+export const Question = ({ handleSubmit, content }: QuestionProps) => {
+  const {
+    input,
+    setInput,
+    handleInputChange,
+    append: askAi,
+  } = useAskHighlight();
 
   return (
     <form
       className="Tip__card"
       onSubmit={(e) => {
-        askAi(e);
+        e.preventDefault();
+
+        const prompt = content?.text
+          ? `Answer the following question given the context below: 
+${content.text}
+The question is: ${input}`
+          : input;
+
+        askAi(
+          {
+            role: "user",
+            content: prompt,
+            createdAt: new Date(),
+          },
+          {},
+        );
+        setInput("");
         handleSubmit(input);
       }}
     >

@@ -1,10 +1,14 @@
 "use client";
 import React, { FC, ReactNode, useContext } from "react";
-import { useChat, Message } from "ai/react";
+import { useChat, Message, CreateMessage } from "ai/react";
 
 export type ContextProps = {
   messages: Message[];
   reload: (chatRequestOptions?: any) => Promise<string | null | undefined>;
+  append: (
+    message: Message | CreateMessage,
+    chatRequestOptions?: any,
+  ) => Promise<string | null | undefined>;
   input: string;
   setInput: React.Dispatch<React.SetStateAction<string>>;
   handleInputChange: (
@@ -25,6 +29,7 @@ export const useAskHighlight = () => {
 
 export const AskHighlightContext = React.createContext<ContextProps>({
   messages: [],
+  append: async () => null,
   reload: async () => null,
   input: "",
   isLoading: false,
@@ -40,6 +45,7 @@ export const AskHighlightProvider: FC<{
     messages,
     input,
     setInput,
+    append,
     reload,
     handleInputChange,
     handleSubmit,
@@ -48,6 +54,7 @@ export const AskHighlightProvider: FC<{
 
   const value = {
     messages,
+    append,
     reload,
     input,
     setInput,

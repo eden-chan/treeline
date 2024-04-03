@@ -162,7 +162,8 @@ export default function PDFViewer({
 
     if (!question || !response) return;
 
-    if (question == highlight.prompt) {
+    // Fix later
+    if (question.includes(highlight.prompt)) {
       const newHighlight = {
         ...highlight,
         response: response,
@@ -239,6 +240,7 @@ export default function PDFViewer({
                       timestamp: new Date(),
                     });
                   }}
+                  content={content}
                 />
               )}
               highlightTransform={(
