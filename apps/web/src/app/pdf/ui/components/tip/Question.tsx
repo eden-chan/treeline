@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 
 import { useAskHighlight } from "@src/context/ask-highlight-context";
+import { api } from "@src/trpc/server";
 
 import "../../style/Tip.css";
 
@@ -9,14 +10,15 @@ type QuestionProps = {
   handleSubmit: (prompt: string) => void;
 };
 
-export const Question = ({ handleSubmit }: QuestionProps) => {
+export const Question = ({ handleSubmit, source }: QuestionProps) => {
   const { input, handleInputChange, handleSubmit: askAi } = useAskHighlight();
 
   return (
     <form
       className="Tip__card"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         askAi(e);
+        await console.log(getParsedPaper(source));
         handleSubmit(input);
       }}
     >

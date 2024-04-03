@@ -45,7 +45,7 @@ const HighlightPopup = ({
       <div key={`highlight-comment-${index}`} className="Highlight__popup">
         {comment.emoji} {comment.text}
       </div>
-    ) : null,
+    ) : null
   );
 
 export default function PDFViewer({
@@ -76,7 +76,7 @@ export default function PDFViewer({
 
       utils.annotatedPdf.fetchAnnotatedPdf.setData(
         newData,
-        (oldData) => newData as AnnotatedPdf,
+        (oldData) => newData as AnnotatedPdf
       );
 
       return { previousData };
@@ -125,6 +125,12 @@ export default function PDFViewer({
     }
   };
 
+  const parsedPaper = clientApi.parsedPapers.fetchParsedPdf.useQuery({
+    source: loadedSource,
+  })?.data;
+
+  console.log(parsedPaper);
+
   // Todo: This useEffect reruns on every state update since scrollToHighlight changes reference on every render.
   // However, we need to keep an updated version of scrollToHighlightId after it gets assigned in PDFHighlighter.
   // Find a more elegant solution.
@@ -137,7 +143,7 @@ export default function PDFViewer({
   }, [highlights, scrollToHighlightId]);
 
   const addHighlight = async (
-    highlight: Omit<AnnotatedPdfHighlights, "id">,
+    highlight: Omit<AnnotatedPdfHighlights, "id">
   ) => {
     const id = uuidv4();
     // If the highlights object doesn't exist, create it
@@ -209,7 +215,7 @@ export default function PDFViewer({
                 position,
                 content,
                 hideTipAndSelection,
-                transformSelection,
+                transformSelection
               ) => (
                 <Tip
                   onOpen={transformSelection}
@@ -239,6 +245,7 @@ export default function PDFViewer({
                       timestamp: new Date(),
                     });
                   }}
+                  parsedPaper={parsedPaper}
                 />
               )}
               highlightTransform={(
@@ -248,7 +255,7 @@ export default function PDFViewer({
                 hideTip,
                 viewportToScaled,
                 screenshot,
-                isScrolledTo,
+                isScrolledTo
               ) => {
                 const isTextHighlight = !(
                   highlight.content && highlight.content.image
