@@ -11,14 +11,16 @@ interface Props {
   onCommentConfirm: (comment: { text: string; emoji: string }) => void;
   onPromptConfirm: (prompt: string) => void;
   onOpen: () => void;
-  parsedPdf: object;
+  parsedPaper: object;
+  content: { text?: string; emoji?: string };
 }
 
 export const Tip = ({
   onCommentConfirm,
   onPromptConfirm,
   onOpen,
-  parsedPdf,
+  parsedPaper,
+  content,
 }: Props) => {
   const [state, setState] = useState<"compact" | "question" | "comment">(
     "compact"
@@ -27,7 +29,11 @@ export const Tip = ({
   return (
     <div className="Tip">
       {state === "question" && (
-        <Question handleSubmit={onPromptConfirm} source={source} />
+        <Question
+          handleSubmit={onPromptConfirm}
+          content={content}
+          parsedPaper={parsedPaper}
+        />
       )}
       {state === "comment" && <Comment onConfirm={onCommentConfirm} />}
       {state === "compact" && (

@@ -40,6 +40,11 @@ export function Sidebar({ highlights, resetHighlights }: Props) {
             }}
           >
             <div>
+              {highlight.prompt && (
+                <div key={`${highlight.id}-prompt-${highlight.prompt}`}>
+                  {highlight.prompt}
+                </div>
+              )}
               {highlight.comments.map((comment, commentIndex) => (
                 <div key={`${highlight.id}-comment-${commentIndex}`}>
                   {comment.text}
