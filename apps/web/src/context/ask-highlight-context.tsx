@@ -4,6 +4,7 @@ import { useChat, Message, CreateMessage } from "ai/react";
 
 export type ContextProps = {
   messages: Message[];
+  setMessages: (messages: Message[]) => void;
   reload: (chatRequestOptions?: any) => Promise<string | null | undefined>;
   append: (
     message: Message | CreateMessage,
@@ -29,6 +30,7 @@ export const useAskHighlight = () => {
 
 export const AskHighlightContext = React.createContext<ContextProps>({
   messages: [],
+  setMessages: () => null,
   append: async () => null,
   reload: async () => null,
   input: "",
@@ -43,6 +45,7 @@ export const AskHighlightProvider: FC<{
 }> = ({ children }) => {
   const {
     messages,
+    setMessages,
     input,
     setInput,
     append,
@@ -54,6 +57,7 @@ export const AskHighlightProvider: FC<{
 
   const value = {
     messages,
+    setMessages,
     append,
     reload,
     input,
