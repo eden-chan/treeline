@@ -118,7 +118,7 @@ export const ScaledPositionSchema = z.object({
   boundingRect: ScaledSchema,
   rects: z.array(ScaledSchema),
   pageNumber: z.number(),
-  usePdfCoordinates: z.boolean().optional(),
+  usePdfCoordinates: z.boolean().optional().or(z.null()),
 });
 
 export const ContentSchema = z.object({

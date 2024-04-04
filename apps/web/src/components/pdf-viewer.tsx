@@ -14,13 +14,11 @@ import {
   Spinner,
   Sidebar,
   PDFHighlightsWithProfile,
-  Position,
-  HighlightContent,
 } from "../app/pdf/ui";
 import {
   AnnotatedPdf,
-  AnnotatedPdfHighlights,
-  AnnotatedPdfHighlightsComments,
+  AnnotatedPdfHighlight,
+  AnnotatedPdfHighlightComment,
 } from "@prisma/client";
 
 import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
@@ -38,14 +36,14 @@ const resetHash = () => {
 const HighlightPopup = ({
   comments,
 }: {
-  comments: AnnotatedPdfHighlightsComments[];
+  comments: AnnotatedPdfHighlightComment[];
 }) =>
   comments.map((comment, index) =>
     comment.text ? (
       <div key={`highlight-comment-${index}`} className="Highlight__popup">
         {comment.emoji} {comment.text}
       </div>
-    ) : null
+    ) : null,
   );
 
 export default function PDFViewer({
@@ -58,7 +56,7 @@ export default function PDFViewer({
   annotatedPdfId: string;
   loadedSource: string;
   userId: string;
-  userHighlights: AnnotatedPdfHighlights[];
+  userHighlights: AnnotatedPdfHighlight[];
   allHighlights: PDFHighlightsWithProfile[];
 }): JSX.Element {
   const utils = clientApi.useUtils();
@@ -76,7 +74,7 @@ export default function PDFViewer({
 
       utils.annotatedPdf.fetchAnnotatedPdf.setData(
         newData,
-        (oldData) => newData as AnnotatedPdf
+        (oldData) => newData as AnnotatedPdf,
       );
 
       return { previousData };
@@ -93,13 +91,11 @@ export default function PDFViewer({
       userId: userId,
       source: loadedSource,
     }).data?.highlights || userHighlights;
-  const [highlight, setHighlight] = useState<
-    AnnotatedPdfHighlights | undefined
-  >(undefined);
   const [friendHighlights, setFriendHighlights] = useState<
-    AnnotatedPdfHighlights[]
+    AnnotatedPdfHighlight[]
   >([]);
-  const { messages, isLoading } = useAskHighlight();
+  const { currentHighlight, setCurrentHighlight, createAskHighlight } =
+    useAskHighlight();
 
   const getHighlightById = (id: string) => {
     return highlights.find((highlight) => highlight.id === id);
@@ -114,22 +110,21 @@ export default function PDFViewer({
     });
   };
 
-  let scrollToHighlightId = (highlight: AnnotatedPdfHighlights) => {};
+  let scrollToHighlightId = (highlight: AnnotatedPdfHighlight) => {};
 
   const setHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
 
     if (highlight) {
-      setHighlight(highlight);
+      setCurrentHighlight(highlight);
       scrollToHighlightId(highlight);
     }
   };
 
-  const parsedPaper = clientApi.parsedPapers.fetchParsedPdf.useQuery({
-    source: loadedSource,
-  })?.data;
-
-  console.log(parsedPaper);
+  const parsedPaper = {};
+  // const parsedPaper = clientApi.parsedPapers.fetchParsedPdf.useQuery({
+  //   source: loadedSource,
+  // })?.data;
 
   // Todo: This useEffect reruns on every state update since scrollToHighlight changes reference on every render.
   // However, we need to keep an updated version of scrollToHighlightId after it gets assigned in PDFHighlighter.
@@ -142,8 +137,8 @@ export default function PDFViewer({
     };
   }, [highlights, scrollToHighlightId]);
 
-  const addHighlight = async (
-    highlight: Omit<AnnotatedPdfHighlights, "id">
+  const createCommentHighlight = async (
+    highlight: Omit<AnnotatedPdfHighlight, "id">,
   ) => {
     const id = uuidv4();
     // If the highlights object doesn't exist, create it
@@ -153,41 +148,7 @@ export default function PDFViewer({
       source: loadedSource,
       id: annotatedPdfId,
     });
-
-    // Set react flow to display the new highlight if it's a question
-    if (highlight.prompt) {
-      setHighlight({ ...highlight, id });
-    }
   };
-
-  useEffect(() => {
-    if (messages.length < 2 || !highlight?.prompt) return;
-
-    const question = messages[messages.length - 2]?.content;
-    const response = messages[messages.length - 1]?.content;
-
-    if (!question || !response) return;
-
-    // Fix later
-    if (question.includes(highlight.prompt)) {
-      const newHighlight = {
-        ...highlight,
-        response: response,
-      };
-
-      mutation.mutate({
-        userId: userId,
-        highlights: [
-          newHighlight,
-          ...highlights.filter((h) => h.id !== highlight.id),
-        ],
-        source: loadedSource,
-        id: annotatedPdfId,
-      });
-
-      setHighlight(newHighlight);
-    }
-  }, [messages, isLoading]);
 
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>
@@ -208,7 +169,7 @@ export default function PDFViewer({
               pdfDocument={pdfDocument}
               enableAreaSelection={(event) => event.altKey}
               onScrollChange={resetHash}
-              highlight={highlight}
+              highlight={currentHighlight ?? undefined}
               scrollRef={(scrollTo) => {
                 scrollToHighlightId = scrollTo;
               }}
@@ -216,16 +177,19 @@ export default function PDFViewer({
                 position,
                 content,
                 hideTipAndSelection,
-                transformSelection
+                transformSelection,
               ) => (
                 <Tip
                   onOpen={transformSelection}
                   onCommentConfirm={(comment) => {
-                    addHighlight({
+                    createCommentHighlight({
                       content: {
                         text: content?.text ?? "",
                         image: content?.image ?? "",
                       },
+                      prompt: null,
+                      response: null,
+                      nodes: [],
                       position,
                       comments: [
                         { ...comment, timestamp: new Date(), userId: userId },
@@ -235,12 +199,14 @@ export default function PDFViewer({
                     hideTipAndSelection();
                   }}
                   onPromptConfirm={(prompt: string) => {
-                    addHighlight({
+                    createAskHighlight({
                       content: {
                         text: content?.text ?? "",
                         image: content?.image ?? "",
                       },
                       prompt,
+                      response: null,
+                      nodes: [],
                       position,
                       comments: [],
                       timestamp: new Date(),
@@ -257,7 +223,7 @@ export default function PDFViewer({
                 hideTip,
                 viewportToScaled,
                 screenshot,
-                isScrolledTo
+                isScrolledTo,
               ) => {
                 const isTextHighlight = !(
                   highlight.content && highlight.content.image
@@ -301,12 +267,12 @@ export default function PDFViewer({
           )}
         </PdfLoader>
       </div>
-      {highlight ? (
+      {currentHighlight ? (
         <Forest
-          highlight={highlight}
+          highlight={currentHighlight}
           returnHome={() => {
             document.location.hash = "";
-            setHighlight(undefined);
+            setCurrentHighlight(null);
           }}
         />
       ) : (

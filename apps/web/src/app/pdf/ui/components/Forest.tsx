@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { AnnotatedPdfHighlights } from "@prisma/client";
+import { AnnotatedPdfHighlight } from "@prisma/client";
 import QuestionNode from "./flownodes/QuestionNode";
 import { Button } from "@/components/ui/button";
 import ReactFlow, {
@@ -16,7 +16,7 @@ import ReactFlow, {
 import "reactflow/dist/style.css";
 
 interface Props {
-  highlight: AnnotatedPdfHighlights;
+  highlight: AnnotatedPdfHighlight;
   returnHome: () => void;
 }
 

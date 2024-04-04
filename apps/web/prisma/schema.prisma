@@ -8,57 +8,60 @@ datasource db {
   relationMode = "prisma"
 }
 
-type AnnotatedPdfHighlights {
-  comments  AnnotatedPdfHighlightsComments[]
+type AnnotatedPdfHighlightNode {
+  comments  AnnotatedPdfHighlightComment[]
   prompt    String?
   response  String?
-  content   AnnotatedPdfHighlightsContent
+  content   AnnotatedPdfHighlightContent
   id        String
-  position  AnnotatedPdfHighlightsPosition
-  timestamp DateTime                         @db.Date
+  position  AnnotatedPdfHighlightPosition
+  nodes     AnnotatedPdfHighlightNode[]
+  timestamp DateTime                       @db.Date
 }
 
-type AnnotatedPdfHighlightsComments {
+type AnnotatedPdfHighlight {
+  comments  AnnotatedPdfHighlightComment[]
+  prompt    String?
+  response  String?
+  content   AnnotatedPdfHighlightContent
+  id        String
+  position  AnnotatedPdfHighlightPosition
+  nodes     AnnotatedPdfHighlightNode[]
+  timestamp DateTime                       @db.Date
+}
+
+type AnnotatedPdfHighlightComment {
   emoji     String?
   text      String?
   timestamp DateTime @db.Date
   userId    String
 }
 
-type AnnotatedPdfHighlightsContent {
+type AnnotatedPdfHighlightContent {
   image String?
   text  String?
 }
 
-type AnnotatedPdfHighlightsPosition {
-  boundingRect AnnotatedPdfHighlightsPositionBoundingRect
-  pageNumber   Int
-  rects        AnnotatedPdfHighlightsPositionRects[]
+type AnnotatedPdfHighlightPosition {
+  boundingRect      AnnotatedPdfHighlightScaledPosition
+  pageNumber        Int
+  rects             AnnotatedPdfHighlightScaledPosition[]
+  usePdfCoordinates Boolean?
 }
 
-type AnnotatedPdfHighlightsPositionBoundingRect {
+type AnnotatedPdfHighlightScaledPosition {
   height     Float
-  pageNumber Int?
   width      Float
   x1         Float
-  x2         Float
   y1         Float
+  x2         Float
   y2         Float
-}
-
-type AnnotatedPdfHighlightsPositionRects {
-  height     Float
   pageNumber Int?
-  width      Float
-  x1         Float
-  x2         Float
-  y1         Float
-  y2         Float
 }
 
 model AnnotatedPdf {
-  id         String                   @id @default(auto()) @map("_id") @db.ObjectId
-  highlights AnnotatedPdfHighlights[]
+  id         String                  @id @default(auto()) @map("_id") @db.ObjectId
+  highlights AnnotatedPdfHighlight[]
   source     String
   userId     String
 }
