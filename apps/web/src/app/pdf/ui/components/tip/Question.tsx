@@ -2,21 +2,28 @@
 import React, { useState } from "react";
 
 import { useAskHighlight } from "@src/context/ask-highlight-context";
+import { api } from "@src/trpc/server";
 
 import "../../style/Tip.css";
 
 type QuestionProps = {
   handleSubmit: (prompt: string) => void;
   content: { text?: string; emoji?: string };
+  parsedPaper: object;
 };
 
-export const Question = ({ handleSubmit, content }: QuestionProps) => {
+export const Question = ({
+  handleSubmit,
+  content,
+  parsedPaper,
+}: QuestionProps) => {
   const {
     input,
     setInput,
     handleInputChange,
     append: askAi,
   } = useAskHighlight();
+  console.log("FROM QUESTION", parsedPaper);
 
   return (
     <form
@@ -36,7 +43,7 @@ The question is: ${input}`
             content: prompt,
             createdAt: new Date(),
           },
-          {},
+          {}
         );
         setInput("");
         handleSubmit(input);
