@@ -1,6 +1,6 @@
+'use client'
 import React from 'react';
 import ActivityCalendar from 'react-activity-calendar';
-
 const LearningActivityCalendar = () => {
     const data = [
         {
@@ -20,7 +20,15 @@ const LearningActivityCalendar = () => {
         }
     ];
 
-    return <ActivityCalendar data={data} />;
+    return <ActivityCalendar data={data} eventHandlers={{
+        onClick: (event) => (activity) => {
+            alert(JSON.stringify(activity));
+        },
+        onMouseEnter: (event) => (activity) => {
+            console.log('on mouse enter');
+        },
+    }}
+    />;
 }
 
 export default LearningActivityCalendar;
