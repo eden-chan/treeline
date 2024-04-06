@@ -13,7 +13,7 @@ const Timeline = memo(({ articles }: { articles: AnnotatedPdf[] }) => {
     () =>
       articles.map((article) => {
         const timeAgoCalculation = calculateTimeAgo(
-          article.highlights[0]?.timestamp,
+          article.highlights[0]?.timestamp ?? new Date(),
         );
         return { ...article, timeAgoCalculation };
       }),
@@ -28,7 +28,7 @@ const Timeline = memo(({ articles }: { articles: AnnotatedPdf[] }) => {
             <Link href={`/pdf?url=${article.source}`}>
               {/* TODO: add LLM parsed data of the pdf */}
               <h2 className="text-xl font-semibold mb-1">
-                {article.highlights[0]?.content?.text.slice(0, 50)}{" "}
+                {article?.highlights[0]?.content?.text?.slice(0, 50) ?? ''}{" "}
               </h2>
               <p className="text-gray-600 mb-2">
                 {" "}
@@ -36,7 +36,7 @@ const Timeline = memo(({ articles }: { articles: AnnotatedPdf[] }) => {
                 highlights
               </p>
               <p className="text-gray-500">
-                {article.highlights[0]?.content?.text}
+                {article.highlights[0]?.content?.text ?? ''}
               </p>
               <p className="text-gray-400 text-sm mt-2">{article.userId}</p>
             </Link>

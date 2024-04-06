@@ -1,22 +1,23 @@
 'use client'
+import { User } from '@prisma/client'
 import { useRouter } from 'next/navigation'
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 
-export default function SearchWithAutocomplete({ items }) {
+export default function SearchWithAutocomplete({ items }: { items: User[] }) {
     const router = useRouter()
 
-    const handleOnSearch = (string, results) => {
+    const handleOnSearch = (string: string, results: User[]) => {
         // onSearch will have as the first callback parameter
         // the string searched and for the second the results.
         console.log(string, results)
     }
 
-    const handleOnHover = (result) => {
+    const handleOnHover = (result: User) => {
         // the item hovered
         console.log(result)
     }
 
-    const handleOnSelect = (item) => {
+    const handleOnSelect = (item: User) => {
         // the item selected
         console.log(item)
 
@@ -27,10 +28,10 @@ export default function SearchWithAutocomplete({ items }) {
         console.log('Focused')
     }
 
-    const formatResult = (item) => {
+    const formatResult = (item: User) => {
         return (
             <>
-                <span style={{ display: 'block', textAlign: 'left' }}>{item.name}</span>
+                <span style={{ display: 'block', textAlign: 'left' }}>{item.first_name} {item.last_name}</span>
             </>
         )
     }

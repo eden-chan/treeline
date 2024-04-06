@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { AnnotatedPdf } from "@prisma/client";
+import { AnnotatedPdf, Prisma } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
@@ -16,7 +16,7 @@ export const annotatedPdfRouter = createTRPCRouter({
         userId: z.string(),
         source: z.string(),
         id: z.string(), // mongo id is provided ahead of time for new documents
-      }),
+      })
     )
     .mutation<AnnotatedPdf | undefined>(async ({ ctx, input }) => {
       let res: AnnotatedPdf;
@@ -45,7 +45,7 @@ export const annotatedPdfRouter = createTRPCRouter({
       z.object({
         userId: z.string().optional(),
         source: z.string().optional(),
-      }),
+      })
     )
     .query<AnnotatedPdf | undefined>(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};
@@ -80,7 +80,7 @@ export const annotatedPdfRouter = createTRPCRouter({
       z.object({
         source: z.string().optional(),
         userList: z.array(z.string()),
-      }),
+      })
     )
     .query<AnnotatedPdf[] | undefined>(async ({ ctx, input }) => {
       const whereClause: Record<string, any> = {};

@@ -14,7 +14,6 @@ import {
   Spinner,
   Sidebar,
   PDFHighlightsWithProfile,
-  Position,
   HighlightContent,
 } from "../app/pdf/ui";
 import {
@@ -27,6 +26,7 @@ import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 
 import "../app/pdf/ui/style/main.css";
+
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -114,7 +114,7 @@ export default function PDFViewer({
     });
   };
 
-  let scrollToHighlightId = (highlight: AnnotatedPdfHighlights) => {};
+  let scrollToHighlightId = (highlight: AnnotatedPdfHighlights) => { };
 
   const setHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
@@ -231,6 +231,8 @@ export default function PDFViewer({
                         { ...comment, timestamp: new Date(), userId: userId },
                       ],
                       timestamp: new Date(),
+                      prompt: "", // Added prompt as null
+                      response: "", // Added response as null
                     });
                     hideTipAndSelection();
                   }}
@@ -244,9 +246,10 @@ export default function PDFViewer({
                       position,
                       comments: [],
                       timestamp: new Date(),
+                      response: "", // Added response as null
                     });
                   }}
-                  parsedPaper={parsedPaper}
+                  parsedPaper={parsedPaper ?? {}}
                   content={content}
                 />
               )}

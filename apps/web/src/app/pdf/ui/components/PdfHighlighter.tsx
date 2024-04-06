@@ -9,7 +9,6 @@ import {
   PDFViewer,
 } from "pdfjs-dist/legacy/web/pdf_viewer";
 import type {
-  IHighlight,
   LTWH,
   LTWHP,
   Position,
@@ -66,13 +65,13 @@ interface Props<T_HT> {
     ) => void,
     hideTip: () => void,
     viewportToScaled: (rect: LTWHP) => Scaled,
-    screenshot: (position: LTWH) => string,
+    screenshot: (position: LTWHP) => string,
     isScrolledTo: boolean,
   ) => JSX.Element;
-  highlights: Array<AnnotatedPdfHighlights>;
-  displayHighlights: Array<AnnotatedPdfHighlights>;
+  highlights: Array<T_HT>;
+  displayHighlights: Array<T_HT>;
   onScrollChange: () => void;
-  scrollRef: (scrollTo: (highlight: AnnotatedPdfHighlights) => void) => void;
+  scrollRef: (scrollTo: (highlight: T_HT) => void) => void;
   highlight: AnnotatedPdfHighlights | undefined;
   pdfDocument: PDFDocumentProxy;
   pdfScaleValue: string;
@@ -87,7 +86,7 @@ interface Props<T_HT> {
 
 const EMPTY_ID = "empty-id";
 
-export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
+export class PdfHighlighter<T_HT extends AnnotatedPdfHighlights> extends PureComponent<
   Props<T_HT>,
   State<T_HT>
 > {
@@ -175,7 +174,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     }
 
     if (this.props.highlight !== prevProps.highlight && this.props.highlight) {
-      this.scrollTo(this.props.highlight);
+      this.scrollTo(this.props.highlight as T_HT);
     }
   }
 
@@ -228,7 +227,9 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
     const pageNumbers = new Set<number>();
     for (const highlight of allHighlights) {
-      pageNumbers.add(highlight!.position.pageNumber);
+      if (highlight!.position.pageNumber !== undefined) {
+        pageNumbers.add(highlight!.position.pageNumber);
+      }
       for (const rect of highlight!.position.rects) {
         if (rect.pageNumber) {
           pageNumbers.add(rect.pageNumber);
@@ -247,7 +248,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
             pageNumber,
             boundingRect: highlight!.position.boundingRect,
             rects: [],
-            usePdfCoordinates: highlight!.position.usePdfCoordinates,
+            // usePdfCoordinates: highlight!.position.usePdfCoordinates,
           } as ScaledPosition,
         };
         let anyRectsOnPage = false;
@@ -255,12 +256,14 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
           if (
             pageNumber === (rect.pageNumber || highlight!.position.pageNumber)
           ) {
-            pageSpecificHighlight.position.rects.push(rect);
+            // pageSpecificHighlight.position.rects.push(rect);
             anyRectsOnPage = true;
           }
         }
         if (anyRectsOnPage || pageNumber === highlight!.position.pageNumber) {
-          groupedHighlights[pageNumber].push(pageSpecificHighlight);
+          if (groupedHighlights[pageNumber]) {
+            groupedHighlights[pageNumber] = [pageSpecificHighlight];
+          }
         }
       }
     }
@@ -312,7 +315,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     };
   }
 
-  screenshot(position: LTWH, pageNumber: number) {
+  screenshot(position: LTWHP, pageNumber: number) {
     const canvas = this.viewer.getPageView(pageNumber - 1).canvas;
 
     return getAreaAsPng(canvas, position);
@@ -382,7 +385,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   };
 
   scrollTo = (highlight: T_HT) => {
-    const { pageNumber, boundingRect, usePdfCoordinates } = highlight.position;
+    const { pageNumber, boundingRect } = highlight.position;
 
     this.viewer.container.removeEventListener("scroll", this.onScroll);
 
@@ -397,7 +400,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         { name: "XYZ" },
         ...pageViewport.convertToPdfPoint(
           0,
-          scaledToViewport(boundingRect, pageViewport, usePdfCoordinates).top -
+          scaledToViewport(boundingRect, pageViewport).top -
           scrollMargin,
         ),
         0,
@@ -515,7 +518,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     const viewportPosition: Position = {
       boundingRect,
       rects,
-      pageNumber: pages[0].number,
+      pageNumber: pages[0]?.number ?? 0,
     };
 
     const content = {

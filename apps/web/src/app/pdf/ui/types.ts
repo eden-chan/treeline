@@ -8,7 +8,7 @@ export interface LTWH {
 }
 
 export interface LTWHP extends LTWH {
-  pageNumber?: number;
+  pageNumber: number;
 }
 
 export interface Scaled {
@@ -18,7 +18,7 @@ export interface Scaled {
   y2: number;
   width: number;
   height: number;
-  pageNumber?: number;
+  pageNumber: number;
 }
 
 export interface Position {
@@ -35,8 +35,8 @@ export interface ScaledPosition {
 }
 
 export interface Content {
-  text?: string | null;
-  image?: string | null;
+  text: string;
+  image: string;
 }
 
 export interface HighlightContent {
@@ -44,8 +44,8 @@ export interface HighlightContent {
 }
 
 export interface Comment {
-  text?: string | null;
-  emoji?: string | null;
+  text: string;
+  emoji: string;
   timestamp: Date;
   userId: string;
 }
@@ -105,7 +105,7 @@ export const ScaledSchema = z.object({
   y2: z.number(),
   width: z.number(),
   height: z.number(),
-  pageNumber: z.number().optional().or(z.null()),
+  pageNumber: z.number(),
 });
 
 export const PositionSchema = z.object({
@@ -122,8 +122,8 @@ export const ScaledPositionSchema = z.object({
 });
 
 export const ContentSchema = z.object({
-  text: z.string().optional().or(z.null()),
-  image: z.string().optional().or(z.null()),
+  text: z.string(),
+  image: z.string(),
 });
 
 export const HighlightContentSchema = z.object({
@@ -131,16 +131,16 @@ export const HighlightContentSchema = z.object({
 });
 
 export const CommentSchema = z.object({
-  text: z.string().optional().or(z.null()),
-  emoji: z.string().optional().or(z.null()),
+  text: z.string(),
+  emoji: z.string(),
   timestamp: z.date(),
   userId: z.string(),
 });
 
 export const NewHighlightSchema = z.object({
   content: ContentSchema,
-  prompt: z.string().optional().or(z.null()),
-  response: z.string().optional().or(z.null()),
+  prompt: z.string(),
+  response: z.string(),
   comments: z.array(CommentSchema),
   position: ScaledPositionSchema,
   timestamp: z.date(),

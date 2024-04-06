@@ -27,6 +27,6 @@ export const parsedPapersRouter = createTRPCRouter({
         return undefined;
       }
 
-      return result;
+      return result ?? undefined;
     }),
 });

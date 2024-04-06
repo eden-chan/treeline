@@ -28,17 +28,30 @@ const getBoundingRect = (clientRects: Array<LTWHP>): LTWHP => {
       rect.pageNumber === firstPageNumber
   );
 
-  const optimal = rectsWithSizeOnFirstPage.reduce((res, rect) => {
-    return {
-      X0: Math.min(res.X0, rect.X0),
-      X1: Math.max(res.X1, rect.X1),
+  const optimal = rectsWithSizeOnFirstPage.reduce(
+    (res, rect) => {
+      return {
+        X0: Math.min(res?.X0 ?? rect.X0, rect.X0),
+        X1: Math.max(res?.X1 ?? rect.X1, rect.X1),
 
-      Y0: Math.min(res.Y0, rect.Y0),
-      Y1: Math.max(res.Y1, rect.Y1),
+        Y0: Math.min(res?.Y0 ?? rect.Y0, rect.Y0),
+        Y1: Math.max(res?.Y1 ?? rect.Y1, rect.Y1),
 
-      pageNumber: firstPageNumber,
-    };
-  }, rectsWithSizeOnFirstPage[0]);
+        pageNumber: firstPageNumber,
+      };
+    },
+    rectsWithSizeOnFirstPage[0] || {
+      X0: 0,
+      X1: 0,
+      Y0: 0,
+      Y1: 0,
+      pageNumber: 0,
+    }
+  );
+
+  if (!optimal) {
+    return { left: 0, top: 0, width: 0, height: 0, pageNumber: 0 };
+  }
 
   const { X0, X1, Y0, Y1, pageNumber } = optimal;
 
@@ -47,7 +60,7 @@ const getBoundingRect = (clientRects: Array<LTWHP>): LTWHP => {
     top: Y0,
     width: X1 - X0,
     height: Y1 - Y0,
-    pageNumber,
+    pageNumber: pageNumber ?? 0,
   };
 };
 

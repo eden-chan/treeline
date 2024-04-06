@@ -9,6 +9,7 @@ import { ObjectId } from "mongodb";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { AnnotatedPdf, AnnotatedPdfHighlights } from "@prisma/client";
+import { SignIn } from '@clerk/nextjs';
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
@@ -19,10 +20,20 @@ export default async function Page() {
 
   const urlParams = new URLSearchParams(header_url.split("?")[1]);
   const defaultPdfURL = "https://arxiv.org/pdf/1706.03762.pdf";
-  const defaultUserId = "admin";
   const pdfUrl = urlParams.get("url") || defaultPdfURL;
 
-  let userEmail = defaultUserId;
+
+  const user = await currentUser();
+
+  if (!user) {
+    return (
+      <div>
+        <SignIn />
+      </div>
+    );
+  }
+  const userEmail = user?.emailAddresses?.[0]?.emailAddress || "";
+
 
   let newUserData: AnnotatedPdf = {
     id: new ObjectId().toString(),
@@ -30,9 +41,6 @@ export default async function Page() {
     source: pdfUrl,
     userId: userEmail,
   };
-
-  const user = await currentUser();
-  userEmail = user?.emailAddresses?.[0]?.emailAddress || "";
 
   let { id, highlights, source, userId } = newUserData;
   let currentHighlight: AnnotatedPdfHighlights | undefined = undefined;

@@ -10,24 +10,24 @@ datasource db {
 
 type AnnotatedPdfHighlights {
   comments  AnnotatedPdfHighlightsComments[]
-  prompt    String?
-  response  String?
   content   AnnotatedPdfHighlightsContent
   id        String
   position  AnnotatedPdfHighlightsPosition
+  prompt    String
+  response  String
   timestamp DateTime                         @db.Date
 }
 
 type AnnotatedPdfHighlightsComments {
-  emoji     String?
-  text      String?
+  emoji     String
+  text      String
   timestamp DateTime @db.Date
   userId    String
 }
 
 type AnnotatedPdfHighlightsContent {
-  image String?
-  text  String?
+  image String
+  text  String
 }
 
 type AnnotatedPdfHighlightsPosition {
@@ -38,7 +38,7 @@ type AnnotatedPdfHighlightsPosition {
 
 type AnnotatedPdfHighlightsPositionBoundingRect {
   height     Float
-  pageNumber Int?
+  pageNumber Int
   width      Float
   x1         Float
   x2         Float
@@ -48,7 +48,7 @@ type AnnotatedPdfHighlightsPositionBoundingRect {
 
 type AnnotatedPdfHighlightsPositionRects {
   height     Float
-  pageNumber Int?
+  pageNumber Int
   width      Float
   x1         Float
   x2         Float
@@ -56,11 +56,39 @@ type AnnotatedPdfHighlightsPositionRects {
   y2         Float
 }
 
+type ParsedPapersText {
+  outline  String[]
+  sections ParsedPapersTextSections[]
+  title    String
+}
+
+type ParsedPapersTextSections {
+  facts ParsedPapersTextSectionsFacts[]
+  name  String
+  page  Int
+  text  String
+}
+
+type ParsedPapersTextSectionsFacts {
+  expectedInfo String
+  fact         String
+  nextSource   String
+  relevance    String
+}
+
 model AnnotatedPdf {
   id         String                   @id @default(auto()) @map("_id") @db.ObjectId
   highlights AnnotatedPdfHighlights[]
   source     String
   userId     String
+}
+
+model ParsedPapers {
+  id     String           @id @default(auto()) @map("_id") @db.ObjectId
+  source String
+  text   ParsedPapersText
+  title  String
+  url    String?
 }
 
 model User {

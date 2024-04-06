@@ -1,13 +1,12 @@
 import { viewportToScaled } from "../lib/coordinates";
 import React from "react";
 import {
-  IHighlight,
-  LTWH,
   LTWHP,
   Position,
   Scaled,
   ScaledPosition,
 } from "../types";
+import { AnnotatedPdfHighlights } from '@prisma/client';
 
 interface HighlightLayerProps<T_HT> {
   highlightsByPage: { [pageNumber: string]: Array<T_HT> };
@@ -19,7 +18,7 @@ interface HighlightLayerProps<T_HT> {
     setTip: (highlight: any, callback: (highlight: any) => JSX.Element) => void,
     hideTip: () => void,
     viewportToScaled: (rect: LTWHP) => Scaled,
-    screenshot: (position: LTWH) => string,
+    screenshot: (position: LTWHP) => string,
     isScrolledTo: boolean
   ) => JSX.Element;
   tip: {
@@ -29,13 +28,13 @@ interface HighlightLayerProps<T_HT> {
   scaledPositionToViewport: (scaledPosition: ScaledPosition) => Position;
   hideTipAndSelection: () => void;
   viewer: any;
-  screenshot: (position: LTWH, pageNumber: number) => string;
+  screenshot: (position: LTWHP, pageNumber: number) => string;
   showTip: (highlight: any, content: JSX.Element) => void;
   setState: (state: any) => void;
   displayOnly?: boolean;
 }
 
-export function HighlightLayer<T_HT extends IHighlight>({
+export function HighlightLayer<T_HT extends AnnotatedPdfHighlights>({
   highlightsByPage,
   scaledPositionToViewport,
   pageNumber,
