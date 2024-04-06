@@ -13,7 +13,7 @@ export default function FollowButton({
   user2: User;
 }) {
   const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState(null);
+  // const [error, setError] = useState(null);
 
   // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
   const [isFollowing, setIsFollowing] = useState(
@@ -21,13 +21,13 @@ export default function FollowButton({
   );
 
   const handleFollow = async () => {
-    setError(null);
+    // setError(null);
     try {
       startTransition(async () => {
         await followAction(user1, user2);
       });
     } catch (error) {
-      setError(error.message);
+      console.error(error);
     }
 
     setIsFollowing((isFollowing) => !isFollowing);
@@ -38,7 +38,7 @@ export default function FollowButton({
       <Button onClick={handleFollow} disabled={isPending}>
         {isFollowing ? "Following" : "Follow"}
       </Button>
-      {error && <p>{error}</p>}
+
     </>
   );
 }

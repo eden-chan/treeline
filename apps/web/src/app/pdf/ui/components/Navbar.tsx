@@ -14,7 +14,7 @@ export default function Navbar({
   loggedInUser,
 }: {
   users: User[];
-  loggedInUser: users;
+  loggedInUser: User | undefined;
 }) {
   // note: the id field is mandatory
   const items = users.map((user) => ({

@@ -4,6 +4,7 @@ import { SearchTab } from "./pdf/ui/components/SearchTab";
 import Timeline from "./pdf/ui/components/Timeline";
 import { SignIn, currentUser } from "@clerk/nextjs";
 import Navbar from "./pdf/ui/components/Navbar";
+import { User } from '@prisma/client';
 
 export default async function Page() {
   const clerkUser = await currentUser();
@@ -17,7 +18,7 @@ export default async function Page() {
   }
   // TODO: Map Clerk userid to mongodb id
   const clerkUserEmail = clerkUser?.emailAddresses[0]?.emailAddress;
-  const user = await api.user.fetchUser({
+  const user: User | undefined = await api.user.fetchUser({
     email: clerkUserEmail,
   });
 
@@ -28,7 +29,7 @@ export default async function Page() {
   // Populate timeline with highlights of user and follows.
   const timeline =
     (await api.annotatedPdf.fetchAllAnnotatedPdfs({
-      userList: [user.email, ...(user?.follows ?? [])],
+      userList: [...(user?.email ?? []), ...(user?.follows ?? [])],
     })) ?? [];
 
   return (

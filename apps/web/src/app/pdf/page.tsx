@@ -13,7 +13,7 @@ const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
 
-export default async function Page({ params }) {
+export default async function Page() {
   const headersList = headers();
   const header_url = headersList.get("x-url") || "";
 
@@ -49,7 +49,7 @@ export default async function Page({ params }) {
       userId = data.userId;
     }
 
-    console.log({ params });
+
   } catch (error) {
     console.error("Error fetching user highlights:", error);
   }
@@ -74,19 +74,19 @@ export default async function Page({ params }) {
 
   const allHighlightsWithProfile = allHighlights
     ? allHighlights.map((pdfHighlight) => {
-        return {
-          ...pdfHighlight,
-          userProfilePicture: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId,
-          )?.imageUrl,
-          firstName: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId,
-          )?.firstName,
-          lastName: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId,
-          )?.lastName,
-        } as PDFHighlightsWithProfile;
-      })
+      return {
+        ...pdfHighlight,
+        userProfilePicture: emailToPicture.find(
+          (user) => user.email === pdfHighlight.userId,
+        )?.imageUrl,
+        firstName: emailToPicture.find(
+          (user) => user.email === pdfHighlight.userId,
+        )?.firstName,
+        lastName: emailToPicture.find(
+          (user) => user.email === pdfHighlight.userId,
+        )?.lastName,
+      } as PDFHighlightsWithProfile;
+    })
     : [];
 
   return (
