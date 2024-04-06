@@ -2,6 +2,7 @@ import { Webhook } from "svix";
 import { headers } from "next/headers";
 import { WebhookEvent } from "@clerk/nextjs/server";
 import { db } from "@src/lib/db";
+import { User } from "@prisma/client";
 
 export async function POST(req: Request) {
   // You can find this in the Clerk Dashboard -> Webhooks -> choose the webhook
@@ -72,10 +73,11 @@ export async function POST(req: Request) {
     });
 
     if (doesHandleExist.length > 0) {
-      handle = doesHandleExist[0].handle + "1";
+      // append count for duplicate handle
+      handle = `${doesHandleExist[0]?.handle}${doesHandleExist.length + 1}`;
     }
 
-    const newUser = await db.user.create({
+    const newUser: User = await db.user.create({
       data: {
         first_name,
         last_name,
@@ -86,7 +88,7 @@ export async function POST(req: Request) {
         followers: [],
       },
     });
-    return new Response(newUser, { status: 200 });
+    return new Response(JSON.stringify(newUser), { status: 200 });
   }
 
   return new Response("", { status: 200 });
