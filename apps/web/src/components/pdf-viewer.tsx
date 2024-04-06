@@ -20,6 +20,7 @@ import {
   AnnotatedPdf,
   AnnotatedPdfHighlights,
   AnnotatedPdfHighlightsComments,
+  ParsedPapers,
 } from "@prisma/client";
 
 import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
@@ -54,12 +55,14 @@ export default function PDFViewer({
   userId,
   userHighlights,
   allHighlights,
+  parsedPaper
 }: {
   annotatedPdfId: string;
   loadedSource: string;
   userId: string;
   userHighlights: AnnotatedPdfHighlights[];
   allHighlights: PDFHighlightsWithProfile[];
+  parsedPaper: ParsedPapers | undefined;
 }): JSX.Element {
   const utils = clientApi.useUtils();
   const mutation = clientApi.annotatedPdf.upsertAnnotatedPdf.useMutation({
@@ -88,11 +91,7 @@ export default function PDFViewer({
       });
     },
   });
-  const highlights =
-    clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
-      userId: userId,
-      source: loadedSource,
-    }).data?.highlights || userHighlights;
+  const highlights = userHighlights;
   const [highlight, setHighlight] = useState<
     AnnotatedPdfHighlights | undefined
   >(undefined);
@@ -125,9 +124,9 @@ export default function PDFViewer({
     }
   };
 
-  const parsedPaper = clientApi.parsedPapers.fetchParsedPdf.useQuery({
-    source: loadedSource,
-  })?.data;
+  // const parsedPaper = clientApi.parsedPapers.fetchParsedPdf.useQuery({
+  //   source: loadedSource,
+  // })?.data;
 
   console.log(parsedPaper);
 
@@ -147,6 +146,7 @@ export default function PDFViewer({
   ) => {
     const id = uuidv4();
     // If the highlights object doesn't exist, create it
+
     mutation.mutate({
       userId: userId,
       highlights: [{ ...highlight, id }, ...(highlights ?? [])],
@@ -174,16 +174,24 @@ export default function PDFViewer({
         ...highlight,
         response: response,
       };
-
-      mutation.mutate({
-        userId: userId,
-        highlights: [
-          newHighlight,
-          ...highlights.filter((h) => h.id !== highlight.id),
-        ],
-        source: loadedSource,
-        id: annotatedPdfId,
-      });
+      if (!isLoading) {
+        console.log('ADD THIS ONCE PLZ    ')
+        if (response === '') {
+          console.log('DONT SAVE')
+          return;
+        }
+        mutation.mutate({
+          userId: userId,
+          highlights: [
+            newHighlight,
+            ...highlights.filter((h) => h.id !== highlight.id),
+          ],
+          source: loadedSource,
+          id: annotatedPdfId,
+        });
+      } else {
+        console.log("Loading");
+      }
 
       setHighlight(newHighlight);
     }

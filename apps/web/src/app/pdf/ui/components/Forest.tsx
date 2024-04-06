@@ -42,12 +42,12 @@ export function Forest({ highlight, returnHome }: Props) {
       data: {
         ...(highlight?.prompt
           ? {
-              question: highlight?.prompt,
-              answer: highlight?.response,
-            }
+            question: highlight?.prompt,
+            answer: highlight?.response,
+          }
           : {
-              label: highlight?.comments[0]?.text,
-            }),
+            label: highlight?.comments?.[0]?.text,
+          }),
       },
       type: highlight.prompt ? "question" : "input",
     },

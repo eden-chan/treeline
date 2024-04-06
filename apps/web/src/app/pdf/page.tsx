@@ -80,6 +80,10 @@ export default async function Page() {
     userList: userEmails,
   });
 
+  const parsedPaper = await api.parsedPapers.fetchParsedPdf({
+    source: pdfUrl,
+  });
+
   const allHighlightsWithProfile = allHighlights
     ? allHighlights.map((pdfHighlight) => {
       return {
@@ -100,6 +104,7 @@ export default async function Page() {
   return (
     <TRPCReactProvider>
       <PDFViewer
+        parsedPaper={parsedPaper}
         annotatedPdfId={id}
         loadedSource={source}
         userId={userId}

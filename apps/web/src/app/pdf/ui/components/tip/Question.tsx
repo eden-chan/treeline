@@ -5,11 +5,12 @@ import { useAskHighlight } from "@src/context/ask-highlight-context";
 import { api } from "@src/trpc/server";
 
 import "../../style/Tip.css";
+import { ParsedPapers } from '@prisma/client';
 
 type QuestionProps = {
   handleSubmit: (prompt: string) => void;
   content: { text?: string; emoji?: string };
-  parsedPaper: object;
+  parsedPaper: ParsedPapers | undefined;
 };
 
 export const Question = ({
