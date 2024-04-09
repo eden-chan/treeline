@@ -30,6 +30,7 @@ export default authMiddleware({
     requestHeaders.set("x-url", req.url);
 
     if (!auth.userId && !auth.isPublicRoute) {
+      console.log("redirect to sign in", req.url);
       return redirectToSignIn({ returnBackUrl: req.url });
     }
     // Redirect signed in users to organization selection page if they are not active in an organization
@@ -42,7 +43,6 @@ export default authMiddleware({
     //   return NextResponse.redirect(orgSelection);
     // }
     // If the user is signed in and trying to access a protected route, allow them to access route
-
     if (auth.userId && !auth.isPublicRoute) {
       return NextResponse.next({
         request: {
@@ -51,14 +51,14 @@ export default authMiddleware({
         },
       });
     }
-    
+
     // Allow users visiting public routes to access them
     return NextResponse.next({
       request: {
-          // Apply new request headers
-          headers: requestHeaders,
-        },
-      });
+        // Apply new request headers
+        headers: requestHeaders,
+      },
+    });
   },
 });
 

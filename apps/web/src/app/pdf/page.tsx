@@ -5,40 +5,50 @@ import { PDFHighlightsWithProfile } from "./ui";
 
 import dynamic from "next/dynamic";
 import { ObjectId } from "mongodb";
-import { clerkClient, currentUser } from "@clerk/nextjs/server";
+import { User, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { AnnotatedPdf } from "@prisma/client";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
+import { RedirectToSignIn } from '@clerk/nextjs';
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
 
-export default async function Page({ params }) {
+export default async function Page() {
   const headersList = headers();
   const header_url = headersList.get("x-url") || "";
 
   const urlParams = new URLSearchParams(header_url.split("?")[1]);
   const defaultPdfURL = "https://arxiv.org/pdf/1706.03762.pdf";
-  const defaultUserId = "admin";
-  const pdfUrl = urlParams.get("url") || defaultPdfURL;
+  let pdfUrl: URL;
 
-  let userEmail = defaultUserId;
+  try {
+    pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
+  } catch (error) {
+    console.error(error)
+    return <div>Not a valid URL</div>;
+  }
+
+  const user: User | null = await currentUser();
+  const userEmail: string | undefined = user?.emailAddresses[0]?.emailAddress
+
+  if (!user || !userEmail) {
+    return <RedirectToSignIn redirectUrl={`/pdf?url=${pdfUrl.href}`} />
+  }
 
   let newUserData: AnnotatedPdf = {
     id: new ObjectId().toString(),
     highlights: [],
-    source: pdfUrl,
+    source: pdfUrl.href,
     userId: userEmail,
   };
 
-  const user = await currentUser();
-  userEmail = user?.emailAddresses?.[0]?.emailAddress || "";
 
   let { id, highlights, source, userId } = newUserData;
   try {
     const data = await api.annotatedPdf.fetchAnnotatedPdf({
       userId: userEmail,
-      source: pdfUrl,
+      source: pdfUrl.href,
     });
 
     if (data) {
@@ -48,7 +58,6 @@ export default async function Page({ params }) {
       userId = data.userId;
     }
 
-    console.log({ params });
   } catch (error) {
     console.error("Error fetching user highlights:", error);
   }
@@ -67,25 +76,25 @@ export default async function Page({ params }) {
   });
 
   const allHighlights = await api.annotatedPdf.fetchAllAnnotatedPdfs({
-    source: pdfUrl,
+    source: pdfUrl.href,
     userList: userEmails,
   });
 
   const allHighlightsWithProfile = allHighlights
     ? allHighlights.map((pdfHighlight) => {
-        return {
-          ...pdfHighlight,
-          userProfilePicture: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId
-          )?.imageUrl,
-          firstName: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId
-          )?.firstName,
-          lastName: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId
-          )?.lastName,
-        } as PDFHighlightsWithProfile;
-      })
+      return {
+        ...pdfHighlight,
+        userProfilePicture: emailToPicture.find(
+          (user) => user.email === pdfHighlight.userId
+        )?.imageUrl,
+        firstName: emailToPicture.find(
+          (user) => user.email === pdfHighlight.userId
+        )?.firstName,
+        lastName: emailToPicture.find(
+          (user) => user.email === pdfHighlight.userId
+        )?.lastName,
+      } as PDFHighlightsWithProfile;
+    })
     : [];
 
   return (
