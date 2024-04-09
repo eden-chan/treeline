@@ -7,8 +7,8 @@ import dynamic from "next/dynamic";
 import { ObjectId } from "mongodb";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
-import { AnnotatedPdf, AnnotatedPdfHighlight } from "@prisma/client";
-import { Providers } from "@src/context/providers";
+import { AnnotatedPdf } from "@prisma/client";
+import { AskHighlightProvider } from "@src/context/ask-highlight-context";
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
@@ -55,7 +55,7 @@ export default async function Page({ params }) {
 
   const users = await clerkClient.users.getUserList();
   const userEmails = users.map(
-    (user) => user.emailAddresses[0]?.emailAddress ?? "",
+    (user) => user.emailAddresses[0]?.emailAddress ?? ""
   );
   const emailToPicture = users.map((user) => {
     return {
@@ -76,20 +76,24 @@ export default async function Page({ params }) {
         return {
           ...pdfHighlight,
           userProfilePicture: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId,
+            (user) => user.email === pdfHighlight.userId
           )?.imageUrl,
           firstName: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId,
+            (user) => user.email === pdfHighlight.userId
           )?.firstName,
           lastName: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId,
+            (user) => user.email === pdfHighlight.userId
           )?.lastName,
         } as PDFHighlightsWithProfile;
       })
     : [];
 
   return (
-    <Providers annotatedPdfId={id} userId={userId} loadedSource={source}>
+    <AskHighlightProvider
+      annotatedPdfId={id}
+      userId={userId}
+      loadedSource={source}
+    >
       <PDFViewer
         annotatedPdfId={id}
         loadedSource={source}
@@ -97,6 +101,6 @@ export default async function Page({ params }) {
         userHighlights={highlights}
         allHighlights={allHighlightsWithProfile}
       />
-    </Providers>
+    </AskHighlightProvider>
   );
 }
