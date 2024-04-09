@@ -24,6 +24,8 @@ const readingSection = {
 
 import { useMemo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
+import LearningActivityCalendar from '@src/components/activity-calendar';
+import BasicRadarChart from '@src/components/radar-graph';
 
 const curiousPeopleSection = {
   title: "Some curious people",
@@ -67,7 +69,7 @@ export default async function Profile({
       <div className="flex">
         <nav className="w-1/5 p-6">
           <div className="w-10">
-            {" "}
+
             {/* Fixed width */}
             <Avatar>
               <AvatarImage src={searchedUserImageUrl} />
@@ -75,6 +77,9 @@ export default async function Profile({
             </Avatar>
             <FollowButton user1={loggedInUser} user2={searchedUser} />
           </div>
+          <LearningActivityCalendar />
+          <BasicRadarChart />
+
           <ul className="space-y-1">
             {navLinks.map((link) => (
               <li key={link.name}>
