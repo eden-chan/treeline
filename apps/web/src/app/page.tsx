@@ -4,7 +4,6 @@ import { SearchTab } from "./pdf/ui/components/SearchTab";
 import Timeline from "./pdf/ui/components/Timeline";
 import { SignIn, currentUser } from "@clerk/nextjs";
 import Navbar from "./pdf/ui/components/Navbar";
-import LearningActivityCalendar from '@src/components/activity-calendar';
 
 
 export default async function Page() {
@@ -37,7 +36,6 @@ export default async function Page() {
   return (
     <main className="h-screen w-screen gap-0">
       <div className="max-w-4xl mx-auto py-8 px-4 text-black">
-        <LearningActivityCalendar />
         <Navbar users={followedUsers} loggedInUser={user} />
         <SearchTab />
         <Timeline articles={timeline} />
