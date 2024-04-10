@@ -12,7 +12,7 @@ export type ContextProps = {
     React.SetStateAction<AnnotatedPdfHighlight | null>
   >;
   createAskHighlight: (
-    highlight: Omit<AnnotatedPdfHighlight, "id">,
+    highlight: Omit<AnnotatedPdfHighlight, "id">
   ) => Promise<AnnotatedPdfHighlight | undefined>;
 } & ReturnType<typeof useChat>;
 
@@ -34,7 +34,32 @@ export const AskHighlightProvider: FC<{
 }> = ({ annotatedPdfId, userId, loadedSource, children }) => {
   const [currentHighlight, setCurrentHighlight] =
     React.useState<AnnotatedPdfHighlight | null>(null);
-  const { messages, setMessages, append, isLoading, ...chat } = useChat();
+  const onFinish = (message: Message) => {
+    // Update DB once entire response is received
+    const newHighlight = {
+      ...currentHighlight,
+      response: message.content,
+    };
+
+    setCurrentHighlight(newHighlight);
+
+    mutation.mutate({
+      userId: userId,
+      highlights: [
+        newHighlight,
+        ...(highlights
+          ? highlights.filter((h) => h.id !== currentHighlightRef.current.id)
+          : []),
+      ],
+      source: loadedSource,
+      id: annotatedPdfId,
+    });
+
+    setMessages([]);
+  };
+  const { messages, setMessages, append, isLoading, ...chat } = useChat({
+    onFinish: onFinish,
+  });
 
   const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
     userId: userId,
@@ -55,7 +80,7 @@ export const AskHighlightProvider: FC<{
 
       utils.annotatedPdf.fetchAnnotatedPdf.setData(
         newData,
-        (oldData) => newData as AnnotatedPdf,
+        (oldData) => newData as AnnotatedPdf
       );
 
       return { previousData };
@@ -69,7 +94,7 @@ export const AskHighlightProvider: FC<{
   });
 
   const createAskHighlight = async (
-    highlight: AnnotatedPdfHighlight,
+    highlight: AnnotatedPdfHighlight
   ): Promise<AnnotatedPdfHighlight | undefined> => {
     if (!highlight.prompt) return;
 
@@ -90,7 +115,7 @@ ${highlight.content.text}`
         content: promptWithContext,
         createdAt: new Date(),
       },
-      {},
+      {}
     );
 
     // Add node to DB
@@ -124,22 +149,6 @@ ${highlight.content.text}`
 
     // Update highlight as messages stream in
     setCurrentHighlight(newHighlight);
-
-    // Update DB once entire response is received
-    if (!isLoading) {
-      mutation.mutate({
-        userId: userId,
-        highlights: [
-          newHighlight,
-          ...(highlights
-            ? highlights.filter((h) => h.id !== currentHighlight.id)
-            : []),
-        ],
-        source: loadedSource,
-        id: annotatedPdfId,
-      });
-      setMessages([]);
-    }
   }, [messages, isLoading]);
 
   const value = {
