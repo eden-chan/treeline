@@ -5,7 +5,15 @@ import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { HighlightWithCurriculumNodeSchema } from "@src/app/pdf/ui/types";
 
-export type HighlightWithRelations = Omit<
+export type CurriculumNodeWithRelations = CurriculumNode & {
+  children: CurriculumNodeWithRelations[];
+};
+
+export type HighlightWithRelations = Highlight & {
+  node?: CurriculumNodeWithRelations | null;
+}
+
+export type NewHighlightWithRelationsInput = Omit<
   Highlight & {
     node?: Omit<CurriculumNode, "id" | "parentId"> | null;
   },

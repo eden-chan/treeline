@@ -44,8 +44,8 @@ export interface HighlightContent {
 }
 
 export interface Comment {
-  text?: string | null;
-  emoji?: string | null;
+  text: string | null;
+  emoji: string | null;
   timestamp: Date;
   userId: string;
 }
@@ -162,37 +162,6 @@ export const HighlightWithCurriculumNodeSchema = HighlightSchema.extend({
 }).omit({ nodeId: true });
 
 export const IHighlightSchema = HighlightSchema.extend({
-  id: z.string(),
-});
-
-export const ViewportHighlightSchema = z.object({
-  content: ContentSchema,
-  comments: z.array(CommentSchema),
-  position: PositionSchema,
-});
-
-export const ViewportSchema = z.object({
-  convertToPdfPoint: z
-    .function()
-    .args(z.number(), z.number())
-    .returns(z.array(z.number())),
-  convertToViewportRectangle: z
-    .function()
-    .args(z.array(z.number()))
-    .returns(z.array(z.number())),
-  width: z.number(),
-  height: z.number(),
-});
-
-export const PageSchema = z.object({
-  node: z.any(), // HTMLElement type is not directly supported by Zod, consider using z.instanceof(HTMLElement) if running in a browser environment
-  number: z.number(),
-});
-
-export const PDFHighlightsSchema = z.object({
-  highlights: z.array(IHighlightSchema),
-  source: z.string(),
-  userId: z.string(),
   id: z.string(),
 });
 

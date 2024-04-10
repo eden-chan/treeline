@@ -21,7 +21,7 @@ import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 
 import "../app/pdf/ui/style/main.css";
-import { HighlightWithRelations } from "@src/server/api/routers/highlight";
+import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -154,7 +154,7 @@ export default function PDFViewer({
     };
   }, [highlights, scrollToHighlightId]);
 
-  const createCommentHighlight = async (highlight: HighlightWithRelations) => {
+  const createCommentHighlight = async (highlight: NewHighlightWithRelationsInput) => {
     highlightMutation.mutate({
       highlight,
     });
