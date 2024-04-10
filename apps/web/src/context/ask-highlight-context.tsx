@@ -1,5 +1,5 @@
 "use client";
-import React, { FC, ReactNode, useContext, useEffect, useState } from "react";
+import React, { FC, ReactNode, useContext, useEffect, useRef } from "react";
 import { useChat, Message, CreateMessage } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -8,9 +8,7 @@ import { clientApi } from "@src/trpc/react";
 
 export type ContextProps = {
   currentHighlight: AnnotatedPdfHighlight | null;
-  setCurrentHighlight: React.Dispatch<
-    React.SetStateAction<AnnotatedPdfHighlight | null>
-  >;
+  setCurrentHighlight: (highlight: AnnotatedPdfHighlight | null) => void;
   createAskHighlight: (
     highlight: Omit<AnnotatedPdfHighlight, "id">
   ) => Promise<AnnotatedPdfHighlight | undefined>;
@@ -32,15 +30,25 @@ export const AskHighlightProvider: FC<{
   loadedSource: string;
   children: ReactNode;
 }> = ({ annotatedPdfId, userId, loadedSource, children }) => {
-  const [currentHighlight, setCurrentHighlight] =
-    React.useState<AnnotatedPdfHighlight | null>(null);
+
+  const currentHighlightRef = useRef<AnnotatedPdfHighlight | null>(null);
+  const setCurrentHighlight = (highlight: AnnotatedPdfHighlight | null) => {
+    currentHighlightRef.current = highlight;
+  };
+
   const onFinish = (message: Message) => {
     // Update DB once entire response is received
+    if (!currentHighlightRef.current) {
+      console.log("No current highlight reference found.");
+      return;
+    }
+
     const newHighlight = {
-      ...currentHighlight,
+      ...currentHighlightRef.current,
       response: message.content,
     };
 
+    console.log('set current highlight', newHighlight, currentHighlightRef.current)
     setCurrentHighlight(newHighlight);
 
     mutation.mutate({
@@ -48,7 +56,7 @@ export const AskHighlightProvider: FC<{
       highlights: [
         newHighlight,
         ...(highlights
-          ? highlights.filter((h) => h.id !== currentHighlightRef.current.id)
+          ? highlights.filter((h) => h.id !== currentHighlightRef.current?.id)
           : []),
       ],
       source: loadedSource,
@@ -104,10 +112,6 @@ Answer this question with the following context:
 ${highlight.content.text}`
       : highlight.prompt;
 
-    if (currentHighlight) {
-      // Construct message history
-    }
-
     // Query AI for response
     append(
       {
@@ -120,21 +124,22 @@ ${highlight.content.text}`
 
     // Add node to DB
     const id = uuidv4();
+    const newHighlight = { ...highlight, id };
     mutation.mutate({
       userId: userId,
-      highlights: [{ ...highlight, id }, ...(highlights ?? [])],
+      highlights: [newHighlight, ...(highlights ?? [])],
       source: loadedSource,
       id: annotatedPdfId,
     });
 
-    setCurrentHighlight({ ...highlight, id });
+    setCurrentHighlight(newHighlight);
 
-    return { ...highlight, id };
+    return newHighlight;
   };
 
   // Update the highlight as the AI response streams in
   useEffect(() => {
-    if (messages.length < 2 || !currentHighlight?.prompt) return;
+    if (messages.length < 2 || !currentHighlightRef.current?.prompt) return;
     if (messages[messages.length - 1]?.role === "user") return;
 
     const question = messages[messages.length - 2]?.content;
@@ -143,7 +148,7 @@ ${highlight.content.text}`
     if (!question || !response) return;
 
     const newHighlight = {
-      ...currentHighlight,
+      ...currentHighlightRef.current,
       response: response,
     };
 
@@ -152,7 +157,7 @@ ${highlight.content.text}`
   }, [messages, isLoading]);
 
   const value = {
-    currentHighlight,
+    currentHighlight: currentHighlightRef.current,
     setCurrentHighlight,
     messages,
     setMessages,
