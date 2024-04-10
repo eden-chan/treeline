@@ -39,7 +39,7 @@ export const AskHighlightProvider: FC<{
   const onFinish = (message: Message) => {
     // Update DB once entire response is received
     if (!currentHighlightRef.current) {
-      console.log("No current highlight reference found.");
+      console.debug("No current highlight reference found.");
       return;
     }
 
@@ -48,7 +48,7 @@ export const AskHighlightProvider: FC<{
       response: message.content,
     };
 
-    console.log('set current highlight', newHighlight, currentHighlightRef.current)
+
     setCurrentHighlight(newHighlight);
 
     mutation.mutate({
@@ -66,7 +66,7 @@ export const AskHighlightProvider: FC<{
     setMessages([]);
   };
   const { messages, setMessages, append, isLoading, ...chat } = useChat({
-    onFinish: onFinish,
+    onFinish
   });
 
   const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
