@@ -1,12 +1,12 @@
 import React from "react";
-import { AnnotatedPdfHighlight } from "@prisma/client";
+import { Highlight } from "@prisma/client";
 
 interface Props {
-  highlights: Array<AnnotatedPdfHighlight>;
+  highlights: Array<Highlight>;
   resetHighlights: () => void;
 }
 
-const updateHash = (highlight: AnnotatedPdfHighlight) => {
+const updateHash = (highlight: Highlight) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 

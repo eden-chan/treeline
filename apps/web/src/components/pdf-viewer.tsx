@@ -7,7 +7,7 @@ import {
   PdfLoader,
   PdfHighlighter,
   Tip,
-  Highlight,
+  Highlight as PDFHighlight,
   Forest,
   Popup,
   AreaHighlight,
@@ -15,16 +15,13 @@ import {
   Sidebar,
   PDFHighlightsWithProfile,
 } from "../app/pdf/ui";
-import {
-  AnnotatedPdf,
-  AnnotatedPdfHighlight,
-  AnnotatedPdfHighlightComment,
-} from "@prisma/client";
+import { Highlight, HighlightComment } from "@prisma/client";
 
 import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 
 import "../app/pdf/ui/style/main.css";
+import { HighlightWithRelations } from "@src/server/api/routers/highlight";
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -33,11 +30,7 @@ const resetHash = () => {
   document.location.hash = "";
 };
 
-const HighlightPopup = ({
-  comments,
-}: {
-  comments: AnnotatedPdfHighlightComment[];
-}) =>
+const HighlightPopup = ({ comments }: { comments: HighlightComment[] }) =>
   comments.map((comment, index) =>
     comment.text ? (
       <div key={`highlight-comment-${index}`} className="Highlight__popup">
@@ -56,11 +49,13 @@ export default function PDFViewer({
   annotatedPdfId: string;
   loadedSource: string;
   userId: string;
-  userHighlights: AnnotatedPdfHighlight[];
+  userHighlights: Highlight[];
   allHighlights: PDFHighlightsWithProfile[];
 }): JSX.Element {
   const utils = clientApi.useUtils();
-  const mutation = clientApi.annotatedPdf.upsertAnnotatedPdf.useMutation({
+  const annotatedPdfMutation =
+    clientApi.annotatedPdf.upsertAnnotatedPdf.useMutation();
+  const highlightMutation = clientApi.highlight.createHighlight.useMutation({
     onMutate: async (newData) => {
       await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
         userId: userId,
@@ -73,16 +68,40 @@ export default function PDFViewer({
       });
 
       utils.annotatedPdf.fetchAnnotatedPdf.setData(
-        newData,
-        (oldData) => newData as AnnotatedPdf,
+        {
+          userId: userId,
+          source: loadedSource,
+        },
+        (oldData) => {
+          if (!oldData) return oldData;
+
+          const nodeId = uuidv4();
+          const newNode = {
+            ...newData.highlight.node,
+            id: nodeId,
+            children: [],
+          };
+          const newHighlight = {
+            ...newData.highlight,
+            id: uuidv4(),
+            nodeId,
+            node: newNode,
+            annotatedPdfId: annotatedPdfId,
+          };
+
+          return {
+            ...oldData,
+            highlights: [newHighlight, ...oldData.highlights],
+          };
+        },
       );
 
       return { previousData };
     },
     onSuccess: (input) => {
       utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
-        userId: input?.userId,
-        source: input?.source,
+        userId: userId,
+        source: loadedSource,
       });
     },
   });
@@ -91,9 +110,7 @@ export default function PDFViewer({
       userId: userId,
       source: loadedSource,
     }).data?.highlights || userHighlights;
-  const [friendHighlights, setFriendHighlights] = useState<
-    AnnotatedPdfHighlight[]
-  >([]);
+  const [friendHighlights, setFriendHighlights] = useState<Highlight[]>([]);
   const { currentHighlight, setCurrentHighlight, createAskHighlight } =
     useAskHighlight();
 
@@ -102,7 +119,7 @@ export default function PDFViewer({
   };
 
   const resetHighlights = () => {
-    mutation.mutate({
+    annotatedPdfMutation.mutate({
       userId: userId,
       highlights: [],
       source: loadedSource,
@@ -110,7 +127,7 @@ export default function PDFViewer({
     });
   };
 
-  let scrollToHighlightId = (highlight: AnnotatedPdfHighlight) => {};
+  let scrollToHighlightId = (highlight: Highlight) => {};
 
   const setHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
@@ -137,16 +154,9 @@ export default function PDFViewer({
     };
   }, [highlights, scrollToHighlightId]);
 
-  const createCommentHighlight = async (
-    highlight: Omit<AnnotatedPdfHighlight, "id">,
-  ) => {
-    const id = uuidv4();
-    // If the highlights object doesn't exist, create it
-    mutation.mutate({
-      userId: userId,
-      highlights: [{ ...highlight, id }, ...(highlights ?? [])],
-      source: loadedSource,
-      id: annotatedPdfId,
+  const createCommentHighlight = async (highlight: HighlightWithRelations) => {
+    highlightMutation.mutate({
+      highlight,
     });
   };
 
@@ -187,14 +197,13 @@ export default function PDFViewer({
                         text: content?.text ?? "",
                         image: content?.image ?? "",
                       },
-                      prompt: null,
-                      response: null,
-                      nodes: [],
+                      comment: {
+                        ...comment,
+                        timestamp: new Date(),
+                        userId,
+                      },
+                      annotatedPdfId,
                       position,
-                      comments: [
-                        { ...comment, timestamp: new Date(), userId: userId },
-                      ],
-                      timestamp: new Date(),
                     });
                     hideTipAndSelection();
                   }}
@@ -204,12 +213,15 @@ export default function PDFViewer({
                         text: content?.text ?? "",
                         image: content?.image ?? "",
                       },
-                      prompt,
-                      response: null,
-                      nodes: [],
+                      comment: null,
+                      annotatedPdfId,
+                      node: {
+                        prompt,
+                        response: null,
+                        timestamp: new Date(),
+                        comments: [],
+                      },
                       position,
-                      comments: [],
-                      timestamp: new Date(),
                     });
                   }}
                   parsedPaper={parsedPaper}
@@ -230,7 +242,7 @@ export default function PDFViewer({
                 );
 
                 const component = isTextHighlight ? (
-                  <Highlight
+                  <PDFHighlight
                     isScrolledTo={isScrolledTo}
                     position={highlight.position}
                     comments={highlight.comments}

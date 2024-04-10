@@ -7,13 +7,13 @@ import dynamic from "next/dynamic";
 import { ObjectId } from "mongodb";
 import { clerkClient, currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
-import { AnnotatedPdf, AnnotatedPdfHighlight } from "@prisma/client";
+import { AnnotatedPdf, Highlight } from "@prisma/client";
 import { Providers } from "@src/context/providers";
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
 
-export default async function Page({ params }) {
+export default async function Page() {
   const headersList = headers();
   const header_url = headersList.get("x-url") || "";
 
@@ -24,7 +24,7 @@ export default async function Page({ params }) {
 
   let userEmail = defaultUserId;
 
-  let newUserData: AnnotatedPdf = {
+  let newUserData: AnnotatedPdf & { highlights: Highlight[] } = {
     id: new ObjectId().toString(),
     highlights: [],
     source: pdfUrl,
@@ -46,9 +46,14 @@ export default async function Page({ params }) {
       highlights = data.highlights;
       source = data.source;
       userId = data.userId;
+    } else if (userEmail) {
+      await api.annotatedPdf.upsertAnnotatedPdf({
+        id,
+        highlights,
+        source,
+        userId: userEmail,
+      });
     }
-
-    console.log({ params });
   } catch (error) {
     console.error("Error fetching user highlights:", error);
   }

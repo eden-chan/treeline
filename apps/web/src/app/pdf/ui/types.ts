@@ -105,7 +105,7 @@ export const ScaledSchema = z.object({
   y2: z.number(),
   width: z.number(),
   height: z.number(),
-  pageNumber: z.number().optional().or(z.null()),
+  pageNumber: z.number().or(z.null()),
 });
 
 export const PositionSchema = z.object({
@@ -118,12 +118,12 @@ export const ScaledPositionSchema = z.object({
   boundingRect: ScaledSchema,
   rects: z.array(ScaledSchema),
   pageNumber: z.number(),
-  usePdfCoordinates: z.boolean().optional().or(z.null()),
+  usePdfCoordinates: z.boolean().or(z.null()),
 });
 
 export const ContentSchema = z.object({
-  text: z.string().optional().or(z.null()),
-  image: z.string().optional().or(z.null()),
+  text: z.string().or(z.null()),
+  image: z.string().or(z.null()),
 });
 
 export const HighlightContentSchema = z.object({
@@ -131,22 +131,37 @@ export const HighlightContentSchema = z.object({
 });
 
 export const CommentSchema = z.object({
-  text: z.string().optional().or(z.null()),
-  emoji: z.string().optional().or(z.null()),
+  text: z.string().or(z.null()),
+  emoji: z.string().or(z.null()),
   timestamp: z.date(),
   userId: z.string(),
 });
 
-export const NewHighlightSchema = z.object({
-  content: ContentSchema,
-  prompt: z.string().optional().or(z.null()),
-  response: z.string().optional().or(z.null()),
+export const CurriculumNodeSchema = z.object({
   comments: z.array(CommentSchema),
-  position: ScaledPositionSchema,
+  prompt: z.string().or(z.null()),
+  response: z.string().or(z.null()),
   timestamp: z.date(),
 });
 
-export const IHighlightSchema = NewHighlightSchema.extend({
+export const ICurriculumNodeSchema = CurriculumNodeSchema.extend({
+  id: z.string(),
+  children: z.array(z.any()),
+});
+
+export const HighlightSchema = z.object({
+  content: ContentSchema,
+  position: ScaledPositionSchema,
+  comment: CommentSchema.or(z.null()),
+  nodeId: z.string().or(z.null()),
+  annotatedPdfId: z.string(),
+});
+
+export const HighlightWithCurriculumNodeSchema = HighlightSchema.extend({
+  node: CurriculumNodeSchema.or(z.undefined()).or(z.null()),
+}).omit({ nodeId: true });
+
+export const IHighlightSchema = HighlightSchema.extend({
   id: z.string(),
 });
 

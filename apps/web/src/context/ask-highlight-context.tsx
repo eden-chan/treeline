@@ -1,20 +1,25 @@
 "use client";
 import React, { FC, ReactNode, useContext, useEffect, useState } from "react";
-import { useChat, Message, CreateMessage } from "ai/react";
+import { useChat } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
 
-import { AnnotatedPdf, AnnotatedPdfHighlight } from "@prisma/client";
+import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
+import { FOLLOW_UP_PROMPT } from "@src/utils/constants";
+import { HighlightWithRelations } from "@src/server/api/routers/highlight";
 
 export type ContextProps = {
-  currentHighlight: AnnotatedPdfHighlight | null;
-  setCurrentHighlight: React.Dispatch<
-    React.SetStateAction<AnnotatedPdfHighlight | null>
-  >;
+  currentHighlight: Highlight | null;
+  setCurrentHighlight: React.Dispatch<React.SetStateAction<Highlight | null>>;
   createAskHighlight: (
-    highlight: Omit<AnnotatedPdfHighlight, "id">,
-  ) => Promise<AnnotatedPdfHighlight | undefined>;
+    light: HighlightWithRelations,
+  ) => Promise<Highlight | undefined>;
 } & ReturnType<typeof useChat>;
+
+enum LoadingState {
+  LOADING_ASK,
+  LOADING_FOLLOWUP,
+}
 
 export const useAskHighlight = () => {
   return useContext(AskHighlightContext);
@@ -32,8 +37,12 @@ export const AskHighlightProvider: FC<{
   loadedSource: string;
   children: ReactNode;
 }> = ({ annotatedPdfId, userId, loadedSource, children }) => {
-  const [currentHighlight, setCurrentHighlight] =
-    React.useState<AnnotatedPdfHighlight | null>(null);
+  const [currentHighlight, setCurrentHighlight] = useState<Highlight | null>(
+    null,
+  );
+  const [loadingState, setLoadingState] = useState<LoadingState>(
+    LoadingState.LOADING_ASK,
+  );
   const { messages, setMessages, append, isLoading, ...chat } = useChat();
 
   const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
@@ -69,45 +78,46 @@ export const AskHighlightProvider: FC<{
   });
 
   const createAskHighlight = async (
-    highlight: AnnotatedPdfHighlight,
-  ): Promise<AnnotatedPdfHighlight | undefined> => {
-    if (!highlight.prompt) return;
+    highlight: HighlightWithRelations,
+  ): Promise<Highlight | undefined> => {
+    if (!highlight.node?.prompt) return;
 
     const promptWithContext = highlight.content?.text
-      ? `${highlight.prompt}
+      ? `${highlight.node.prompt}
 Answer this question with the following context:
 ${highlight.content.text}`
-      : highlight.prompt;
+      : highlight.node.prompt;
 
     if (currentHighlight) {
       // Construct message history
     }
 
     // Query AI for response
-    append(
-      {
-        role: "user",
-        content: promptWithContext,
-        createdAt: new Date(),
-      },
-      {},
-    );
+    // append(
+    //   {
+    //     role: "user",
+    //     content: promptWithContext,
+    //     createdAt: new Date(),
+    //   },
+    //   {},
+    // );
+    //
+    // // Add node to DB
+    // const id = uuidv4();
+    // mutation.mutate({
+    //   userId: userId,
+    //   highlights: [{ ...highlight, id }, ...(highlights ?? [])],
+    //   source: loadedSource,
+    //   id: annotatedPdfId,
+    // });
+    //
+    // setCurrentHighlight({ ...highlight, id });
 
-    // Add node to DB
-    const id = uuidv4();
-    mutation.mutate({
-      userId: userId,
-      highlights: [{ ...highlight, id }, ...(highlights ?? [])],
-      source: loadedSource,
-      id: annotatedPdfId,
-    });
-
-    setCurrentHighlight({ ...highlight, id });
-
-    return { ...highlight, id };
+    // return { ...highlight, id };
   };
 
   // Update the highlight as the AI response streams in
+  // TODO: Update API so we don't rely on useEffect anymore. Just work off of callbacks once the response is done streaming
   useEffect(() => {
     if (messages.length < 2 || !currentHighlight?.prompt) return;
     if (messages[messages.length - 1]?.role === "user") return;
@@ -117,28 +127,74 @@ ${highlight.content.text}`
 
     if (!question || !response) return;
 
-    const newHighlight = {
-      ...currentHighlight,
-      response: response,
-    };
+    if (loadingState === LoadingState.LOADING_ASK) {
+      const newHighlight = {
+        ...currentHighlight,
+        response: response,
+      };
 
-    // Update highlight as messages stream in
-    setCurrentHighlight(newHighlight);
+      // Update highlight as messages stream in
+      setCurrentHighlight(newHighlight);
 
-    // Update DB once entire response is received
-    if (!isLoading) {
-      mutation.mutate({
-        userId: userId,
-        highlights: [
-          newHighlight,
-          ...(highlights
-            ? highlights.filter((h) => h.id !== currentHighlight.id)
-            : []),
-        ],
-        source: loadedSource,
-        id: annotatedPdfId,
-      });
-      setMessages([]);
+      if (!isLoading) {
+        // Update DB once entire response is received
+        mutation.mutate({
+          userId: userId,
+          highlights: [
+            newHighlight,
+            ...(highlights
+              ? highlights.filter((h) => h.id !== currentHighlight.id)
+              : []),
+          ],
+          source: loadedSource,
+          id: annotatedPdfId,
+        });
+
+        append(
+          {
+            role: "user",
+            content: FOLLOW_UP_PROMPT,
+            createdAt: new Date(),
+          },
+          {},
+        );
+
+        setLoadingState(LoadingState.LOADING_FOLLOWUP);
+      }
+    } else if (loadingState === LoadingState.LOADING_FOLLOWUP) {
+      if (!isLoading) {
+        const followUpNodes: CurriculumNode[] = response
+          .split("?")
+          .map((response) => ({
+            id: uuidv4(),
+            prompt: "",
+            response,
+            timestamp: new Date(),
+            comments: [],
+          }));
+
+        const newHighlight = {
+          ...currentHighlight,
+          nodes: followUpNodes,
+        };
+
+        setCurrentHighlight(newHighlight);
+
+        mutation.mutate({
+          userId: userId,
+          highlights: [
+            newHighlight,
+            ...(highlights
+              ? highlights.filter((h) => h.id !== currentHighlight.id)
+              : []),
+          ],
+          source: loadedSource,
+          id: annotatedPdfId,
+        });
+
+        setMessages([]);
+        setLoadingState(LoadingState.LOADING_ASK);
+      }
     }
   }, [messages, isLoading]);
 

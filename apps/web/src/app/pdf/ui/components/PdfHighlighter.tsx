@@ -36,8 +36,8 @@ import getBoundingRect from "../lib/get-bounding-rect";
 import getClientRects from "../lib/get-client-rects";
 import { HighlightLayer } from "./HighlightLayer";
 import {
-  AnnotatedPdfHighlight,
-  AnnotatedPdfHighlightPosition,
+  Highlight,
+  HighlightPosition,
 } from "@prisma/client";
 
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
@@ -72,15 +72,15 @@ interface Props<T_HT> {
     screenshot: (position: LTWH) => string,
     isScrolledTo: boolean,
   ) => JSX.Element;
-  highlights: Array<AnnotatedPdfHighlight>;
-  displayHighlights: Array<AnnotatedPdfHighlight>;
+  highlights: Array<Highlight>;
+  displayHighlights: Array<Highlight>;
   onScrollChange: () => void;
-  scrollRef: (scrollTo: (highlight: AnnotatedPdfHighlight) => void) => void;
-  highlight: AnnotatedPdfHighlight | undefined;
+  scrollRef: (scrollTo: (highlight: Highlight) => void) => void;
+  highlight: Highlight | undefined;
   pdfDocument: PDFDocumentProxy;
   pdfScaleValue: string;
   onSelectionFinished: (
-    position: AnnotatedPdfHighlightPosition,
+    position: HighlightPosition,
     content: { text?: string; image?: string },
     hideTipAndSelection: () => void,
     transformSelection: () => void,

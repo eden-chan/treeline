@@ -1,5 +1,8 @@
-import React, { useCallback, useState } from "react";
-import { AnnotatedPdfHighlight } from "@prisma/client";
+import React, { useMemo, useState } from "react";
+import {
+  Highlight,
+  CurriculumNode,
+} from "@prisma/client";
 import QuestionNode from "./flownodes/QuestionNode";
 import { Button } from "@/components/ui/button";
 import ReactFlow, {
@@ -7,16 +10,14 @@ import ReactFlow, {
   Controls,
   Background,
   BackgroundVariant,
-  applyNodeChanges,
-  applyEdgeChanges,
-  OnNodesChange,
-  OnEdgesChange,
+  Node,
+  Edge,
   NodeTypes,
 } from "reactflow";
 import "reactflow/dist/style.css";
 
 interface Props {
-  highlight: AnnotatedPdfHighlight;
+  highlight: Highlight;
   returnHome: () => void;
 }
 
@@ -34,8 +35,10 @@ const defaultViewPort = {
   zoom: 0.85,
 };
 
-export function Forest({ highlight, returnHome }: Props) {
-  const nodes = [
+const generateNodesAndEdges = (
+  highlight: Highlight | CurriculumNode,
+): { nodes: Node[]; edges: Edge[] } => {
+  const currentNode: Node[] = [
     {
       id: highlight!.id,
       position: { x: 0, y: 0 },
@@ -52,7 +55,29 @@ export function Forest({ highlight, returnHome }: Props) {
       type: highlight.prompt ? "question" : "input",
     },
   ];
-  const [edges, setEdges] = useState([]);
+  const currentEdges: Edge[] = [];
+
+  if ("nodes" in highlight) {
+    for (let child of highlight.nodes) {
+      const { nodes, edges } = generateNodesAndEdges(child);
+      currentNode.push(...nodes);
+      currentEdges.push(...edges);
+      currentEdges.push({
+        id: `${highlight.id}-${child.id}`,
+        source: highlight.id,
+        target: child.id,
+      });
+    }
+  }
+
+  return { nodes: currentNode, edges: currentEdges };
+};
+
+export function Forest({ highlight, returnHome }: Props) {
+  const { nodes, edges } = useMemo(
+    () => generateNodesAndEdges(highlight),
+    [highlight],
+  );
 
   // const onNodesChange: OnNodesChange = useCallback(
   //   // @ts-ignore
