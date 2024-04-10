@@ -1,8 +1,5 @@
 import React, { useMemo, useState } from "react";
-import {
-  Highlight,
-  CurriculumNode,
-} from "@prisma/client";
+import { Highlight, CurriculumNode } from "@prisma/client";
 import QuestionNode from "./flownodes/QuestionNode";
 import { Button } from "@/components/ui/button";
 import ReactFlow, {
@@ -15,6 +12,7 @@ import ReactFlow, {
   NodeTypes,
 } from "reactflow";
 import "reactflow/dist/style.css";
+import { HighlightWithRelations } from "@src/server/api/routers/highlight";
 
 interface Props {
   highlight: Highlight;
@@ -36,39 +34,39 @@ const defaultViewPort = {
 };
 
 const generateNodesAndEdges = (
-  highlight: Highlight | CurriculumNode,
+  highlight: HighlightWithRelations,
 ): { nodes: Node[]; edges: Edge[] } => {
   const currentNode: Node[] = [
     {
       id: highlight!.id,
       position: { x: 0, y: 0 },
       data: {
-        ...(highlight?.prompt
+        ...(highlight.node?.prompt
           ? {
-              question: highlight?.prompt,
-              answer: highlight?.response,
+              question: highlight.node.prompt,
+              answer: highlight.node.response,
             }
           : {
-              label: highlight?.comments[0]?.text,
+              label: highlight.comment?.text,
             }),
       },
-      type: highlight.prompt ? "question" : "input",
+      type: highlight.node?.prompt ? "question" : "input",
     },
   ];
   const currentEdges: Edge[] = [];
 
-  if ("nodes" in highlight) {
-    for (let child of highlight.nodes) {
-      const { nodes, edges } = generateNodesAndEdges(child);
-      currentNode.push(...nodes);
-      currentEdges.push(...edges);
-      currentEdges.push({
-        id: `${highlight.id}-${child.id}`,
-        source: highlight.id,
-        target: child.id,
-      });
-    }
-  }
+  // if (highlight.node && "children" in highlight.node) {
+  //   for (let child of highlight.node.children) {
+  //     const { nodes, edges } = generateNodesAndEdges(child);
+  //     currentNode.push(...nodes);
+  //     currentEdges.push(...edges);
+  //     currentEdges.push({
+  //       id: `${highlight.id}-${child.id}`,
+  //       source: highlight.id,
+  //       target: child.id,
+  //     });
+  //   }
+  // }
 
   return { nodes: currentNode, edges: currentEdges };
 };

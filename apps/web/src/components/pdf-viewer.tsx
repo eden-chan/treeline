@@ -30,14 +30,13 @@ const resetHash = () => {
   document.location.hash = "";
 };
 
-const HighlightPopup = ({ comments }: { comments: HighlightComment[] }) =>
-  comments.map((comment, index) =>
-    comment.text ? (
-      <div key={`highlight-comment-${index}`} className="Highlight__popup">
-        {comment.emoji} {comment.text}
-      </div>
-    ) : null,
-  );
+const HighlightPopup = ({ comment }: { comment: HighlightComment | null }) => {
+  return comment?.text ? (
+    <div className="Highlight__popup">
+      {comment.emoji} {comment.text}
+    </div>
+  ) : null;
+};
 
 export default function PDFViewer({
   annotatedPdfId,
@@ -54,15 +53,37 @@ export default function PDFViewer({
 }): JSX.Element {
   const utils = clientApi.useUtils();
   const annotatedPdfMutation =
-    clientApi.annotatedPdf.upsertAnnotatedPdf.useMutation();
+    clientApi.annotatedPdf.resetHighlights.useMutation({
+      onMutate: async () => {
+        await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
+          userId: userId,
+          source: loadedSource,
+        });
+
+        utils.annotatedPdf.fetchAnnotatedPdf.setData(
+          {
+            userId: userId,
+            source: loadedSource,
+          },
+          (oldData) => {
+            if (!oldData) return oldData;
+            return {
+              ...oldData,
+              highlights: [],
+            };
+          },
+        );
+      },
+      onSuccess: (input) => {
+        utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+          userId: userId,
+          source: loadedSource,
+        });
+      },
+    });
   const highlightMutation = clientApi.highlight.createHighlight.useMutation({
     onMutate: async (newData) => {
       await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
-        userId: userId,
-        source: loadedSource,
-      });
-
-      const previousData = utils.annotatedPdf.fetchAnnotatedPdf.getData({
         userId: userId,
         source: loadedSource,
       });
@@ -91,12 +112,10 @@ export default function PDFViewer({
 
           return {
             ...oldData,
-            highlights: [newHighlight, ...oldData.highlights],
+            highlights: [...oldData.highlights, newHighlight],
           };
         },
       );
-
-      return { previousData };
     },
     onSuccess: (input) => {
       utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
@@ -120,9 +139,6 @@ export default function PDFViewer({
 
   const resetHighlights = () => {
     annotatedPdfMutation.mutate({
-      userId: userId,
-      highlights: [],
-      source: loadedSource,
       id: annotatedPdfId,
     });
   };
@@ -154,7 +170,9 @@ export default function PDFViewer({
     };
   }, [highlights, scrollToHighlightId]);
 
-  const createCommentHighlight = async (highlight: NewHighlightWithRelationsInput) => {
+  const createCommentHighlight = async (
+    highlight: NewHighlightWithRelationsInput,
+  ) => {
     highlightMutation.mutate({
       highlight,
     });
@@ -263,7 +281,9 @@ export default function PDFViewer({
 
                 return (
                   <Popup
-                    popupContent={<HighlightPopup {...highlight} />}
+                    popupContent={
+                      <HighlightPopup comment={highlight.comment} />
+                    }
                     onMouseOver={(popupContent) =>
                       setTip(highlight, (highlight) => popupContent)
                     }

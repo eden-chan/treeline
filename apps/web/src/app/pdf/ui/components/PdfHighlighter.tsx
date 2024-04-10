@@ -35,10 +35,7 @@ import getAreaAsPng from "../lib/get-area-as-png";
 import getBoundingRect from "../lib/get-bounding-rect";
 import getClientRects from "../lib/get-client-rects";
 import { HighlightLayer } from "./HighlightLayer";
-import {
-  Highlight,
-  HighlightPosition,
-} from "@prisma/client";
+import { Highlight, HighlightPosition } from "@prisma/client";
 
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
 
@@ -61,7 +58,7 @@ interface State<T_HT> {
 
 interface Props<T_HT> {
   highlightTransform: (
-    highlight: T_ViewportHighlight<T_HT>,
+    highlight: Highlight,
     index: number,
     setTip: (
       highlight: T_ViewportHighlight<T_HT>,
@@ -312,6 +309,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
       boundingRect: viewportToScaled(boundingRect, viewport),
       rects: (rects || []).map((rect) => viewportToScaled(rect, viewport)),
       pageNumber,
+      usePdfCoordinates: false,
     };
   }
 

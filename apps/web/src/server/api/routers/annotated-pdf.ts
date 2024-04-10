@@ -1,18 +1,13 @@
 import { z } from "zod";
-import {
-  AnnotatedPdf,
-  Highlight,
-  CurriculumNode,
-} from "@prisma/client";
+import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { IHighlightSchema } from "@src/app/pdf/ui/types";
 
-export type CurriculumNodeWithChildren =
-  CurriculumNode & {
-    children: CurriculumNode[];
-  };
+export type CurriculumNodeWithChildren = CurriculumNode & {
+  children: CurriculumNode[];
+};
 
 export type AnnotatedPdfWithRelations = AnnotatedPdf & {
   highlights: Highlight[] & {
@@ -62,24 +57,17 @@ export const annotatedPdfRouter = createTRPCRouter({
   fetchAnnotatedPdf: publicProcedure
     .input(
       z.object({
-        userId: z.string().optional(),
-        source: z.string().optional(),
+        userId: z.string(),
+        source: z.string(),
       }),
     )
     .query<AnnotatedPdfWithRelations | null>(async ({ ctx, input }) => {
-      const whereClause: Record<string, string> = {};
-      if (input.userId) {
-        whereClause["userId"] = input.userId;
-      }
-      if (input.source) {
-        whereClause["source"] = input.source;
-      }
       let result;
 
       // TODO: add bark for recursive tree structure quieries: https://prisma-extension-bark.gitbook.io/docs/getting-started
       try {
         result = await db.annotatedPdf.findFirst({
-          where: whereClause,
+          where: input,
           include: {
             highlights: {
               include: {
@@ -142,5 +130,28 @@ export const annotatedPdfRouter = createTRPCRouter({
       }
 
       return result;
+    }),
+
+  resetHighlights: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation<boolean>(async ({ ctx, input }) => {
+      try {
+        await db.annotatedPdf.update({
+          where: input,
+          data: {
+            highlights: {
+              deleteMany: {},
+            },
+          },
+        });
+      } catch {
+        console.error("Failed to reset highlights");
+        return false;
+      }
+      return true;
     }),
 });

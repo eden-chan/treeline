@@ -11,7 +11,7 @@ export type CurriculumNodeWithRelations = CurriculumNode & {
 
 export type HighlightWithRelations = Highlight & {
   node?: CurriculumNodeWithRelations | null;
-}
+};
 
 export type NewHighlightWithRelationsInput = Omit<
   Highlight & {

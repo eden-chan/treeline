@@ -1,5 +1,12 @@
 "use client";
-import React, { FC, ReactNode, useContext, useEffect, useRef } from "react";
+import React, {
+  FC,
+  ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useChat, Message, CreateMessage } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
 
@@ -13,9 +20,12 @@ import {
 
 export type ContextProps = {
   currentHighlight: Highlight | null;
-  setCurrentHighlight: (highlight: Highlight | null) => void;
+  setCurrentHighlight: (
+    highlight: Highlight | null,
+    forceRerender?: boolean,
+  ) => void;
   createAskHighlight: (
-    highlight: NewHighlightWithRelationsInput
+    highlight: NewHighlightWithRelationsInput,
   ) => Promise<Highlight | undefined>;
 } & ReturnType<typeof useChat>;
 
@@ -35,9 +45,16 @@ export const AskHighlightProvider: FC<{
   loadedSource: string;
   children: ReactNode;
 }> = ({ annotatedPdfId, userId, loadedSource, children }) => {
+  const [_, setForceRerender] = useState<Boolean>(false);
   const currentHighlightRef = useRef<HighlightWithRelations | null>(null);
-  const setCurrentHighlight = (highlight: HighlightWithRelations | null) => {
+  const setCurrentHighlight = (
+    highlight: HighlightWithRelations | null,
+    forceRerender = true,
+  ) => {
     currentHighlightRef.current = highlight;
+    if (forceRerender) {
+      setForceRerender((prev) => !prev);
+    }
   };
 
   const onFinish = (message: Message) => {
@@ -60,7 +77,7 @@ export const AskHighlightProvider: FC<{
       },
     };
 
-    setCurrentHighlight(newHighlight);
+    setCurrentHighlight(newHighlight, false);
 
     // TODO: Add TRPC router for curriculum node and update this value
     // updateHighlightMutation.mutate({
@@ -115,7 +132,7 @@ export const AskHighlightProvider: FC<{
               ...oldData,
               highlights: [newHighlight, ...oldData.highlights],
             };
-          }
+          },
         );
 
         return { previousData };
@@ -129,7 +146,7 @@ export const AskHighlightProvider: FC<{
     });
 
   const createAskHighlight = async (
-    highlight: NewHighlightWithRelationsInput
+    highlight: NewHighlightWithRelationsInput,
   ): Promise<Highlight | undefined> => {
     if (!highlight.node?.prompt) return;
 
@@ -146,7 +163,7 @@ ${highlight.content.text}`
         content: promptWithContext,
         createdAt: new Date(),
       },
-      {}
+      {},
     );
 
     // Add node to DB
@@ -167,7 +184,7 @@ ${highlight.content.text}`
       },
     };
 
-    setCurrentHighlight(pseudoHighlight);
+    setCurrentHighlight(pseudoHighlight, false);
 
     return pseudoHighlight;
   };
@@ -175,7 +192,8 @@ ${highlight.content.text}`
   // Update the highlight as the AI response streams in
   // TODO: Update API so we don't rely on useEffect anymore. Just work off of callbacks once the response is done streaming
   useEffect(() => {
-    if (messages.length < 2 || !currentHighlightRef.current?.node?.prompt) return;
+    if (messages.length < 2 || !currentHighlightRef.current?.node?.prompt)
+      return;
     if (messages[messages.length - 1]?.role === "user") return;
 
     const question = messages[messages.length - 2]?.content;
@@ -189,7 +207,7 @@ ${highlight.content.text}`
     };
 
     // Update highlight as messages stream in
-    setCurrentHighlight(newHighlight);
+    setCurrentHighlight(newHighlight, false);
   }, [messages, isLoading]);
 
   const value = {
