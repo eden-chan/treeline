@@ -6,6 +6,7 @@ import {
   SignOutButton,
   currentUser,
 } from "@clerk/nextjs";
+import { Button } from '@/components/ui/button';
 
 export default async function Page() {
   const clerkUser = await currentUser();
@@ -13,7 +14,10 @@ export default async function Page() {
   if (clerkUser) {
     return (
       <div className="w-screen h-screen flex items-center justify-center">
-        <SignOutButton />
+
+
+        <Button><SignOutButton /></Button>
+
       </div>
     );
   }
