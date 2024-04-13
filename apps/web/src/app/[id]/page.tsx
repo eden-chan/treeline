@@ -4,20 +4,16 @@ import { User, clerkClient, currentUser } from "@clerk/nextjs/server";
 
 import Profile from "../pdf/ui/components/ProfilePage";
 import Navbar from "../pdf/ui/components/Navbar";
-import { SignIn } from '@clerk/nextjs';
+import { RedirectToSignIn, SignIn } from '@clerk/nextjs';
 
-export default async function Page({ params }) {
-  // TODO: handle edgecase of multiple hypthen in names
+export default async function Page({ params }: { params: { id: string } }) {
+  // TODO: handle edgecase of multiple hyphen in names
   const handle = params.id;
   const searchedUser = await api.user.fetchUser({ handle });
-
   const clerkUser = await currentUser();
-
   if (!clerkUser) {
     return (
-      <div>
-        <SignIn />
-      </div>
+      <RedirectToSignIn />
     );
   }
 
@@ -35,7 +31,6 @@ export default async function Page({ params }) {
     emailAddress: [searchedUser.email],
   })) as User[];
 
-  //
   // Get all users to populate search bar and timeline
   const clerkUsers = (await clerkClient.users.getUserList()) as User[];
   let userEmails = [];
@@ -56,14 +51,6 @@ export default async function Page({ params }) {
   const loggedInUserEmail = _loggedInUser?.emailAddresses[0]
     ?.emailAddress as string;
   const loggedInUser = await api.user.fetchUser({ email: loggedInUserEmail });
-
-  // if (!users || !timeline || !_loggedInUser || !loggedInUser) {
-  //   return (
-  //     <div className="h-screen w-screen gap-0 text-black">
-  //       <div>Change Later</div>
-  //     </div>
-  //   );
-  // }
 
   return (
     <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">
