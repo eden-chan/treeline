@@ -34,12 +34,9 @@ export default async function Page() {
 
 
   return (
-    <main className="h-screen w-screen gap-0">
-      <div className="max-w-4xl mx-auto py-8 px-4 text-black">
-        <Navbar users={followedUsers} loggedInUser={user} />
-        <SearchTab />
-        <Timeline articles={timeline} />
-      </div>
+    <main className="h-screen w-screen gap-0 p-4">
+      <Navbar users={followedUsers} loggedInUser={user} />
+      <Timeline articles={timeline} />
     </main>
   );
 }

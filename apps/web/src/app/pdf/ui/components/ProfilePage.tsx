@@ -37,6 +37,8 @@ const curiousPeopleSection = {
   ],
 };
 
+
+
 export default async function Profile({
   users,
   timeline,
@@ -60,46 +62,39 @@ export default async function Profile({
       }),
     [users, timeline],
   );
-
   const friendsSection = {
     title: "Your friends",
     friends: userHighlights,
   };
+
+
+  const RenderUserProfileSection = () => {
+    return (
+      <nav className="w-1/5 p-6 h-screen">
+        <div className="mb-8">
+          <div className="w-20 h-20 mb-4">
+            <Avatar className="w-full h-full">
+              <AvatarImage src={searchedUserImageUrl} alt="User profile" />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+          </div>
+          <FollowButton user1={loggedInUser} user2={searchedUser} />
+          <div className="mt-4">
+            <Link href={`https://x.com/${searchedUser.handle}`} className="text-blue-500 hover:underline">Twitter</Link>
+            <Link href={'https://edenchan.ca'} className="text-blue-500 hover:underline">Website</Link>
+          </div>
+        </div>
+        <div className="mt-8">
+          <LearningActivityCalendar />
+        </div>
+      </nav>
+    )
+  }
   return (
     <div className="min-h-screen">
       <div className="flex">
-        <nav className="w-1/5 p-6">
-          <div className="w-10">
-            {/* Fixed width */}
-            <Avatar>
-              <AvatarImage src={searchedUserImageUrl} />
-              <AvatarFallback>CN</AvatarFallback>
-            </Avatar>
-            <FollowButton user1={loggedInUser} user2={searchedUser} />
-          </div>
-          <LearningActivityCalendar />
-          <ul className="space-y-1">
-            {navLinks.map((link) => (
-              <li key={link.name}>
-                <Link className="block" href={link.href}>
-                  {link.name}
-                </Link>
-              </li>
-            ))}
-          </ul>
-          <div className="mt-6">
-            <h2 className="text-lg font-semibold">{readingSection.title}</h2>
-            <ul className="mt-2 space-y-1">
-              {readingSection.links.map((link) => (
-                <li key={link.name}>
-                  <Link className="block" href={link.href}>
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </nav>
+
+        {RenderUserProfileSection()}
         <main className="w-3/5 p-6">
           <h2 className="text-lg font-semibold mb-4">Recent</h2>
           <Timeline articles={timeline} />

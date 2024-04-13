@@ -48,7 +48,6 @@ export function ImportButton() {
                             id="link"
                             value={link}
                             onChange={(e) => setLink(e.target.value)}
-                            readOnly
                         />
                     </div>
                     {/* <Button type="submit" size="sm" className="px-3">
