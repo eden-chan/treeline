@@ -67,7 +67,6 @@ export default async function Page({ params }) {
 
   return (
     <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">
-
       <Navbar users={users} loggedInUser={loggedInUser} />
       <Profile
         users={users}

@@ -26,6 +26,7 @@ import { useMemo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
 import LearningActivityCalendar from "@src/components/activity-calendar";
 import BasicRadarChart from "@src/components/radar-graph";
+import { Button } from '@/components/ui/button';
 
 const curiousPeopleSection = {
   title: "Some curious people",
@@ -77,7 +78,6 @@ export default async function Profile({
             <FollowButton user1={loggedInUser} user2={searchedUser} />
           </div>
           <LearningActivityCalendar />
-
           <ul className="space-y-1">
             {navLinks.map((link) => (
               <li key={link.name}>
@@ -101,7 +101,7 @@ export default async function Profile({
           </div>
         </nav>
         <main className="w-3/5 p-6">
-          <h2 className="text-lg font-semibold mb-4">Pages</h2>
+          <h2 className="text-lg font-semibold mb-4">Recent</h2>
           <Timeline articles={timeline} />
         </main>
         <aside className="w-1/5 p-6">
