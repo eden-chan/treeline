@@ -1,8 +1,7 @@
 import React from "react";
 import { api } from "@src/trpc/server";
-import { SearchTab } from "./pdf/ui/components/SearchTab";
 import Timeline from "./pdf/ui/components/Timeline";
-import { SignIn, currentUser } from "@clerk/nextjs";
+import { RedirectToSignIn, SignIn, currentUser } from "@clerk/nextjs";
 import Navbar from "./pdf/ui/components/Navbar";
 
 
@@ -11,9 +10,7 @@ export default async function Page() {
 
   if (!clerkUser) {
     return (
-      <div>
-        <SignIn />
-      </div>
+      <RedirectToSignIn />
     );
   }
   // TODO: Map Clerk userid to mongodb id
@@ -22,6 +19,11 @@ export default async function Page() {
     email: clerkUserEmail,
   });
 
+  if (!user) {
+    return (
+      <RedirectToSignIn />
+    );
+  }
   const followedUsers =
     (await api.user.fetchUsers({
       userEmailList: user?.follows ?? [],
