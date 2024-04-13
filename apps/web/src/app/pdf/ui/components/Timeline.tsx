@@ -1,14 +1,15 @@
-import Link from "next/link";
+"use client";
 
 import { AnnotatedPdf } from "@prisma/client";
-import { Suspense } from "react";
-
-import { useMemo } from "react";
-
-import { memo } from "react";
+import { Suspense, useState } from "react";
+import { useMemo, memo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
+import { PaperCard } from "@src/components/paper-card";
+import { useRouter } from "next/navigation";
 
 const Timeline = memo(({ articles }: { articles: AnnotatedPdf[] }) => {
+  const [highlightedCardId, setHighlightedCardId] = useState(null);
+  const router = useRouter();
   const memoizedArticles = useMemo(
     () =>
       articles.map((article) => {
@@ -20,31 +21,38 @@ const Timeline = memo(({ articles }: { articles: AnnotatedPdf[] }) => {
     [articles],
   );
 
+  const handleClick = (cardId) => {
+    setHighlightedCardId(cardId);
+  };
+
   return (
     <main>
       <Suspense fallback={<h1>🌀 Loading...</h1>}>
-        {memoizedArticles.map((article, index) => (
-          <article key={index} className="mb-6">
-            <Link href={`/pdf?url=${article.source}`}>
-              {/* TODO: add LLM parsed data of the pdf */}
-              <h2 className="text-xl font-semibold mb-1">
-                {article.highlights[0]?.content?.text.slice(0, 50)}{" "}
-              </h2>
-              <p className="text-gray-600 mb-2">
-                {" "}
-                {article.timeAgoCalculation} {article.highlights.length}{" "}
-                highlights
-              </p>
-              <p className="text-gray-500">
-                {article.highlights[0]?.content?.text}
-              </p>
-              <p className="text-gray-400 text-sm mt-2">{article.userId}</p>
-            </Link>
-          </article>
-        ))}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {memoizedArticles.map((article, index) => (
+            <article key={index} className="mb-6">
+              <PaperCard
+                link={`/pdf?url=${article.source}`}
+                description={article.highlights[0]?.content?.text}
+                timeAgoCalculation={article.timeAgoCalculation}
+                title={article.highlights[0]?.content?.text.slice(0, 50)}
+                highlightCount={article.highlights.length}
+                isHighlighted={
+                  highlightedCardId === article.highlights[0]?.content?.text
+                }
+                onClick={() =>
+                  handleClick(article.highlights[0]?.content?.text)
+                }
+                onDoubleClick={() => {
+                  router.push(`/pdf?url=${article.source}`);
+                }}
+              />
+            </article>
+          ))}
+        </div>
       </Suspense>
     </main>
   );
 });
-export default Timeline;
 
+export default Timeline;
