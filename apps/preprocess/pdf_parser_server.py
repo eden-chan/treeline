@@ -2,16 +2,23 @@ from db import mongo_client
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import time
-import argparse
-import hashlib
-import pickle
 import os
-from llmsherpa.readers import LayoutPDFReader
 from models import ExtractFactDescriptor, FactDescriptor, ClientType
 import instructor
 from openai import OpenAI
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+import requests
+import tempfile
+from llama_parse import LlamaParse
+import httpx
+from llama_index.core.node_parser import MarkdownNodeParser
+
+
+
 client = instructor.patch(OpenAI())
+
+
 
 def chat(user_text, response_model):
     try:
@@ -33,90 +40,63 @@ def chat(user_text, response_model):
     return resp
 
 
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
 async def parse_pdf(pdf_url):
-    cache_dir = "cache"
-    os.makedirs(cache_dir, exist_ok=True)
-    cache_key = hashlib.md5(pdf_url.encode('utf-8')).hexdigest()
-    cache_path = os.path.join(cache_dir, f"{cache_key}.pkl")
+    # Use httpx.AsyncClient for asynchronous HTTP requests
+    async with httpx.AsyncClient() as client:
+        response = await client.get(pdf_url)
 
-    start_time = time.time()
-    
-    if os.path.exists(cache_path):
-        with open(cache_path, "rb") as cache_file:
-            doc = pickle.load(cache_file)
-    else:
-        llmsherpa_api_url = "https://readers.llmsherpa.com/api/document/developer/parseDocument?renderFormat=all"
-        pdf_reader = LayoutPDFReader(llmsherpa_api_url)
-        doc = pdf_reader.read_pdf(pdf_url)
-        with open(cache_path, "wb") as cache_file:
-            pickle.dump(doc, cache_file)
-    end_time = time.time()
-    
-    print(f"PDF reading took {end_time - start_time} seconds.")
-    
-    outline = [section.title for section in doc.sections()]
-    title=doc.sections()[0].title    
-    return_text = {'title':title,'outline':outline, 'sections':[]}
-    tasks = []
-    overall_start_time = time.time()  # Start timing the overall process
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        # assume first section.title is the name of the paper
-        for section in doc.sections():
-            if any(title in section.title for title in ['References']):
-                break
-            tasks.append(executor.submit(process_section, section, pdf_url))
+    # Assuming you have a temporary file setup as before
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+        temp_file.write(response.content)
+        temp_pdf_path = temp_file.name
 
-        for future in as_completed(tasks):
-            parsed_section = future.result()
-            return_text['sections'].append(parsed_section)
-
-
-    data = {"url": pdf_url,"text": return_text, "title": title}
-    try:
-        with mongo_client(db_name='paper', collection_name='ParsedPapers') as collection: 
-            result = collection.update_one({'url': pdf_url}, {'$set': data}, upsert=True)
-    except Exception as e:
-        print(f"An error occurred while updating the database: {e}")
+    # Correctly await the asynchronous call to LlamaParse.aload_data
+    documents = await LlamaParse(result_type="markdown").aload_data(file_path=temp_pdf_path)
+    print(documents[0].text[:1000] + '...')
     
-    overall_end_time = time.time()  # End timing the overall process
-    print(f"Overall processing took {overall_end_time - overall_start_time} seconds.")
-    return return_text
+    parser = MarkdownNodeParser()
 
-def process_section(section, pdf_url):
-    start_time = time.time()  # Start timing the process_section function
-    return_content = {} # TODO: fix this BS
+    nodes = parser.get_nodes_from_documents(documents)
 
-    src = section.to_text(include_children=True, recurse=False)
-    # if 'abstract' in src.lower():
-    #     src = src.lower().split('abstract')[-1]
-        # response : ExtractFactDescriptor= chat(user_text=src, response_model=ExtractFactDescriptor)
-        # abstract_section = {'name': 'abstract', 'text': src, 'page': section.page_idx, 'facts': [x.dict() for x in response.fact_descriptors] }
-        # if response:
-        #     abstract_section['facts'] = [x.dict() for x in response.fact_descriptors]
-        #     section_data = {"url": pdf_url, "text": abstract_section, 'page': section.page_idx}
-        # return_content.append(abstract_section)
-    
-    section_title_lower = section.title.lower()
-    section_content = {'name': section_title_lower, 'text': '', 'page': section.page_idx, 'facts': [] }
-    
-    for chunk in section.chunks():
-        source = chunk.to_text()
-        section_content['text'] += " " + source if section_content['text'] else source
-        # section_content['page'] = chunk.page_idx
+    with ThreadPoolExecutor() as executor:
+        try:
+            futures = [executor.submit(chat, node.text, ExtractFactDescriptor) for node in nodes]
+            parsing = [future.result() for future in as_completed(futures)]
+            # Ensure proper serialization of the facts
+            # import pdb; pdb.set_trace()
+            facts = [parsing_item.fact_descriptors for parsing_item in parsing]
+            facts_serialized = [fact_descriptor.dict() for fact in facts for fact_descriptor in fact]
+            title = nodes[0].text.split('\n')[0]
             
-    # if section_content['text']:
-    src = section_content['text']
-    response : ExtractFactDescriptor= chat(user_text=src, response_model=ExtractFactDescriptor)
-    section_content['facts'] = [x.dict() for x in response.fact_descriptors]
-    # return_text.append(section_content)
-
-    end_time = time.time()  # End timing the process_section function
-    print(f"Processing {section.title} took {end_time - start_time} seconds.")  # Print out how long it took
-
-    return section_content
-
+            sections = [{'text': node.text, 'metadata': node.metadata} for node in nodes]
+            
+            with mongo_client(db_name='paper', collection_name='ParsedPapers') as db: 
+                filter_query = {"source": pdf_url}
+                update_data = {"$set": {"title": title, "facts": facts_serialized, 'sections': sections}}
+                result = db.update_one(filter_query, update_data, upsert=True)
+        except Exception as e:
+            print(f"An error occurred during parsing or database update: {e}")
+            # Optionally, handle the error, e.g., by setting response_id to None or re-raising the exception
+            response_id = None
+            
+    # Check if the document was inserted
+    if result.upserted_id is not None:
+        mongo_id = str(result.upserted_id)
+        print(f"Document inserted with id {mongo_id}.")
+    else:
+        # The document was updated, find it to get the ID
+        with mongo_client(db_name='paper', collection_name='ParsedPapers') as db: 
+            updated_document = db.find_one(filter_query)
+        if updated_document:
+            mongo_id = str(updated_document['_id'])
+            print(f"Document updated. ID: {mongo_id}")
+        else:
+            print("Document not found after update.")
+            mongo_id = None
+    
+    
+    response = {"source": pdf_url, 'sections': sections, 'facts': facts_serialized, 'title': title, "mongo_id": mongo_id }
+    return response
     
 app = FastAPI()
 
@@ -126,12 +106,15 @@ class PDFRequest(BaseModel):
 @app.post("/process_pdf/")
 async def process_pdf(request: PDFRequest):
     try:
-        # Assuming preprocess_pdf is a function that processes the PDF and returns a result
+        # Assuming preprocess_pdf is a function that processes the PDF and returns a result                
+        start_time = time.time()
         result = await parse_pdf(request.pdf_url)
-        
+        end_time = time.time()
+
+        print(f"PDF parsing took {end_time - start_time} seconds.")
         return {"message": "PDF processed successfully", "data": result}
     except Exception as e:
-        raise HTTPException(status_code=500, detail="An error occurred while processing the PDF.")
+        raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF. {e}")
 
 
 

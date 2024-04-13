@@ -16,6 +16,8 @@ pydantic = "^2.6.4"
 instructor = "^0.6.8"
 graphviz = "^0.20.3"
 chromadb = "^0.4.24"
+llama-parse = "^0.4.0"
+nest-asyncio = "^1.6.0"
 
 
 [build-system]

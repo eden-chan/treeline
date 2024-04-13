@@ -25,13 +25,13 @@ export default function Navbar({
   }));
   return (
     <header className="flex justify-between items-center mb-10 sticky top-0 bg-white z-50">
-      <h1 className="text-3xl font-bold">My/Space</h1>
-      <div className="flex space-x-4">
-        <div className="w-[200px]">
+      <h1 className="text-3xl font-bold self-center">My/Space</h1>
+      <div className="flex space-x-4 items-center">
+        <div className="w-[200px] self-center">
           <SearchWithAutocomplete items={items} />
         </div>
         <Link
-          className="text-gray-600 hover:text-gray-900"
+          className="text-gray-600 hover:text-gray-900 self-center"
           href={`/${loggedInUser?.handle}`}
         >
           My bookshelf
