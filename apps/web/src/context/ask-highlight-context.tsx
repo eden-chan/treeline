@@ -79,10 +79,9 @@ export const AskHighlightProvider: FC<{
 
     setCurrentHighlight(newHighlight, false);
 
-    // TODO: Add TRPC router for curriculum node and update this value
-    // updateHighlightMutation.mutate({
-    //   highlight: newHighlight,
-    // });
+    updateCurriculumNodeMutation.mutate({
+      curriculumNode: newHighlight.node,
+    });
 
     setMessages([]);
   };
@@ -114,18 +113,21 @@ export const AskHighlightProvider: FC<{
           (oldData) => {
             if (!oldData) return oldData;
 
-            const nodeId = uuidv4();
-            const newNode = {
-              ...newData.highlight.node,
-              id: nodeId,
-              children: [],
-            };
+            const highlightId = uuidv4();
+            const newNode = newData.highlight.node
+              ? {
+                  ...newData.highlight.node,
+                  id: uuidv4(),
+                  parentId: null,
+                  highlightId,
+                  children: [],
+                }
+              : null;
             const newHighlight = {
               ...newData.highlight,
-              id: uuidv4(),
-              nodeId,
+              id: highlightId,
               node: newNode,
-              annotatedPdfId: annotatedPdfId,
+              annotatedPdfId,
             };
 
             return {
@@ -142,8 +144,17 @@ export const AskHighlightProvider: FC<{
           userId: userId,
           source: loadedSource,
         });
+
+        // Todo: address potential race condition where onFinish callback for useChat executes before
+        // setting the new id values
+        if (!input?.node || !currentHighlightRef.current?.node) return;
+        currentHighlightRef.current.id = input.id;
+        currentHighlightRef.current.node.id = input.node.id;
+        currentHighlightRef.current.node.highlightId = input.node.highlightId;
       },
     });
+  const updateCurriculumNodeMutation =
+    clientApi.curriculum.updateNode.useMutation();
 
   const createAskHighlight = async (
     highlight: NewHighlightWithRelationsInput,
@@ -171,22 +182,22 @@ ${highlight.content.text}`
       highlight,
     });
 
-    const nodeId = uuidv4();
-    const pseudoHighlight = {
+    const highlightId = uuidv4();
+    const tempHighlight = {
       ...highlight,
-      id: uuidv4(),
-      nodeId,
+      id: highlightId,
       node: {
         ...highlight.node,
-        id: nodeId,
+        id: uuidv4(),
+        highlightId,
         parentId: null,
         children: [],
       },
     };
 
-    setCurrentHighlight(pseudoHighlight, false);
+    setCurrentHighlight(tempHighlight, false);
 
-    return pseudoHighlight;
+    return tempHighlight;
   };
 
   // Update the highlight as the AI response streams in
@@ -203,8 +214,13 @@ ${highlight.content.text}`
 
     const newHighlight = {
       ...currentHighlightRef.current,
-      response: response,
+      node: {
+        ...currentHighlightRef.current.node,
+        response,
+      },
     };
+
+    setCurrentHighlight(newHighlight, false);
 
     // Update highlight as messages stream in
     setCurrentHighlight(newHighlight, false);

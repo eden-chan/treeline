@@ -5,14 +5,16 @@ import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { IHighlightSchema } from "@src/app/pdf/ui/types";
 
-export type CurriculumNodeWithChildren = CurriculumNode & {
-  children: CurriculumNode[];
+export type CurriculumNodeWithRelations = CurriculumNode & {
+  children?: CurriculumNodeWithRelations[];
+};
+
+export type HighlightWithRelations = Highlight & {
+  node?: CurriculumNodeWithRelations | null;
 };
 
 export type AnnotatedPdfWithRelations = AnnotatedPdf & {
-  highlights: Highlight[] & {
-    node?: CurriculumNodeWithChildren;
-  };
+  highlights: HighlightWithRelations[];
 };
 
 export const annotatedPdfRouter = createTRPCRouter({
@@ -62,7 +64,7 @@ export const annotatedPdfRouter = createTRPCRouter({
       }),
     )
     .query<AnnotatedPdfWithRelations | null>(async ({ ctx, input }) => {
-      let result;
+      let result: AnnotatedPdfWithRelations | null;
 
       // TODO: add bark for recursive tree structure quieries: https://prisma-extension-bark.gitbook.io/docs/getting-started
       try {
@@ -80,9 +82,6 @@ export const annotatedPdfRouter = createTRPCRouter({
             },
           },
         });
-        if (!result) {
-          return null;
-        }
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
         return null;
@@ -107,7 +106,6 @@ export const annotatedPdfRouter = createTRPCRouter({
       }
       let result;
       try {
-        const start = Date.now();
         result = await db.annotatedPdf.findMany({
           where: whereClause,
           include: {
@@ -122,8 +120,6 @@ export const annotatedPdfRouter = createTRPCRouter({
             },
           },
         });
-        const end = Date.now();
-        console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
         return null;

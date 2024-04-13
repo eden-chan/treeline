@@ -96,16 +96,19 @@ export default function PDFViewer({
         (oldData) => {
           if (!oldData) return oldData;
 
-          const nodeId = uuidv4();
-          const newNode = {
-            ...newData.highlight.node,
-            id: nodeId,
-            children: [],
-          };
+          const highlightId = uuidv4();
+          const newNode = newData.highlight.node
+            ? {
+                ...newData.highlight.node,
+                id: uuidv4(),
+                parentId: null,
+                highlightId,
+                children: [],
+              }
+            : null;
           const newHighlight = {
             ...newData.highlight,
-            id: uuidv4(),
-            nodeId,
+            id: highlightId,
             node: newNode,
             annotatedPdfId: annotatedPdfId,
           };
@@ -173,6 +176,7 @@ export default function PDFViewer({
   const createCommentHighlight = async (
     highlight: NewHighlightWithRelationsInput,
   ) => {
+    console.log("highlight", highlight);
     highlightMutation.mutate({
       highlight,
     });
@@ -220,6 +224,7 @@ export default function PDFViewer({
                         timestamp: new Date(),
                         userId,
                       },
+                      type: "COMMENT",
                       annotatedPdfId,
                       position,
                     });
@@ -233,6 +238,7 @@ export default function PDFViewer({
                       },
                       comment: null,
                       annotatedPdfId,
+                      type: "ASK",
                       node: {
                         prompt,
                         response: null,
