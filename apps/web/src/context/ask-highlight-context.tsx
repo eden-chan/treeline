@@ -1,19 +1,32 @@
 "use client";
-import React, { FC, ReactNode, useContext, useEffect, useState } from "react";
+import React, {
+  FC,
+  ReactNode,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { useChat, Message, CreateMessage } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
 
-import { AnnotatedPdf, AnnotatedPdfHighlight } from "@prisma/client";
+import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
+import { FOLLOW_UP_PROMPT } from "@src/utils/constants";
+import {
+  NewHighlightWithRelationsInput,
+  HighlightWithRelations,
+} from "@src/server/api/routers/highlight";
 
 export type ContextProps = {
-  currentHighlight: AnnotatedPdfHighlight | null;
-  setCurrentHighlight: React.Dispatch<
-    React.SetStateAction<AnnotatedPdfHighlight | null>
-  >;
+  currentHighlight: Highlight | null;
+  setCurrentHighlight: (
+    highlight: Highlight | null,
+    forceRerender?: boolean,
+  ) => void;
   createAskHighlight: (
-    highlight: Omit<AnnotatedPdfHighlight, "id">,
-  ) => Promise<AnnotatedPdfHighlight | undefined>;
+    highlight: NewHighlightWithRelationsInput,
+  ) => Promise<Highlight | undefined>;
 } & ReturnType<typeof useChat>;
 
 export const useAskHighlight = () => {
@@ -32,56 +45,116 @@ export const AskHighlightProvider: FC<{
   loadedSource: string;
   children: ReactNode;
 }> = ({ annotatedPdfId, userId, loadedSource, children }) => {
-  const [currentHighlight, setCurrentHighlight] =
-    React.useState<AnnotatedPdfHighlight | null>(null);
-  const { messages, setMessages, append, isLoading, ...chat } = useChat();
+  const [_, setForceRerender] = useState<Boolean>(false);
+  const currentHighlightRef = useRef<HighlightWithRelations | null>(null);
+  const setCurrentHighlight = (
+    highlight: HighlightWithRelations | null,
+    forceRerender = true,
+  ) => {
+    currentHighlightRef.current = highlight;
+    if (forceRerender) {
+      setForceRerender((prev) => !prev);
+    }
+  };
 
-  const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
-    userId: userId,
-    source: loadedSource,
-  }).data?.highlights;
-  const utils = clientApi.useUtils();
-  const mutation = clientApi.annotatedPdf.upsertAnnotatedPdf.useMutation({
-    onMutate: async (newData) => {
-      await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
-        userId: userId,
-        source: loadedSource,
-      });
+  const onFinish = (message: Message) => {
+    // Update DB once entire response is received
+    if (!currentHighlightRef.current) {
+      console.debug("No current highlight reference found.");
+      return;
+    }
 
-      const previousData = utils.annotatedPdf.fetchAnnotatedPdf.getData({
-        userId: userId,
-        source: loadedSource,
-      });
+    if (!currentHighlightRef.current.node) {
+      console.debug("No current highlight node found.");
+      return;
+    }
 
-      utils.annotatedPdf.fetchAnnotatedPdf.setData(
-        newData,
-        (oldData) => newData as AnnotatedPdf,
-      );
+    const newHighlight = {
+      ...currentHighlightRef.current,
+      node: {
+        ...currentHighlightRef.current.node,
+        response: message.content,
+      },
+    };
 
-      return { previousData };
-    },
-    onSuccess: (input) => {
-      utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
-        userId: input?.userId,
-        source: input?.source,
-      });
-    },
+    setCurrentHighlight(newHighlight, false);
+
+    // TODO: Add TRPC router for curriculum node and update this value
+    // updateHighlightMutation.mutate({
+    //   highlight: newHighlight,
+    // });
+
+    setMessages([]);
+  };
+
+  const { messages, setMessages, append, isLoading, ...chat } = useChat({
+    onFinish,
   });
 
+  const utils = clientApi.useUtils();
+  // const updateHighlightMutation = clientApi.highlight.updateHighlight.useMutation();
+  const createHighlightMutation =
+    clientApi.highlight.createHighlight.useMutation({
+      onMutate: async (newData) => {
+        await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
+          userId: userId,
+          source: loadedSource,
+        });
+
+        const previousData = utils.annotatedPdf.fetchAnnotatedPdf.getData({
+          userId: userId,
+          source: loadedSource,
+        });
+
+        utils.annotatedPdf.fetchAnnotatedPdf.setData(
+          {
+            userId: userId,
+            source: loadedSource,
+          },
+          (oldData) => {
+            if (!oldData) return oldData;
+
+            const nodeId = uuidv4();
+            const newNode = {
+              ...newData.highlight.node,
+              id: nodeId,
+              children: [],
+            };
+            const newHighlight = {
+              ...newData.highlight,
+              id: uuidv4(),
+              nodeId,
+              node: newNode,
+              annotatedPdfId: annotatedPdfId,
+            };
+
+            return {
+              ...oldData,
+              highlights: [newHighlight, ...oldData.highlights],
+            };
+          },
+        );
+
+        return { previousData };
+      },
+      onSuccess: (input) => {
+        utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+          userId: userId,
+          source: loadedSource,
+        });
+      },
+    });
+
   const createAskHighlight = async (
-    highlight: AnnotatedPdfHighlight,
-  ): Promise<AnnotatedPdfHighlight | undefined> => {
-    if (!highlight.prompt) return;
+    highlight: NewHighlightWithRelationsInput,
+  ): Promise<Highlight | undefined> => {
+    if (!highlight.node?.prompt) return;
 
     const promptWithContext = highlight.content?.text
-      ? `${highlight.prompt}
+      ? `${highlight.node.prompt}
 Answer this question with the following context:
 ${highlight.content.text}`
-      : highlight.prompt;
-
-    if (currentHighlight) {
-      // Construct message history
-    }
+      : highlight.node.prompt;
 
     // Query AI for response
     append(
@@ -94,22 +167,33 @@ ${highlight.content.text}`
     );
 
     // Add node to DB
-    const id = uuidv4();
-    mutation.mutate({
-      userId: userId,
-      highlights: [{ ...highlight, id }, ...(highlights ?? [])],
-      source: loadedSource,
-      id: annotatedPdfId,
+    createHighlightMutation.mutate({
+      highlight,
     });
 
-    setCurrentHighlight({ ...highlight, id });
+    const nodeId = uuidv4();
+    const pseudoHighlight = {
+      ...highlight,
+      id: uuidv4(),
+      nodeId,
+      node: {
+        ...highlight.node,
+        id: nodeId,
+        parentId: null,
+        children: [],
+      },
+    };
 
-    return { ...highlight, id };
+    setCurrentHighlight(pseudoHighlight, false);
+
+    return pseudoHighlight;
   };
 
   // Update the highlight as the AI response streams in
+  // TODO: Update API so we don't rely on useEffect anymore. Just work off of callbacks once the response is done streaming
   useEffect(() => {
-    if (messages.length < 2 || !currentHighlight?.prompt) return;
+    if (messages.length < 2 || !currentHighlightRef.current?.node?.prompt)
+      return;
     if (messages[messages.length - 1]?.role === "user") return;
 
     const question = messages[messages.length - 2]?.content;
@@ -118,32 +202,16 @@ ${highlight.content.text}`
     if (!question || !response) return;
 
     const newHighlight = {
-      ...currentHighlight,
+      ...currentHighlightRef.current,
       response: response,
     };
 
     // Update highlight as messages stream in
-    setCurrentHighlight(newHighlight);
-
-    // Update DB once entire response is received
-    if (!isLoading) {
-      mutation.mutate({
-        userId: userId,
-        highlights: [
-          newHighlight,
-          ...(highlights
-            ? highlights.filter((h) => h.id !== currentHighlight.id)
-            : []),
-        ],
-        source: loadedSource,
-        id: annotatedPdfId,
-      });
-      setMessages([]);
-    }
+    setCurrentHighlight(newHighlight, false);
   }, [messages, isLoading]);
 
   const value = {
-    currentHighlight,
+    currentHighlight: currentHighlightRef.current,
     setCurrentHighlight,
     messages,
     setMessages,

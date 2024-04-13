@@ -7,9 +7,9 @@ import dynamic from "next/dynamic";
 import { ObjectId } from "mongodb";
 import { User, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
-import { AnnotatedPdf } from "@prisma/client";
+import { AnnotatedPdf, Highlight } from "@prisma/client";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
-import { RedirectToSignIn } from '@clerk/nextjs';
+import { RedirectToSignIn } from "@clerk/nextjs";
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
@@ -25,24 +25,23 @@ export default async function Page() {
   try {
     pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
   } catch (error) {
-    console.error(error)
+    console.error(error);
     return <div>Not a valid URL</div>;
   }
 
   const user: User | null = await currentUser();
-  const userEmail: string | undefined = user?.emailAddresses[0]?.emailAddress
+  const userEmail: string | undefined = user?.emailAddresses[0]?.emailAddress;
 
   if (!user || !userEmail) {
-    return <RedirectToSignIn redirectUrl={`/pdf?url=${pdfUrl.href}`} />
+    return <RedirectToSignIn redirectUrl={`/pdf?url=${pdfUrl.href}`} />;
   }
 
-  let newUserData: AnnotatedPdf = {
+  let newUserData: AnnotatedPdf & { highlights: Highlight[] } = {
     id: new ObjectId().toString(),
     highlights: [],
     source: pdfUrl.href,
     userId: userEmail,
   };
-
 
   let { id, highlights, source, userId } = newUserData;
   try {
@@ -56,15 +55,21 @@ export default async function Page() {
       highlights = data.highlights;
       source = data.source;
       userId = data.userId;
+    } else if (userEmail) {
+      await api.annotatedPdf.upsertAnnotatedPdf({
+        id,
+        highlights,
+        source,
+        userId: userEmail,
+      });
     }
-
   } catch (error) {
     console.error("Error fetching user highlights:", error);
   }
 
   const users = await clerkClient.users.getUserList();
   const userEmails = users.map(
-    (user) => user.emailAddresses[0]?.emailAddress ?? ""
+    (user) => user.emailAddresses[0]?.emailAddress ?? "",
   );
   const emailToPicture = users.map((user) => {
     return {
@@ -82,19 +87,19 @@ export default async function Page() {
 
   const allHighlightsWithProfile = allHighlights
     ? allHighlights.map((pdfHighlight) => {
-      return {
-        ...pdfHighlight,
-        userProfilePicture: emailToPicture.find(
-          (user) => user.email === pdfHighlight.userId
-        )?.imageUrl,
-        firstName: emailToPicture.find(
-          (user) => user.email === pdfHighlight.userId
-        )?.firstName,
-        lastName: emailToPicture.find(
-          (user) => user.email === pdfHighlight.userId
-        )?.lastName,
-      } as PDFHighlightsWithProfile;
-    })
+        return {
+          ...pdfHighlight,
+          userProfilePicture: emailToPicture.find(
+            (user) => user.email === pdfHighlight.userId,
+          )?.imageUrl,
+          firstName: emailToPicture.find(
+            (user) => user.email === pdfHighlight.userId,
+          )?.firstName,
+          lastName: emailToPicture.find(
+            (user) => user.email === pdfHighlight.userId,
+          )?.lastName,
+        } as PDFHighlightsWithProfile;
+      })
     : [];
 
   return (

@@ -1,12 +1,13 @@
 import React from "react";
-import { AnnotatedPdfHighlight } from "@prisma/client";
+import { Highlight } from "@prisma/client";
+import { HighlightWithRelations } from "@src/server/api/routers/highlight";
 
 interface Props {
-  highlights: Array<AnnotatedPdfHighlight>;
+  highlights: Array<HighlightWithRelations>;
   resetHighlights: () => void;
 }
 
-const updateHash = (highlight: AnnotatedPdfHighlight) => {
+const updateHash = (highlight: Highlight) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 
@@ -40,16 +41,12 @@ export function Sidebar({ highlights, resetHighlights }: Props) {
             }}
           >
             <div>
-              {highlight.prompt && (
-                <div key={`${highlight.id}-prompt-${highlight.prompt}`}>
-                  {highlight.prompt}
+              {highlight.node?.prompt && (
+                <div key={`${highlight.id}-prompt-${highlight.node.prompt}`}>
+                  {highlight.node.prompt}
                 </div>
               )}
-              {highlight.comments.map((comment, commentIndex) => (
-                <div key={`${highlight.id}-comment-${commentIndex}`}>
-                  {comment.text}
-                </div>
-              ))}
+              {highlight?.comment && <div>{highlight.comment.text}</div>}
               {highlight.content.text ? (
                 <blockquote style={{ marginTop: "0.5rem" }}>
                   {`${highlight.content.text.slice(0, 90).trim()}…`}

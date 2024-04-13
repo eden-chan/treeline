@@ -1,9 +1,19 @@
 import { z } from "zod";
-import { AnnotatedPdf } from "@prisma/client";
+import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { IHighlightSchema } from "@src/app/pdf/ui/types";
+
+export type CurriculumNodeWithChildren = CurriculumNode & {
+  children: CurriculumNode[];
+};
+
+export type AnnotatedPdfWithRelations = AnnotatedPdf & {
+  highlights: Highlight[] & {
+    node?: CurriculumNodeWithChildren;
+  };
+};
 
 export const annotatedPdfRouter = createTRPCRouter({
   // Create new highlight object if doesn't exist
@@ -18,7 +28,7 @@ export const annotatedPdfRouter = createTRPCRouter({
         id: z.string(), // mongo id is provided ahead of time for new documents
       }),
     )
-    .mutation<AnnotatedPdf | undefined>(async ({ ctx, input }) => {
+    .mutation<AnnotatedPdf | null>(async ({ ctx, input }) => {
       let res: AnnotatedPdf;
       try {
         res = await db.annotatedPdf.upsert({
@@ -26,51 +36,56 @@ export const annotatedPdfRouter = createTRPCRouter({
             id: input.id,
           },
           update: {
-            highlights: input.highlights,
+            highlights: {
+              create: input.highlights,
+            },
           },
           create: {
             userId: input.userId,
             source: input.source,
-            highlights: input.highlights,
+            highlights: {
+              create: input.highlights,
+            },
           },
         });
       } catch (error) {
         console.error("Failed to upsert highlights:", error);
-        return undefined;
+        return null;
       }
       return res;
     }),
   fetchAnnotatedPdf: publicProcedure
     .input(
       z.object({
-        userId: z.string().optional(),
-        source: z.string().optional(),
+        userId: z.string(),
+        source: z.string(),
       }),
     )
-    .query<AnnotatedPdf | undefined>(async ({ ctx, input }) => {
-      const whereClause: Record<string, string> = {};
-      if (input.userId) {
-        console.log("Filtering by user:", input.userId);
-        whereClause["userId"] = input.userId;
-      }
-      if (input.source) {
-        console.log("Filtering by source:", input.source);
-        whereClause["source"] = input.source;
-      }
+    .query<AnnotatedPdfWithRelations | null>(async ({ ctx, input }) => {
       let result;
+
+      // TODO: add bark for recursive tree structure quieries: https://prisma-extension-bark.gitbook.io/docs/getting-started
       try {
-        const start = Date.now();
         result = await db.annotatedPdf.findFirst({
-          where: whereClause,
+          where: input,
+          include: {
+            highlights: {
+              include: {
+                node: {
+                  include: {
+                    children: true,
+                  },
+                },
+              },
+            },
+          },
         });
-        const end = Date.now();
-        console.log(`Query took ${end - start}ms`);
         if (!result) {
-          return undefined;
+          return null;
         }
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
-        return undefined;
+        return null;
       }
       console.log("Fetched single highlights:", result);
       return result;
@@ -82,7 +97,7 @@ export const annotatedPdfRouter = createTRPCRouter({
         userList: z.array(z.string()),
       }),
     )
-    .query<AnnotatedPdf[] | undefined>(async ({ ctx, input }) => {
+    .query<AnnotatedPdfWithRelations[] | null>(async ({ ctx, input }) => {
       const whereClause: Record<string, any> = {};
 
       whereClause["userId"] = { in: input.userList };
@@ -95,14 +110,48 @@ export const annotatedPdfRouter = createTRPCRouter({
         const start = Date.now();
         result = await db.annotatedPdf.findMany({
           where: whereClause,
+          include: {
+            highlights: {
+              include: {
+                node: {
+                  include: {
+                    children: true,
+                  },
+                },
+              },
+            },
+          },
         });
         const end = Date.now();
         console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
-        return undefined;
+        return null;
       }
 
       return result;
+    }),
+
+  resetHighlights: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation<boolean>(async ({ ctx, input }) => {
+      try {
+        await db.annotatedPdf.update({
+          where: input,
+          data: {
+            highlights: {
+              deleteMany: {},
+            },
+          },
+        });
+      } catch {
+        console.error("Failed to reset highlights");
+        return false;
+      }
+      return true;
     }),
 });
