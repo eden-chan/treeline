@@ -32,20 +32,19 @@ const GalleryView = ({ articles }: { articles: AnnotatedPdfWithRelationsWithTime
       {articles.map((article, index) => {
         const firstHighlight = article.highlights?.[0]?.content?.text || "";
         return (
-          <article key={index} className="mb-6">
-            <PaperCard
-              link={`/pdf?url=${article.source}`}
-              description={firstHighlight}
-              timeAgoCalculation={article.timeAgoCalculation} // Fixed typo from timeAgoCalculation to timeAgoCalculations
-              title={firstHighlight.slice(0, 50)}
-              highlightCount={article.highlights?.length || 0}
-              isHighlighted={highlightedCardId === firstHighlight}
-              onClick={() => handleClick(firstHighlight)}
-              onDoubleClick={() => {
-                router.push(`/pdf?url=${article.source}`);
-              }}
-            />
-          </article>
+          <PaperCard
+            key={index}
+            link={`/pdf?url=${article.source}`}
+            description={firstHighlight}
+            timeAgoCalculation={article.timeAgoCalculation} // Fixed typo from timeAgoCalculation to timeAgoCalculations
+            title={firstHighlight.slice(0, 50)}
+            highlightCount={article.highlights?.length || 0}
+            isHighlighted={highlightedCardId === firstHighlight}
+            onClick={() => handleClick(firstHighlight)}
+            onDoubleClick={() => {
+              router.push(`/pdf?url=${article.source}`);
+            }}
+          />
         );
       })}
     </div>
@@ -53,12 +52,22 @@ const GalleryView = ({ articles }: { articles: AnnotatedPdfWithRelationsWithTime
 }
 
 const ListView = ({ articles }: { articles: AnnotatedPdfWithRelationsWithTimestamp[] }) => {
+  const router = useRouter();
+  const [highlightedCardId, setHighlightedCardId] = useState('');
+
   return (
     <div className="">
       {articles.map((article, index) => {
         const firstHighlight = article.highlights?.[0]?.content?.text || "";
         return (
-          <article key={index} className="mb-6">
+          <article
+            key={index}
+            className={`mb-6 hover:cursor-pointer ${highlightedCardId === article.id ? "outline outline-2 outline-primary" : ""}`}
+            onClick={() => setHighlightedCardId(article.id)}
+            onDoubleClick={() => {
+              router.push(`/pdf?url=${article.source}`);
+            }}
+          >
             <h2 className="text-xl font-semibold mb-1">
               {firstHighlight.slice(0, 50)}{" "}
             </h2>
