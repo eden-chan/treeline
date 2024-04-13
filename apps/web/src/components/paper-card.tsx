@@ -1,43 +1,36 @@
 "use client";
 
 import {
-  ChevronDownIcon,
   CircleIcon,
-  PlusIcon,
   StarIcon,
 } from "@radix-ui/react-icons";
-import { Button } from "@/components/ui/button";
+
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Separator } from "@/components/ui/separator";
-import { useRouter } from "next/navigation";
+
+type PaperCardProps = {
+  description: string;
+  title: string;
+  timeAgoCalculation: string;
+  highlightCount: number;
+  isHighlighted: boolean;
+  onClick: () => void;
+  onDoubleClick: () => void;
+};
 
 export function PaperCard({
   description,
   title,
   timeAgoCalculation,
   highlightCount,
-  link,
   isHighlighted,
   onClick,
   onDoubleClick,
-}) {
-  const router = useRouter();
-
+}: PaperCardProps) {
   return (
     <Card
       className={`flex flex-col min-h-[300px] ${isHighlighted ? "outline outline-2 outline-primary" : ""

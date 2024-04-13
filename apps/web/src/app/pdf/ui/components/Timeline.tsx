@@ -1,6 +1,6 @@
 "use client";
 
-import { AnnotatedPdf } from "@prisma/client";
+
 import { Suspense, useState } from "react";
 import { useMemo, memo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
@@ -13,7 +13,7 @@ import { TabsTrigger, TabsList, Tabs, TabsContent } from "@/components/ui/tabs"
 import { SelectValue, SelectTrigger, SelectItem, SelectContent, Select } from "@/components/ui/select"
 import { Button } from '@/components/ui/button';
 import { AlignJustify, LayoutGrid } from 'lucide-react';
-import { ListBulletIcon } from '@radix-ui/react-icons';
+
 
 export type AnnotatedPdfWithRelationsWithTimestamp = AnnotatedPdfWithRelations & {
   timeAgoCalculation: string;
@@ -34,7 +34,6 @@ const GalleryView = ({ articles }: { articles: AnnotatedPdfWithRelationsWithTime
         return (
           <PaperCard
             key={index}
-            link={`/pdf?url=${article.source}`}
             description={firstHighlight}
             timeAgoCalculation={article.timeAgoCalculation} // Fixed typo from timeAgoCalculation to timeAgoCalculations
             title={firstHighlight.slice(0, 50)}
