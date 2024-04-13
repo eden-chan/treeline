@@ -34,7 +34,7 @@ export default async function Page() {
 
 
   return (
-    <main className="h-screen w-screen gap-0 p-4">
+    <main className="h-screen w-screen gap-0 p-4 text-black">
       <Navbar users={followedUsers} loggedInUser={user} />
       <Timeline articles={timeline} />
     </main>
