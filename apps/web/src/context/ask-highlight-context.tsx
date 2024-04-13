@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 import { useChat, Message, CreateMessage } from "ai/react";
-import { v4 as uuidv4 } from "uuid";
+import { ObjectId } from "mongodb";
 
 import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
@@ -79,10 +79,9 @@ export const AskHighlightProvider: FC<{
 
     setCurrentHighlight(newHighlight, false);
 
-    // TODO: Add TRPC router for curriculum node and update this value
-    // updateHighlightMutation.mutate({
-    //   highlight: newHighlight,
-    // });
+    updateCurriculumNodeMutation.mutate({
+      curriculumNode: newHighlight.node,
+    });
 
     setMessages([]);
   };
@@ -114,18 +113,21 @@ export const AskHighlightProvider: FC<{
           (oldData) => {
             if (!oldData) return oldData;
 
-            const nodeId = uuidv4();
-            const newNode = {
-              ...newData.highlight.node,
-              id: nodeId,
-              children: [],
-            };
+            const highlightId = new ObjectId().toString();
+            const newNode = newData.highlight.node
+              ? {
+                  ...newData.highlight.node,
+                  id: new ObjectId().toString(),
+                  parentId: null,
+                  highlightId,
+                  children: [],
+                }
+              : null;
             const newHighlight = {
               ...newData.highlight,
-              id: uuidv4(),
-              nodeId,
+              id: highlightId,
               node: newNode,
-              annotatedPdfId: annotatedPdfId,
+              annotatedPdfId,
             };
 
             return {
@@ -144,6 +146,8 @@ export const AskHighlightProvider: FC<{
         });
       },
     });
+  const updateCurriculumNodeMutation =
+    clientApi.curriculum.updateNode.useMutation();
 
   const createAskHighlight = async (
     highlight: NewHighlightWithRelationsInput,
@@ -166,27 +170,27 @@ ${highlight.content.text}`
       {},
     );
 
-    // Add node to DB
-    createHighlightMutation.mutate({
-      highlight,
-    });
-
-    const nodeId = uuidv4();
-    const pseudoHighlight = {
+    const highlightId = new ObjectId().toString();
+    const iHighlight = {
       ...highlight,
-      id: uuidv4(),
-      nodeId,
+      id: highlightId,
       node: {
         ...highlight.node,
-        id: nodeId,
+        id: new ObjectId().toString(),
+        highlightId,
         parentId: null,
         children: [],
       },
     };
 
-    setCurrentHighlight(pseudoHighlight, false);
+    // Add node to DB
+    createHighlightMutation.mutate({
+      highlight: iHighlight,
+    });
 
-    return pseudoHighlight;
+    setCurrentHighlight(iHighlight, false);
+
+    return iHighlight;
   };
 
   // Update the highlight as the AI response streams in
@@ -203,8 +207,13 @@ ${highlight.content.text}`
 
     const newHighlight = {
       ...currentHighlightRef.current,
-      response: response,
+      node: {
+        ...currentHighlightRef.current.node,
+        response,
+      },
     };
+
+    setCurrentHighlight(newHighlight, false);
 
     // Update highlight as messages stream in
     setCurrentHighlight(newHighlight, false);

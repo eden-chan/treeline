@@ -140,6 +140,7 @@ export const CommentSchema = z.object({
 export const CurriculumNodeSchema = z.object({
   comments: z.array(CommentSchema),
   prompt: z.string().or(z.null()),
+  highlightId: z.string().or(z.null()),
   response: z.string().or(z.null()),
   timestamp: z.date(),
 });
@@ -149,17 +150,21 @@ export const ICurriculumNodeSchema = CurriculumNodeSchema.extend({
   children: z.array(z.any()),
 });
 
+export const HighlightTypeSchema = z.enum(["ASK", "COMMENT"]);
+
 export const HighlightSchema = z.object({
   content: ContentSchema,
+  type: HighlightTypeSchema,
   position: ScaledPositionSchema,
   comment: CommentSchema.or(z.null()),
-  nodeId: z.string().or(z.null()),
   annotatedPdfId: z.string(),
 });
 
 export const HighlightWithCurriculumNodeSchema = HighlightSchema.extend({
-  node: CurriculumNodeSchema.or(z.undefined()).or(z.null()),
-}).omit({ nodeId: true });
+  node: CurriculumNodeSchema.omit({ highlightId: true })
+    .or(z.undefined())
+    .or(z.null()),
+});
 
 export const IHighlightSchema = HighlightSchema.extend({
   id: z.string(),

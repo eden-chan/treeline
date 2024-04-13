@@ -15,9 +15,9 @@ export type HighlightWithRelations = Highlight & {
 
 export type NewHighlightWithRelationsInput = Omit<
   Highlight & {
-    node?: Omit<CurriculumNode, "id" | "parentId"> | null;
+    node?: Omit<CurriculumNode, "id" | "parentId" | "highlightId"> | null;
   },
-  "id" | "nodeId"
+  "id"
 >;
 
 export const highlightRouter = createTRPCRouter({
@@ -60,7 +60,7 @@ export const highlightRouter = createTRPCRouter({
       try {
         res = await db.highlight.create(...createHighlightParams);
       } catch (error) {
-        console.error("Failed to upsert highlights:", error);
+        console.error("Failed to create highlights:", error);
         return null;
       }
       return res;

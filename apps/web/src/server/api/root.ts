@@ -1,8 +1,9 @@
-import { parsedPapersRouter } from "./routers/parsed-pdf";
+import { parsedPapersRouter } from "src/server/api/routers/parsed-pdf";
 import { annotatedPdfRouter } from "@src/server/api/routers/annotated-pdf";
 import { highlightRouter } from "@src/server/api/routers/highlight";
 import { userRouter } from "@src/server/api/routers/user";
 import { createCallerFactory, createTRPCRouter } from "@src/server/api/trpc";
+import { curriculumNodeRouter } from "@src/server/api/routers/curriculum-node";
 
 /**
  * This is the primary router for your server.
@@ -11,9 +12,10 @@ import { createCallerFactory, createTRPCRouter } from "@src/server/api/trpc";
  */
 export const appRouter = createTRPCRouter({
   annotatedPdf: annotatedPdfRouter,
+  curriculum: curriculumNodeRouter,
   highlight: highlightRouter,
-  user: userRouter,
   parsedPapers: parsedPapersRouter,
+  user: userRouter,
 });
 
 // export type definition of API
