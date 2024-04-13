@@ -8,7 +8,7 @@ import React, {
   useState,
 } from "react";
 import { useChat, Message, CreateMessage } from "ai/react";
-import { ObjectId } from "mongodb";
+import { v4 as uuidv4 } from "uuid";
 
 import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
@@ -113,11 +113,11 @@ export const AskHighlightProvider: FC<{
           (oldData) => {
             if (!oldData) return oldData;
 
-            const highlightId = new ObjectId().toString();
+            const highlightId = uuidv4();
             const newNode = newData.highlight.node
               ? {
                   ...newData.highlight.node,
-                  id: new ObjectId().toString(),
+                  id: uuidv4(),
                   parentId: null,
                   highlightId,
                   children: [],
@@ -144,6 +144,13 @@ export const AskHighlightProvider: FC<{
           userId: userId,
           source: loadedSource,
         });
+
+        // Todo: address potential race condition where onFinish callback for useChat executes before
+        // setting the new id values
+        if (!input?.node || !currentHighlightRef.current?.node) return;
+        currentHighlightRef.current.id = input.id;
+        currentHighlightRef.current.node.id = input.node.id;
+        currentHighlightRef.current.node.highlightId = input.node.highlightId;
       },
     });
   const updateCurriculumNodeMutation =
@@ -170,27 +177,27 @@ ${highlight.content.text}`
       {},
     );
 
-    const highlightId = new ObjectId().toString();
-    const iHighlight = {
+    // Add node to DB
+    createHighlightMutation.mutate({
+      highlight,
+    });
+
+    const highlightId = uuidv4();
+    const tempHighlight = {
       ...highlight,
       id: highlightId,
       node: {
         ...highlight.node,
-        id: new ObjectId().toString(),
+        id: uuidv4(),
         highlightId,
         parentId: null,
         children: [],
       },
     };
 
-    // Add node to DB
-    createHighlightMutation.mutate({
-      highlight: iHighlight,
-    });
+    setCurrentHighlight(tempHighlight, false);
 
-    setCurrentHighlight(iHighlight, false);
-
-    return iHighlight;
+    return tempHighlight;
   };
 
   // Update the highlight as the AI response streams in
