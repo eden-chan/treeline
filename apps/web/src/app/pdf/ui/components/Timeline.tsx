@@ -63,7 +63,6 @@ const ListView = ({ articles }: { articles: AnnotatedPdfWithRelationsWithTimesta
               {firstHighlight.slice(0, 50)}{" "}
             </h2>
             <p className="text-gray-600 mb-2">
-              {" "}
               {article.timeAgoCalculation} {article.highlights?.length || 0}{" "}
               highlights
             </p>
@@ -95,76 +94,74 @@ const Timeline = memo(({ articles }: { articles: AnnotatedPdfWithRelations[] }) 
   const [view, setView] = useState('galleryView');
 
   return (
-    <main>
-      <Tabs defaultValue="recentlyViewed">
 
-        <TabsList>
-          <TabsTrigger value="recentlyViewed">
-            Recently viewed
-          </TabsTrigger>
-          <TabsTrigger value="favorites">
-            Favorites
-          </TabsTrigger>
-          <TabsTrigger value="explore">
-            Explore
-          </TabsTrigger>
+    <Tabs defaultValue="recentlyViewed" >
+      <TabsList className='w-full flex items-center justify-between bg-white'>
+        <div className='flex items-center space-x-4'>
+          <TabsTrigger value="recentlyViewed"> Recently viewed </TabsTrigger>
+          <TabsTrigger value="favorites"> Favorites </TabsTrigger>
+          <TabsTrigger value="explore"> Explore </TabsTrigger>
 
-          <Select>
-            <SelectTrigger id="organization" className='min-w-[200px]'>
-              <SelectValue placeholder="All organizations" />
-            </SelectTrigger>
-            <SelectContent position="popper">
-              <SelectItem value="org1">Organization 1</SelectItem>
-              <SelectItem value="org2">Organization 2</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select>
-            <SelectTrigger id="viewed">
-              <SelectValue placeholder="Last viewed" />
-            </SelectTrigger>
-            <SelectContent position="popper">
-              <SelectItem value="today">Today</SelectItem>
-              <SelectItem value="yesterday">Yesterday</SelectItem>
-            </SelectContent>
-          </Select>
+          <div className="flex items-center space-x-2">
+            <Select>
+              <SelectTrigger id="organization" className='min-w-[200px]'>
+                <SelectValue placeholder="All organizations" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectItem value="org1">Organization 1</SelectItem>
+                <SelectItem value="org2">Organization 2</SelectItem>
+              </SelectContent>
+            </Select>
 
+            <Select>
+              <SelectTrigger id="viewed">
+                <SelectValue placeholder="Last viewed" />
+              </SelectTrigger>
+              <SelectContent position="popper">
+                <SelectItem value="today">Today</SelectItem>
+                <SelectItem value="yesterday">Yesterday</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <div className="flex space-x-2">
           <Button onClick={() => setView('galleryView')}>
             <LayoutGrid />
           </Button>
           <Button onClick={() => setView('listView')}>
             <AlignJustify />
           </Button>
-
-        </TabsList>
-        <TabsContent value="recentlyViewed">
-          <Suspense fallback={<h1>🌀 Loading...</h1>}>
-            {view === 'galleryView' ? (
-              <GalleryView articles={memoizedArticles} />
-            ) : (
-              <ListView articles={memoizedArticles} />
-            )}
-          </Suspense>
-        </TabsContent>
-        <TabsContent value="favorites">
-          <Suspense fallback={<h1>🌀 Loading...</h1>}>
-            {view === 'galleryView' ? (
-              <GalleryView articles={memoizedArticles} />
-            ) : (
-              <ListView articles={memoizedArticles} />
-            )}
-          </Suspense>
-        </TabsContent>
-        <TabsContent value="explore">
-          <Suspense fallback={<h1>🌀 Loading...</h1>}>
-            {view === 'galleryView' ? (
-              <GalleryView articles={memoizedArticles} />
-            ) : (
-              <ListView articles={memoizedArticles} />
-            )}
-          </Suspense>
-        </TabsContent>
-      </Tabs>
-    </main>
+        </div>
+      </TabsList>
+      <TabsContent value="recentlyViewed">
+        <Suspense fallback={<h1>🌀 Loading...</h1>}>
+          {view === 'galleryView' ? (
+            <GalleryView articles={memoizedArticles} />
+          ) : (
+            <ListView articles={memoizedArticles} />
+          )}
+        </Suspense>
+      </TabsContent>
+      <TabsContent value="favorites">
+        <Suspense fallback={<h1>🌀 Loading...</h1>}>
+          {view === 'galleryView' ? (
+            <GalleryView articles={memoizedArticles} />
+          ) : (
+            <ListView articles={memoizedArticles} />
+          )}
+        </Suspense>
+      </TabsContent>
+      <TabsContent value="explore">
+        <Suspense fallback={<h1>🌀 Loading...</h1>}>
+          {view === 'galleryView' ? (
+            <GalleryView articles={memoizedArticles} />
+          ) : (
+            <ListView articles={memoizedArticles} />
+          )}
+        </Suspense>
+      </TabsContent>
+    </Tabs>
   );
 });
 

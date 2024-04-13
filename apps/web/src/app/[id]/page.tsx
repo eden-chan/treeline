@@ -66,17 +66,17 @@ export default async function Page({ params }) {
   // }
 
   return (
-    <main className="h-screen w-screen gap-0 bg-[##f8f7f6]">
-      <div className="mx-auto py-8 px-4 text-black">
-        <Navbar users={users} loggedInUser={loggedInUser} />
-        <Profile
-          users={users}
-          timeline={timeline}
-          searchedUser={searchedUser}
-          searchedUserImageUrl={searchedUserClerk?.imageUrl as string}
-          loggedInUser={loggedInUser}
-        />
-      </div>
+    <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">
+
+      <Navbar users={users} loggedInUser={loggedInUser} />
+      <Profile
+        users={users}
+        timeline={timeline}
+        searchedUser={searchedUser}
+        searchedUserImageUrl={searchedUserClerk?.imageUrl as string}
+        loggedInUser={loggedInUser}
+      />
+
     </main>
   );
 }
