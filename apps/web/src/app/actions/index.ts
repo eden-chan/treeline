@@ -19,3 +19,16 @@ export const followAction = async (searchedUser: User, loggedInUser: User) => {
     throw new Error("Failed to update follow status.");
   }
 };
+
+import { ChromaClient } from "chromadb";
+
+export async function createDocs(prevState: any, formData: FormData) {
+  const client = new ChromaClient({ path: "http://0.0.0.0:8000" });
+  const collection = await client.getCollection({ name: "demo" });
+  const response = await collection.add({
+    ids: ["1"],
+    documents: [`${formData.get("content")}`],
+    metadatas: [{ user: 1, title: `${formData.get("title")}` }],
+  });
+  return { message: `${response}` };
+}

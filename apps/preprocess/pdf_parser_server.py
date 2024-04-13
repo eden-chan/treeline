@@ -120,6 +120,10 @@ async def parse_pdf(pdf_url):
             candidate_titles = [node.text.split('\n')[0] for node in nodes[:5]]
             
             # there can be preface text, so we take the second to fourth sections as potential candidates
+            # import pdb; pdb.set_trace()
+            # TODO: extract the metadata location, get all possible headers and subsections.
+            # all_metadata = [for metadata in node.metadata.split('\n') for node in nodes]
+            
             candidate_abstracts = [node.text for node in nodes[0:5]]
             title = extract_title(candidate_titles)
             abstract = extract_abstract(candidate_abstracts)
