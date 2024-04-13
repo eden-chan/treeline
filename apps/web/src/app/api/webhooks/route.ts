@@ -72,7 +72,7 @@ export async function POST(req: Request) {
     });
 
     if (doesHandleExist.length > 0) {
-      handle = doesHandleExist[0].handle + "1";
+      handle = `${doesHandleExist[0]?.handle}${doesHandleExist.length + 1}`;
     }
 
     const newUser = await db.user.create({

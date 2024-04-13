@@ -8,13 +8,14 @@ import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import SearchWithAutocomplete from "./SearchWithAutocomplete";
 import type { User } from "@prisma/client";
+import { ImportButton } from '@src/components/import-button';
 
 export default function Navbar({
   users,
   loggedInUser,
 }: {
   users: User[];
-  loggedInUser: users;
+  loggedInUser: User; // Corrected type from 'users' to 'User'
 }) {
   // note: the id field is mandatory
   const items = users.map((user) => ({
@@ -23,7 +24,7 @@ export default function Navbar({
     handle: user.handle,
   }));
   return (
-    <header className="flex justify-between items-center mb-10">
+    <header className="flex justify-between items-center mb-10 sticky top-0 bg-white z-50">
       <h1 className="text-3xl font-bold">My/Space</h1>
       <div className="flex space-x-4">
         <div className="w-[200px]">
@@ -36,6 +37,7 @@ export default function Navbar({
           My bookshelf
         </Link>
         <UserButton />
+        <ImportButton />
       </div>
     </header>
   );

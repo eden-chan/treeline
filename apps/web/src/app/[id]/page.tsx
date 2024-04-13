@@ -4,11 +4,19 @@ import { User, clerkClient, currentUser } from "@clerk/nextjs/server";
 
 import Profile from "../pdf/ui/components/ProfilePage";
 import Navbar from "../pdf/ui/components/Navbar";
+import { RedirectToSignIn, SignIn } from '@clerk/nextjs';
 
 export default async function Page({ params }: { params: { id: string } }) {
-  // TODO: handle edgecase of multiple hypthen in names
+  // TODO: handle edgecase of multiple hyphen in names
   const handle = params.id;
   const searchedUser = await api.user.fetchUser({ handle });
+  const clerkUser = await currentUser();
+  if (!clerkUser) {
+    return (
+      <RedirectToSignIn />
+    );
+  }
+
 
   if (!searchedUser) {
     return (
@@ -23,7 +31,6 @@ export default async function Page({ params }: { params: { id: string } }) {
     emailAddress: [searchedUser.email],
   })) as User[];
 
-  //
   // Get all users to populate search bar and timeline
   const clerkUsers = (await clerkClient.users.getUserList()) as User[];
   let userEmails = [];
@@ -38,33 +45,24 @@ export default async function Page({ params }: { params: { id: string } }) {
   const users = await api.user.fetchUsers({ userEmailList: userEmails });
   const timeline = await api.annotatedPdf.fetchAllAnnotatedPdfs({
     userList: userEmails,
-  });
+  }) ?? [];
 
   const _loggedInUser = await currentUser();
   const loggedInUserEmail = _loggedInUser?.emailAddresses[0]
     ?.emailAddress as string;
   const loggedInUser = await api.user.fetchUser({ email: loggedInUserEmail });
 
-  if (!users || !timeline || !_loggedInUser || !loggedInUser) {
-    return (
-      <div className="h-screen w-screen gap-0 text-black">
-        <div>Change Later</div>
-      </div>
-    );
-  }
-
   return (
-    <main className="h-screen w-screen gap-0 bg-[##f8f7f6]">
-      <div className="mx-auto py-8 px-4 text-black">
-        <Navbar users={users} loggedInUser={loggedInUser} />
-        <Profile
-          users={users}
-          timeline={timeline}
-          searchedUser={searchedUser}
-          searchedUserImageUrl={searchedUserClerk?.imageUrl as string}
-          loggedInUser={loggedInUser}
-        />
-      </div>
+    <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">
+      <Navbar users={users} loggedInUser={loggedInUser} />
+      <Profile
+        users={users}
+        timeline={timeline}
+        searchedUser={searchedUser}
+        searchedUserImageUrl={searchedUserClerk?.imageUrl as string}
+        loggedInUser={loggedInUser}
+      />
+
     </main>
   );
 }
