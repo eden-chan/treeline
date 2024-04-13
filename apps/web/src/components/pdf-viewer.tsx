@@ -133,8 +133,12 @@ export default function PDFViewer({
       source: loadedSource,
     }).data?.highlights || userHighlights;
   const [friendHighlights, setFriendHighlights] = useState<Highlight[]>([]);
-  const { currentHighlight, setCurrentHighlight, createAskHighlight } =
-    useAskHighlight();
+  const {
+    currentHighlight,
+    selectHighlight,
+    createAskHighlight,
+    clearSelectedHighlight,
+  } = useAskHighlight();
 
   const getHighlightById = (id: string) => {
     return highlights.find((highlight) => highlight.id === id);
@@ -152,7 +156,7 @@ export default function PDFViewer({
     const highlight = getHighlightById(parseIdFromHash());
 
     if (highlight) {
-      setCurrentHighlight(highlight);
+      selectHighlight(highlight);
       scrollToHighlightId(highlight);
     }
   };
@@ -310,7 +314,7 @@ export default function PDFViewer({
           highlight={currentHighlight}
           returnHome={() => {
             document.location.hash = "";
-            setCurrentHighlight(null);
+            clearSelectedHighlight();
           }}
         />
       ) : (

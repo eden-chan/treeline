@@ -27,8 +27,8 @@ export const curriculumNodeRouter = createTRPCRouter({
       async ({ ctx, input }) => {
         let res: CurriculumNodeWithMaybeRelations;
 
-        try {
-          res = await db.curriculumNode.update({
+        const updateNodeParams: Parameters<typeof db.curriculumNode.update> = [
+          {
             where: {
               id: input.curriculumNode.id,
             },
@@ -41,7 +41,24 @@ export const curriculumNodeRouter = createTRPCRouter({
             include: {
               children: true,
             },
-          });
+          },
+        ];
+
+        if (input.curriculumNode.children.length) {
+          updateNodeParams[0].data.children = {
+            createMany: {
+              data: input.curriculumNode.children.map((child) => ({
+                prompt: child.prompt,
+                response: child.response,
+                timestamp: child.timestamp,
+                comments: child.comments,
+              })),
+            },
+          };
+        }
+
+        try {
+          res = await db.curriculumNode.update(...updateNodeParams);
         } catch (error) {
           console.error("Failed to update curriculum node", error);
           return null;

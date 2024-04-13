@@ -7,7 +7,7 @@ import React, {
   useRef,
   useState,
 } from "react";
-import { useChat, Message, CreateMessage } from "ai/react";
+import { useChat, Message } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
 
 import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
@@ -17,6 +17,7 @@ import {
   NewHighlightWithRelationsInput,
   HighlightWithRelations,
 } from "@src/server/api/routers/highlight";
+import { CurriculumNodeWithRelations } from "@src/server/api/routers/annotated-pdf";
 
 export type ContextProps = {
   currentHighlight: Highlight | null;
@@ -27,6 +28,8 @@ export type ContextProps = {
   createAskHighlight: (
     highlight: NewHighlightWithRelationsInput,
   ) => Promise<Highlight | undefined>;
+  clearSelectedHighlight: () => void;
+  selectHighlight: (h: HighlightWithRelations) => void;
 } & ReturnType<typeof useChat>;
 
 export const useAskHighlight = () => {
@@ -46,7 +49,9 @@ export const AskHighlightProvider: FC<{
   children: ReactNode;
 }> = ({ annotatedPdfId, userId, loadedSource, children }) => {
   const [_, setForceRerender] = useState<Boolean>(false);
+  // Refs are required so that their values are not cached in callback functions
   const currentHighlightRef = useRef<HighlightWithRelations | null>(null);
+  const currentNodeRef = useRef<CurriculumNodeWithRelations | null>(null);
   const setCurrentHighlight = (
     highlight: HighlightWithRelations | null,
     forceRerender = true,
@@ -56,6 +61,16 @@ export const AskHighlightProvider: FC<{
       setForceRerender((prev) => !prev);
     }
   };
+  const setCurrentNode = (
+    node: CurriculumNodeWithRelations | null,
+    forceRerender = true,
+  ) => {
+    currentNodeRef.current = node;
+    if (forceRerender) {
+      setForceRerender((prev) => !prev);
+    }
+  };
+  const isGeneratingFollowUpsRef = useRef<Boolean>(false);
 
   const onFinish = (message: Message) => {
     // Update DB once entire response is received
@@ -69,25 +84,69 @@ export const AskHighlightProvider: FC<{
       return;
     }
 
-    const newHighlight = {
-      ...currentHighlightRef.current,
-      node: {
-        ...currentHighlightRef.current.node,
-        response: message.content,
-      },
-    };
+    /**
+     * Case 1: Finished generating the response to the question being asked
+     * Case 2: Finished generating followup questions for the previous response
+     */
+    if (!isGeneratingFollowUpsRef.current) {
+      const newHighlight = {
+        ...currentHighlightRef.current,
+        node: {
+          ...currentHighlightRef.current.node,
+          response: message.content,
+        },
+      };
 
-    setCurrentHighlight(newHighlight, false);
+      setCurrentHighlight(newHighlight, false);
 
-    updateCurriculumNodeMutation.mutate({
-      curriculumNode: newHighlight.node,
-    });
+      updateCurriculumNodeMutation.mutate({
+        curriculumNode: newHighlight.node,
+      });
 
-    setMessages([]);
+      setCurrentNode(newHighlight.node, false);
+
+      // Timeout is required since useChat may cause a socket connection error if opening a new connection with append as the old connection is closing
+      setTimeout(() => {
+        append({
+          role: "user",
+          content: FOLLOW_UP_PROMPT,
+          createdAt: new Date(),
+        });
+        isGeneratingFollowUpsRef.current = true;
+      }, 500);
+    } else if (isGeneratingFollowUpsRef.current && currentNodeRef.current) {
+      console.log("message.content:", message.content);
+      const newPrompts = [...message.content.split("\n")];
+      console.log("new prompts:", newPrompts);
+      const newChildren = newPrompts.map((prompt) => {
+        return {
+          id: uuidv4(),
+          parentId: currentNodeRef.current?.id ?? null,
+          highlightId: null,
+          comments: [],
+          prompt,
+          response: "",
+          children: [],
+          timestamp: new Date(),
+        };
+      });
+      const newNode = {
+        ...currentNodeRef.current,
+        children: newChildren,
+      };
+
+      updateCurriculumNodeMutation.mutate({
+        curriculumNode: newNode,
+      });
+
+      setCurrentNode(newNode, false);
+      isGeneratingFollowUpsRef.current = false;
+    }
   };
 
-  const { messages, setMessages, append, isLoading, ...chat } = useChat({
+  const { messages, setMessages, append, ...chat } = useChat({
     onFinish,
+    onError: (error) => console.error("Error occured in useChat:", error),
   });
 
   const utils = clientApi.useUtils();
@@ -168,14 +227,11 @@ ${highlight.content.text}`
       : highlight.node.prompt;
 
     // Query AI for response
-    append(
-      {
-        role: "user",
-        content: promptWithContext,
-        createdAt: new Date(),
-      },
-      {},
-    );
+    append({
+      role: "user",
+      content: promptWithContext,
+      createdAt: new Date(),
+    });
 
     // Add node to DB
     createHighlightMutation.mutate({
@@ -203,6 +259,7 @@ ${highlight.content.text}`
   // Update the highlight as the AI response streams in
   // TODO: Update API so we don't rely on useEffect anymore. Just work off of callbacks once the response is done streaming
   useEffect(() => {
+    if (isGeneratingFollowUpsRef.current) return;
     if (messages.length < 2 || !currentHighlightRef.current?.node?.prompt)
       return;
     if (messages[messages.length - 1]?.role === "user") return;
@@ -221,10 +278,18 @@ ${highlight.content.text}`
     };
 
     setCurrentHighlight(newHighlight, false);
+  }, [messages, isGeneratingFollowUpsRef]);
 
-    // Update highlight as messages stream in
-    setCurrentHighlight(newHighlight, false);
-  }, [messages, isLoading]);
+  const selectHighlight = (highlight: HighlightWithRelations) => {
+    setCurrentHighlight(highlight);
+    // Todo: Construct message history
+  };
+
+  const clearSelectedHighlight = () => {
+    setCurrentHighlight(null);
+    setCurrentNode(null, false);
+    isGeneratingFollowUpsRef.current = false;
+  };
 
   const value = {
     currentHighlight: currentHighlightRef.current,
@@ -232,8 +297,9 @@ ${highlight.content.text}`
     messages,
     setMessages,
     createAskHighlight,
+    selectHighlight,
+    clearSelectedHighlight,
     append,
-    isLoading,
     ...chat,
   };
 
