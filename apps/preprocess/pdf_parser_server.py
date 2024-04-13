@@ -66,7 +66,7 @@ def extract_abstract(abstract_candidates: List[str]):
     return highest_confidence_abstract.candidate
 
 
-def chat(user_text, response_model):
+def chat(text_chunk, metadata, abstract, response_model):
     try:
         resp = client.chat.completions.create(
                 model="gpt-3.5-turbo",
@@ -74,9 +74,13 @@ def chat(user_text, response_model):
                 max_retries=3,
                 response_model=response_model,
                 messages=[
+                     {
+                        "role": "system",
+                        "content": f"You are an expert at coming up with facts and questions to help beginners understand a field of research when reading research papers. Ask questions that will help you understand the provided TEXT_CHUNK and SOURCE_LOCATION better based on PROVIDED_ABSTRACT to guide your questions. PROVIDED_ABSTRACT=\"\"\"{abstract}\"\"\""
+                    }, 
                     {
                         "role": "user",
-                        "content": user_text
+                        "content": f"TEXT_CHUNK=\"\"\"{text_chunk}\"\"\" SOURCE_LOCATION=\"\"\"{metadata}\"\"\""
                     }, 
                 ]
             )
@@ -120,7 +124,7 @@ async def parse_pdf(pdf_url):
             title = extract_title(candidate_titles)
             abstract = extract_abstract(candidate_abstracts)
 
-            futures = [executor.submit(chat, node.text, ExtractFactDescriptor) for node in nodes]
+            futures = [executor.submit(chat, node.text, node.metadata, abstract, ExtractFactDescriptor) for node in nodes]
             parsing = [future.result() for future in as_completed(futures)]
 
             facts = [parsing_item.fact_descriptors for parsing_item in parsing]

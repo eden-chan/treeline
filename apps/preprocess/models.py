@@ -13,7 +13,7 @@ class User(BaseModel):
 class FactDescriptor(BaseModel):
     fact: str = Field(description="Provide information directly relevant to the question (or where to find more information in the text) - either supplementary data, facts, or where the answer might be located, like pages and sections. Add definitions and other context from the page into the fact, so it's self-explanatory")
     relevance: str = Field(description="How is this fact relevant to the answer?")
-    nextSource: str = Field(description="a page number, a section name, or other descriptors of where to look for more information.")
+    nextSource: str = Field(description="Based the provided metadata, provide the section name, or other descriptors of where to look for more information.")
     expectedInfo: str = Field(description="What information do you expect to find there?")
 
     class Config:
