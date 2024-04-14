@@ -13,15 +13,14 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import requests
 import tempfile
 from llama_parse import LlamaParse
-import httpx
 from llama_index.core.node_parser import MarkdownNodeParser
-
-
-
 import arxiv
-from pydantic import BaseModel
 from datetime import datetime
+import httpx
 
+app = FastAPI()
+client = instructor.patch(OpenAI())
+    
 class PaperMetadata(BaseModel):
     title: str
     summary: str
@@ -30,36 +29,22 @@ class PaperMetadata(BaseModel):
     primary_category: str
 
 
-
-
-
+def semantic_scholar_extract(pdf_url:str):
+    paper_id = pdf_url.split('/')[-1].split('.pdf')[0]
+    paper_id=f'ARXIV:{paper_id}'
+    response = requests.get(f'https://api.semanticscholar.org/graph/v1/paper/{paper_id}', params={'fields': 'authors,influentialCitationCount,tldr,referenceCount,citationCount,title,references,citations'})
+    response_json = response.json()
+    return response_json
+    
     
 def extract_paper_metadata(pdf_url:str) -> PaperMetadata:
     paper_id = pdf_url.split('/')[-1].split('.pdf')[0]
     search = arxiv.Search(id_list=[paper_id])
     paper = next(search.results())
     
-    
      # Extract the title and authors from the arXiv metadata
     title = paper.title
     authors = ' '.join([author.name for author in paper.authors])
-
-    # Query the Semantic Scholar API to get the citation count
-    url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={title} {authors}"
-    response = requests.get(url)
-    data = response.json()
-
-    if 'total' in data and data['total'] > 0:
-        paper_id = data['data'][0]['paperId']
-        citation_count = data['data'][0]['citationCount']
-        # return citation_count
-    # else:
-        # return None
-
-    import pdb; pdb.set_trace()
-    
-
-        
     paper_metadata = PaperMetadata(
         title=paper.title, 
         summary=paper.summary, 
@@ -68,51 +53,6 @@ def extract_paper_metadata(pdf_url:str) -> PaperMetadata:
         primary_category=CATEGORY_MAPPING.get(paper.primary_category, 'Other')
     )
     return paper_metadata
-
-client = instructor.patch(OpenAI())
-def extract_title(title_candidates: List[str]):
-    try:
-        qa: TitleRanker = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            max_retries=2,
-            response_model=TitleRanker,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an expert at identifying the most likely title for research papers from a list of sentences. Select the sentence that is most likely to be the title.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Here are the title candidates: {title_candidates}\n\n Rank each candidate by how likely it's the title of the paper.",
-                },
-            ],
-        )
-    except Exception as e:
-        print(e)
-    highest_confidence_title = max(qa.ranked_candidates, key=lambda x: x.confidence)
-    return highest_confidence_title.candidate
-
-def extract_abstract(abstract_candidates: List[str]):
-    try:
-        qa: AbstractRanker = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            max_retries=2,
-            response_model=AbstractRanker,
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are an expert at identifying the most likely abstract for research papers from a list of candidate text. A research paper abstract is usually prefaced by ABSTRACT. If it\s not prefaced by ABSTRACT it is unlikely to be the abstract. It should briefly summarize the paper\'s purpose, research problem, methodology, major findings, conclusions, and implications. The candidate text can also not be relevant at all to the abstract. Select candidate that is most likely to be the abstract.",
-                },
-                {
-                    "role": "user",
-                    "content": f"Here are the abstract candidates: {abstract_candidates}\n\n Rank each candidate by how likely it's the title of the paper.",
-                },
-            ],
-        )
-    except Exception as e:
-        print(e)
-    highest_confidence_abstract = max(qa.ranked_candidates, key=lambda x: x.confidence)
-    return highest_confidence_abstract.candidate
 
 
 def chat(text_chunk, metadata, abstract, response_model):
@@ -212,7 +152,6 @@ async def parse_pdf(pdf_url):
     response = {"source": pdf_url, 'sections': sections, 'facts': facts_serialized, 'title': title, "abstract": abstract, "mongo_id": mongo_id }
     return response
     
-app = FastAPI()
 
 class PDFRequest(BaseModel):
     pdf_url: str
@@ -240,6 +179,21 @@ async def fetch_paper(request: PDFRequest):
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF. {e}")
     
     
+import uvicorn
 if __name__ == "__main__":
-    import uvicorn
     uvicorn.run("pdf_parser_server:app", host="0.0.0.0", port=3001, reload=True)
+    
+    """
+    SEMBANTIC scholar resources
+    [''_abstract', '_authors', '_citationCount', '_citationStyles', '_citations', 
+    '_corpusId', '_data', '_embedding', '_externalIds', '_fieldsOfStudy',
+    '_influentialCitationCount', '_init_attributes', '_isOpenAccess',
+    '_journal', '_openAccessPdf', '_paperId', '_publicationDate', 
+    '_publicationTypes', '_publicationVenue', '_referenceCount', '_references', 
+    '_s2FieldsOfStudy', '_title', '_tldr', '_url', '_venue', '_year', 'abstract',
+    'authors', 'citationCount', 'citationStyles', 'citations', 'corpusId', 'embedding',
+    'externalIds', 'fieldsOfStudy', 'influentialCitationCount', 'isOpenAccess', 'journal', 
+    'keys', 'openAccessPdf', 'paperId', 'publicationDate', 'publicationTypes', 'publicationVenue',
+    'raw_data', 'referenceCount', 'references', 's2FieldsOfStudy', 'title', 'tldr', 'url', 
+    'venue', 'year']
+    """
