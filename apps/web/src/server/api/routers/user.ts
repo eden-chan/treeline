@@ -90,7 +90,7 @@ export const userRouter = createTRPCRouter({
           where: whereClause,
         });
         const end = Date.now();
-        console.log(`Query took ${end - start}ms`);
+        // console.log(`Query took ${end - start}ms`);
         if (!result) {
           return undefined;
         }
@@ -116,7 +116,7 @@ export const userRouter = createTRPCRouter({
           where: whereClause,
         });
         const end = Date.now();
-        console.log(`Query took ${end - start}ms`);
+        // console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
         return undefined;

@@ -25,7 +25,7 @@ const LearningActivityCalendar = () => {
             alert(JSON.stringify(activity));
         },
         onMouseEnter: (event) => (activity) => {
-            console.log('on mouse enter');
+            // console.debug('on mouse enter');
         },
     }}
     />;

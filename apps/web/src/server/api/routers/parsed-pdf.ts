@@ -4,6 +4,11 @@ import { ParsedPapers } from "@prisma/client";
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 
+export interface TitleSourcePair {
+  title: string;
+  source: string;
+}
+
 export const parsedPapersRouter = createTRPCRouter({
   fetchParsedPdf: publicProcedure
     .input(
@@ -21,7 +26,7 @@ export const parsedPapersRouter = createTRPCRouter({
           where: whereClause,
         });
         const end = Date.now();
-        console.log(`Query took ${end - start}ms`);
+        // console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch parsed paper:", error);
         return null;
@@ -35,23 +40,27 @@ export const parsedPapersRouter = createTRPCRouter({
       const start = Date.now();
       result = await db.parsedPapers.findMany();
       const end = Date.now();
-      console.log(`Query took ${end - start}ms`);
+      // console.log(`Query took ${end - start}ms`);
     } catch (error) {
       console.error("Failed to fetch parsed paper:", error);
       return [];
     }
     return result;
   }),
-  fetchAllParsedSources: publicProcedure.query<string[]>(async () => {
-    let result: string[];
+  fetchAllParsedSources: publicProcedure.query<TitleSourcePair[]>(async () => {
+    let result: TitleSourcePair[];
     try {
       const start = Date.now();
-      let resp = await db.parsedPapers.findMany({ select: { source: true } });
+      let resp = await db.parsedPapers.findMany({
+        select: { source: true, title: true },
+      });
       result = resp
         .filter((paper) => paper.source !== undefined)
-        .map((paper) => paper.source);
+        .map((paper) => {
+          return { source: paper.source, title: paper.title };
+        });
       const end = Date.now();
-      console.log(`Query took ${end - start}ms`);
+      // console.log(`Query took ${end - start}ms`);
     } catch (error) {
       console.error("Failed to fetch parsed paper:", error);
       return [];

@@ -1,6 +1,7 @@
 "use server";
 
-import { ParsedPapers, User } from "@prisma/client";
+import { ParsedPapers, ParsedPapersFacts, User } from "@prisma/client";
+import { TitleSourcePair } from "@src/server/api/routers/parsed-pdf";
 import { api } from "@src/trpc/server";
 
 // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
@@ -30,7 +31,7 @@ export const getParsedPaperAction = async (
     throw new Error(`Failed to get parsed paper by url: ${pdfUrl}`);
   }
 };
-export const getAllParsedPaperAction = async (): Promise<string[]> => {
+export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
   try {
     const parsedPapers = await api.parsedPapers.fetchAllParsedSources();
     return parsedPapers;
@@ -186,4 +187,84 @@ export const getExistingCollection = async (collectionName: string) => {
 
 export const deleteCollection = async (collectionName: string) => {
   return await client.deleteCollection({ name: collectionName });
+};
+
+export const loadEmbeddings = async (formData: FormData) => {
+  "use server";
+  console.log("hello load embedding");
+  const pdfUrl = formData.get("source")!.toString();
+  const collectionName = formData.get("collection")!.toString();
+  const paper = await getParsedPaperAction(pdfUrl);
+
+  console.log("loadEmbeddings on paper", paper);
+  if (paper) {
+    const { abstract, title, facts, sections } = paper;
+    const metadata = facts.map(({ fact, relevance }: ParsedPapersFacts) => ({
+      fact,
+      relevance,
+      source: pdfUrl,
+    }));
+    const documents = facts.map(
+      ({ expectedInfo, nextSource }: ParsedPapersFacts) =>
+        `${expectedInfo} ${nextSource}`
+    );
+    // We can embed the descriptors, and use them to search the document for new chunks of information that were missed by the previous round of retrieval.
+
+    const item = {
+      ids: Array(metadata.length)
+        .fill(null)
+        .map(() => crypto.randomUUID()),
+      metadatas: metadata,
+      documents,
+    };
+    console.log("upserting...");
+    const startTime = performance.now();
+    await upsertItemInCollection(collectionName, item);
+    const endTime = performance.now();
+    console.log(
+      `Time taken to upsert item in collection: ${endTime - startTime} milliseconds`
+    );
+  }
+};
+
+export const search = async (formData: FormData) => {
+  "use server";
+  const query = formData.get("query")!.toString();
+  const collectionName = formData.get("collection")!.toString();
+  const source = formData.get("source")!.toString();
+
+  if (collectionName && source) {
+    // const results = await queryItemsInCollection(collectionName, source, query)
+    const results = await queryItemsInCollection(collectionName, source, query);
+    console.log("query: ", results);
+    const { documents, metadatas, ids } = results;
+
+    console.log("items: ", documents, metadatas);
+  }
+};
+
+export const handleDeleteCollection = async (formData: FormData) => {
+  const collectionName = formData.get("collection")?.toString();
+  const response = await deleteCollection(collectionName || "ParsedPapers");
+  console.log(`Deleted Collection ${collectionName}:`, { response });
+};
+
+export const handleMakeNewCollection = async (formData: FormData) => {
+  try {
+    const collectionName = formData.get("query")?.toString();
+    const response = await makeNewCollection(collectionName || "ParsedPapers");
+    console.log("New Collection Created:", { response });
+  } catch (error) {
+    // console.error('Error creating new collection:', error);
+  }
+};
+
+export const handleGetItemsFromCollection = async (formData: FormData) => {
+  const collectionName = formData.get("collection")!.toString();
+  const source = formData.get("source")!.toString();
+
+  const response = await getItemsFromCollection(collectionName, source);
+  console.log(`getItemsFromCollection ${collectionName} by ${source}:`, {
+    response,
+  });
 };

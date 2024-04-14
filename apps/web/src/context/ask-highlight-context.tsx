@@ -17,6 +17,7 @@ import {
   NewHighlightWithRelationsInput,
   HighlightWithRelations,
 } from "@src/server/api/routers/highlight";
+import { queryItemsInCollection } from '@src/app/actions';
 
 export type ContextProps = {
   currentHighlight: Highlight | null;
@@ -161,10 +162,43 @@ export const AskHighlightProvider: FC<{
   ): Promise<Highlight | undefined> => {
     if (!highlight.node?.prompt) return;
 
-    const promptWithContext = highlight.content?.text
+
+
+
+
+
+    // Walking RAG - Cyclical Generation
+    // Fetch most relevant chunks (descriptors)
+    // fetch fact - descriptors for pdf.use chroma to embed the descriptors and store the embeddings
+    // vector search on user query over all descriptors for the pdf.
+    // retrieve relevant facts to inject into context
+
+    const collectionName = 'ParsedPapers'
+    const source = loadedSource
+    const query = highlight.node.prompt
+    const results = await queryItemsInCollection(collectionName, source, query)
+    console.log('query: ', { source, query, collectionName, results })
+    const { documents, metadatas, ids } = results
+
+    console.log('fetched RAG items: ', documents, metadatas)
+
+    const ragContext = highlight.content?.text
       ? `${highlight.node.prompt}
 Answer this question with the following context:
 ${highlight.content.text}`
+      : highlight.node.prompt;
+
+    // metadata contains the facts
+    // documents contain the descriptors
+    // pass in descriptors `${expectedInfo} ${nextSource}` in context to make open ai calls to get more relevant context
+    // Pass in the section text stored in mongo. 
+
+
+
+    const promptWithContext = highlight.content?.text
+      ? `${highlight.node.prompt}
+Answer this question with the following context:
+${ragContext}`
       : highlight.node.prompt;
 
     // Query AI for response
