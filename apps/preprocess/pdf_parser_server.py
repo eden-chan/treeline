@@ -1,4 +1,5 @@
 from typing import List
+import uuid
 from constants import CATEGORY_MAPPING
 from db import mongo_client
 from fastapi import FastAPI, HTTPException
@@ -17,7 +18,11 @@ from llama_index.core.node_parser import MarkdownNodeParser
 import arxiv
 from datetime import datetime
 import httpx
+import chromadb
+from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 
+
+embedding_function = OpenAIEmbeddingFunction(api_key=os.environ.get('OPENAI_API_KEY'))
 app = FastAPI()
 client = instructor.patch(OpenAI())
     
@@ -103,7 +108,7 @@ async def parse_pdf(pdf_url):
 
     nodes = parser.get_nodes_from_documents(documents)
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=6) as executor:
         try:
             
             paper_metadata:PaperMetadata =extract_paper_metadata(pdf_url)
@@ -126,8 +131,20 @@ async def parse_pdf(pdf_url):
                 filter_query = {"source": pdf_url}
                 update_data = {"$set": {"title": title, "abstract": abstract, "facts": facts_serialized, 'sections': sections, 'primary_category': primary_category, 'published': published, 'updated': updated}}
                 result = db.update_one(filter_query, update_data, upsert=True)
-            
-            # TODO: embed in CHROMA 
+                
+            chroma_client = chromadb.HttpClient(host='localhost', port=8000)
+            collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
+
+            metadata = [{"fact": fact_descriptor["fact"], "relevance": fact_descriptor["relevance"], "source": pdf_url} for fact_descriptor in facts_serialized]
+            # We can embed the descriptors, and use them to search the document for new chunks of information that were missed by the previous round of retrieval.
+            documents = [f"{fact_descriptor['expectedInfo']} {fact_descriptor['nextSource']}" for fact_descriptor in facts_serialized]
+            ids = [str(uuid.uuid4()) for _ in metadata]
+
+            collection.upsert(
+                documents=documents,
+                metadatas=metadata,
+                ids=ids
+            )
         except Exception as e:
             print(f"An error occurred during parsing or database update: {e}")
             # Optionally, handle the error, e.g., by setting response_id to None or re-raising the exception
@@ -147,11 +164,11 @@ async def parse_pdf(pdf_url):
         else:
             print("Document not found after update.")
             mongo_id = None
-    
-    
+
     response = {"source": pdf_url, 'sections': sections, 'facts': facts_serialized, 'title': title, "abstract": abstract, "mongo_id": mongo_id }
     return response
     
+
 
 class PDFRequest(BaseModel):
     pdf_url: str
@@ -170,18 +187,28 @@ async def process_pdf(request: PDFRequest):
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF. {e}")
 
 
-@app.post("/fetch_papers")
+@app.post("/fetch_paper")
 async def fetch_paper(request: PDFRequest):
     try:
         extract_info = extract_paper_metadata(request.pdf_url)
         return {"message": "Arxiv Fetch successfully", "data": extract_info}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF. {e}")
-    
+
+
     
 import uvicorn
 if __name__ == "__main__":
     uvicorn.run("pdf_parser_server:app", host="0.0.0.0", port=3001, reload=True)
+    # chroma_client = chromadb.HttpClient(host='localhost', port=8000)
+    # collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
+    # import pdb; pdb.set_trace()
+    # results = collection.get(where={   "source": {         "$eq":"https://arxiv.org/pdf/2403.11207.pdf"     }}) 
+     
+
+
+
+
     
     """
     SEMBANTIC scholar resources
