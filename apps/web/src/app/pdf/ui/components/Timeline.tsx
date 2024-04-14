@@ -101,9 +101,10 @@ const ExploreGalleryView = ({ articles }: { articles: ParsedPapers[] }) => {
           <PaperCard
             key={index}
             description={article.abstract}
-            timeAgoCalculation={''} // set time
+            timeAgoCalculation={calculateTimeAgo(article.updated)} // set time
             title={article.title}
             highlightCount={1}
+            category={article.primary_category}
             isHighlighted={highlightedCardId === article.title}
             onClick={() => handleClick(article.title)}
             onDoubleClick={() => {
@@ -137,12 +138,12 @@ const ExploreListView = ({ articles }: { articles: ParsedPapers[] }) => {
               {article.title}
             </h2>
             <p className="text-gray-600 mb-2">
-              {/* {article.facts.length} facts */}
+              {article.primary_category}
             </p>
             <p className="text-gray-500">
               {article.abstract}
             </p>
-            <p className="text-gray-400 text-sm mt-2">{article.id}</p>
+            <p className="text-gray-400 text-sm mt-2">{calculateTimeAgo(article.updated)}</p>
           </article>
         );
       })}

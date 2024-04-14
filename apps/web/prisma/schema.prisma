@@ -118,10 +118,13 @@ type ParsedPapersSectionsMetadata {
   Header_5 String?
 }
 model ParsedPapers {
-  id       String                 @id @default(auto()) @map("_id") @db.ObjectId
-  abstract String
-  facts    ParsedPapersFacts[]
-  sections ParsedPapersSections[]
-  source   String
-  title    String
+  id               String                 @id @default(auto()) @map("_id") @db.ObjectId
+  abstract         String
+  facts            ParsedPapersFacts[]
+  primary_category String
+  published        DateTime               @db.Date
+  sections         ParsedPapersSections[]
+  source           String
+  title            String
+  updated          DateTime               @db.Date
 }

@@ -18,6 +18,7 @@ type PaperCardProps = {
   timeAgoCalculation: string;
   highlightCount: number;
   isHighlighted: boolean;
+  category?: string;
   onClick: () => void;
   onDoubleClick: () => void;
 };
@@ -28,6 +29,7 @@ export function PaperCard({
   timeAgoCalculation,
   highlightCount,
   isHighlighted,
+  category,
   onClick,
   onDoubleClick,
 }: PaperCardProps) {
@@ -49,7 +51,7 @@ export function PaperCard({
       <div className="flex space-x-4 text-sm text-muted-foreground px-4 pb-4 group-hover:cursor-pointer">
         <div className="flex items-center">
           <CircleIcon className="mr-1 h-3 w-3 fill-sky-400 text-sky-400" />
-          Machine Learning
+          {category}
         </div>
         <div className="flex items-center">
           <StarIcon className="mr-1 h-3 w-3" />
