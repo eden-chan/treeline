@@ -4,6 +4,10 @@ import { ParsedPapers, ParsedPapersFacts, User } from "@prisma/client";
 import { TitleSourcePair } from "@src/server/api/routers/parsed-pdf";
 import { api } from "@src/trpc/server";
 
+export enum EMBEDDING_TYPE {
+  SourceText = "sourceText",
+  FactDescriptor = "factDescriptor",
+}
 // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
 export const followAction = async (searchedUser: User, loggedInUser: User) => {
   console.log("follow action");
@@ -134,6 +138,7 @@ export const queryItemsInCollection = async (
   collectionName: string,
   source: string,
   query: string,
+  type: EMBEDDING_TYPE, // searching for sourceText or relevant facts
   limit: number = 5
 ) => {
   const collection = await client.getCollection({
@@ -141,10 +146,15 @@ export const queryItemsInCollection = async (
     embeddingFunction: embedder,
   });
 
-  const response = await collection.query({
+  const retrievedRelevantFacts = await collection.query({
     // ids: ["id1", "id2"],
     queryTexts: [query],
-    where: { source: { $eq: source } },
+    where: {
+      $and: [
+        { source: { $eq: source } },
+        { type: { $eq: EMBEDDING_TYPE.FactDescriptor } },
+      ],
+    },
     nResults: limit,
 
     include: [
@@ -154,7 +164,43 @@ export const queryItemsInCollection = async (
     ],
     // whereDocument: { $contains: "value" },
   });
-  return response;
+
+  // TODO:  for each fact, embed on section location to close semantic distance for the associated relevant source text chunks
+  //  const retrievedRelevantFacts = await collection.query({
+  //   // ids: ["id1", "id2"],
+  //   queryTexts: [query],
+  //   where: {
+  //     $and: [{ source: { $eq: source } }, { type: { $eq: EMBEDDING_TYPE.FactDescriptor } }],
+  //   },
+  //   nResults: limit,
+
+  //   include: [
+  //     IncludeEnum.Embeddings,
+  //     IncludeEnum.Metadatas,
+  //     IncludeEnum.Documents,
+  //   ],
+  //   // whereDocument: { $contains: "value" },
+  // });
+
+  // const sourceTextResponse = await collection.query({
+  //   // ids: ["id1", "id2"],
+  //   queryTexts: [query],
+  //   where: {
+  //     $and: [
+  //       { source: { $eq: source } },
+  //       { type: { $eq: EMBEDDING_TYPE.SourceText } },
+  //     ],
+  //   },
+  //   nResults: limit,
+
+  //   include: [
+  //     IncludeEnum.Embeddings,
+  //     IncludeEnum.Metadatas,
+  //     IncludeEnum.Documents,
+  //   ],
+  //   // whereDocument: { $contains: "value" },
+  // });
+  return retrievedRelevantFacts;
 };
 
 export const deleteItemsFromCollection = async (collectionName: string) => {
@@ -199,10 +245,13 @@ export const loadEmbeddings = async (formData: FormData) => {
   console.log("loadEmbeddings on paper", paper);
   if (paper) {
     const { abstract, title, facts, sections } = paper;
+    // TODO: pass in relevant sections per each fact
+    // idea: in metadata specify which section the fact was retrieved. this would be done in python
     const metadata = facts.map(({ fact, relevance }: ParsedPapersFacts) => ({
       fact,
       relevance,
       source: pdfUrl,
+      type: EMBEDDING_TYPE.FactDescriptor,
     }));
     const documents = facts.map(
       ({ expectedInfo, nextSource }: ParsedPapersFacts) =>
@@ -217,12 +266,43 @@ export const loadEmbeddings = async (formData: FormData) => {
       metadatas: metadata,
       documents,
     };
-    console.log("upserting...");
-    const startTime = performance.now();
+    console.log("upserting fact-descriptors...");
+    let startTime = performance.now();
     await upsertItemInCollection(collectionName, item);
-    const endTime = performance.now();
+    let endTime = performance.now();
     console.log(
       `Time taken to upsert item in collection: ${endTime - startTime} milliseconds`
+    );
+
+    // Descriptors $`{expectedInfo + nextSource}` embedding semantic distance is close to Section Location, to get associated section source text
+    const sectionSourceTextLocation = sections.map((section) => {
+      const { metadata } = section;
+      return `${metadata.Header_1 || ""} ${metadata.Header_2 || ""} ${metadata.Header_3 || ""} ${metadata.Header_4 || ""} ${metadata.Header_5 || ""}`.trim();
+    });
+
+    const sectionSourceTextContent = sections.map((section) => {
+      const { text } = section;
+      return {
+        text: `${text}`.trim(),
+        source: pdfUrl,
+        type: EMBEDDING_TYPE.SourceText,
+      };
+    });
+
+    const sectionItem = {
+      ids: Array(metadata.length)
+        .fill(null)
+        .map(() => crypto.randomUUID()),
+      metadatas: sectionSourceTextContent,
+      documents: sectionSourceTextLocation,
+    };
+
+    console.log("upserting section source text...");
+    startTime = performance.now();
+    await upsertItemInCollection(collectionName, sectionItem);
+    endTime = performance.now();
+    console.log(
+      `Time taken to upsert source text in collection: ${endTime - startTime} milliseconds`
     );
   }
 };
