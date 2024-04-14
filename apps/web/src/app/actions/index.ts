@@ -39,7 +39,7 @@ export const getAllParsedPaperAction = async (): Promise<string[]> => {
   }
 };
 
-import { ChromaClient, OpenAIEmbeddingFunction } from "chromadb";
+import { ChromaClient, IncludeEnum, OpenAIEmbeddingFunction } from "chromadb";
 
 // ESM
 const client = new ChromaClient({ path: "http://0.0.0.0:8000" });
@@ -93,19 +93,29 @@ export const upsertItemInCollection = async (
   return await collection.upsert(item);
 };
 
-export const getItemsFromCollection = async (collectionName: string) => {
+export const getItemsFromCollection = async (
+  collectionName: string,
+  source: string
+) => {
   const collection = await client.getCollection({
     name: collectionName,
     embeddingFunction: embedder,
   });
 
-  const response = await collection.add({
-    ids: [crypto.randomUUID(), crypto.randomUUID()],
-    metadatas: [{ style: "style1" }, { style: "style2" }],
-    documents: ["This is a document!", "that is a document!"],
+  const response = await collection.get({
+    // ids: ["id1", "id2"],
+    where: { source },
+    limit: 10,
+    offset: 0,
+    include: [
+      IncludeEnum.Embeddings,
+      IncludeEnum.Metadatas,
+      IncludeEnum.Documents,
+    ],
+    // whereDocument: { $contains: "value" },
   });
-  console.log("get ersponse", response);
-  return await collection.get();
+
+  return response;
 };
 
 export const peekItemsFromCollection = async (
@@ -121,13 +131,29 @@ export const peekItemsFromCollection = async (
 
 export const queryItemsInCollection = async (
   collectionName: string,
-  queryParams: any
+  source: string,
+  query: string,
+  limit: number = 5
 ) => {
   const collection = await client.getCollection({
     name: collectionName,
     embeddingFunction: embedder,
   });
-  return await collection.query(queryParams);
+
+  const response = await collection.query({
+    // ids: ["id1", "id2"],
+    queryTexts: [query],
+    where: { source: { $eq: source } },
+    nResults: limit,
+
+    include: [
+      IncludeEnum.Embeddings,
+      IncludeEnum.Metadatas,
+      IncludeEnum.Documents,
+    ],
+    // whereDocument: { $contains: "value" },
+  });
+  return response;
 };
 
 export const deleteItemsFromCollection = async (collectionName: string) => {
@@ -145,43 +171,19 @@ export const listAllCollections = async () => {
 export const makeNewCollection = async (
   collectionName: string = "ParsedPapers"
 ) => {
-  return await client.createCollection({ name: collectionName });
+  return await client.createCollection({
+    name: collectionName,
+    embeddingFunction: embedder,
+  });
 };
 
 export const getExistingCollection = async (collectionName: string) => {
-  return await client.getCollection({ name: collectionName });
+  return await client.getCollection({
+    name: collectionName,
+    embeddingFunction: embedder,
+  });
 };
 
 export const deleteCollection = async (collectionName: string) => {
   return await client.deleteCollection({ name: collectionName });
-};
-
-export const createDocsAction = async (formData: FormData) => {
-  console.log("embedder", embedder);
-
-  let response;
-  try {
-    let myCollection;
-    try {
-      myCollection = await client.getCollection({
-        name: "ParsedPapers",
-        embeddingFunction: embedder,
-      });
-    } catch (getCollectionError) {
-      console.log("Collection does not exist, creating new one.");
-      myCollection = await client.createCollection({
-        name: "ParsedPapers",
-        embeddingFunction: embedder,
-      });
-    }
-    response = await myCollection.add({
-      ids: ["1"],
-      documents: [`${formData.get("content")}`],
-      metadatas: [{ user: 1, title: `${formData.get("title")}` }],
-    });
-  } catch (error) {
-    console.error("Error caught:", error);
-  }
-
-  return { message: `${response}` };
 };
