@@ -52,6 +52,9 @@ export default async function Page({ params }: { params: { id: string } }) {
     ?.emailAddress as string;
   const loggedInUser = await api.user.fetchUser({ email: loggedInUserEmail });
 
+  const parsedPapers = await api.parsedPapers.fetchAllParsedPapers() ?? []
+
+
   return (
     <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">
       <Navbar users={users} loggedInUser={loggedInUser} />
@@ -61,6 +64,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         searchedUser={searchedUser}
         searchedUserImageUrl={searchedUserClerk?.imageUrl as string}
         loggedInUser={loggedInUser}
+        parsedPapers={parsedPapers}
       />
 
     </main>

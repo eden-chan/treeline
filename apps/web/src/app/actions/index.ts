@@ -32,7 +32,7 @@ export const getParsedPaperAction = async (
 };
 export const getAllParsedPaperAction = async (): Promise<string[]> => {
   try {
-    const parsedPapers = await api.parsedPapers.fetchAllParsedPdfSources();
+    const parsedPapers = await api.parsedPapers.fetchAllParsedSources();
     return parsedPapers;
   } catch (error) {
     throw new Error(`Failed to get parsed papers: ${error}`);

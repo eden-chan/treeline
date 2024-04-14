@@ -46,12 +46,14 @@ export default async function Profile({
   searchedUser,
   loggedInUser,
   searchedUserImageUrl,
+  parsedPapers,
 }: {
   users: User[];
   timeline: AnnotatedPdf[];
   searchedUser: User;
   loggedInUser: User;
   searchedUserImageUrl: string;
+  parsedPapers: ParsedPapers[]
 }) {
   const userHighlights = useMemo(
     () =>
@@ -99,7 +101,7 @@ export default async function Profile({
         {RenderUserProfileSection()}
         <main className="w-3/5 p-6">
           <h2 className="text-lg font-semibold mb-4">Recent</h2>
-          <Timeline articles={timeline} />
+          <Timeline articles={timeline} parsedPapers={parsedPapers} />
         </main>
         <aside className="w-1/5 p-6">
           <div className="mb-6">

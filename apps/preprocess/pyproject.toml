@@ -18,6 +18,8 @@ graphviz = "^0.20.3"
 chromadb = "^0.4.24"
 llama-parse = "^0.4.0"
 nest-asyncio = "^1.6.0"
+arxiv = "^2.1.0"
+semanticscholar = "^0.8.0"
 
 
 [build-system]

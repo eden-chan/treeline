@@ -1,4 +1,5 @@
 from typing import List
+from constants import CATEGORY_MAPPING
 from db import mongo_client
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, BeforeValidator
@@ -17,10 +18,58 @@ from llama_index.core.node_parser import MarkdownNodeParser
 
 
 
+import arxiv
+from pydantic import BaseModel
+from datetime import datetime
+
+class PaperMetadata(BaseModel):
+    title: str
+    summary: str
+    published: datetime
+    updated: datetime
+    primary_category: str
+
+
+
+
+
+    
+def extract_paper_metadata(pdf_url:str) -> PaperMetadata:
+    paper_id = pdf_url.split('/')[-1].split('.pdf')[0]
+    search = arxiv.Search(id_list=[paper_id])
+    paper = next(search.results())
+    
+    
+     # Extract the title and authors from the arXiv metadata
+    title = paper.title
+    authors = ' '.join([author.name for author in paper.authors])
+
+    # Query the Semantic Scholar API to get the citation count
+    url = f"https://api.semanticscholar.org/graph/v1/paper/search?query={title} {authors}"
+    response = requests.get(url)
+    data = response.json()
+
+    if 'total' in data and data['total'] > 0:
+        paper_id = data['data'][0]['paperId']
+        citation_count = data['data'][0]['citationCount']
+        # return citation_count
+    # else:
+        # return None
+
+    import pdb; pdb.set_trace()
+    
+
+        
+    paper_metadata = PaperMetadata(
+        title=paper.title, 
+        summary=paper.summary, 
+        published=paper.published, 
+        updated=paper.updated, 
+        primary_category=CATEGORY_MAPPING.get(paper.primary_category, 'Other')
+    )
+    return paper_metadata
 
 client = instructor.patch(OpenAI())
-
-
 def extract_title(title_candidates: List[str]):
     try:
         qa: TitleRanker = client.chat.completions.create(
@@ -116,18 +165,15 @@ async def parse_pdf(pdf_url):
 
     with ThreadPoolExecutor() as executor:
         try:
-            # there can be preface text, so we take the first 5 sections as potential title candidates
-            candidate_titles = [node.text.split('\n')[0] for node in nodes[:5]]
             
-            # there can be preface text, so we take the second to fourth sections as potential candidates
-            # import pdb; pdb.set_trace()
-            # TODO: extract the metadata location, get all possible headers and subsections.
-            # all_metadata = [for metadata in node.metadata.split('\n') for node in nodes]
+            paper_metadata:PaperMetadata =extract_paper_metadata(pdf_url)
+            title=paper_metadata.title 
+            abstract=paper_metadata.summary
+            published=paper_metadata.published
+            updated=paper_metadata.updated
+            primary_category=paper_metadata.primary_category
             
-            candidate_abstracts = [node.text for node in nodes[0:5]]
-            title = extract_title(candidate_titles)
-            abstract = extract_abstract(candidate_abstracts)
-
+        
             futures = [executor.submit(chat, node.text, node.metadata, abstract, ExtractFactDescriptor) for node in nodes]
             parsing = [future.result() for future in as_completed(futures)]
 
@@ -138,8 +184,10 @@ async def parse_pdf(pdf_url):
             
             with mongo_client(db_name='paper', collection_name='ParsedPapers') as db: 
                 filter_query = {"source": pdf_url}
-                update_data = {"$set": {"title": title, "abstract": abstract, "facts": facts_serialized, 'sections': sections}}
+                update_data = {"$set": {"title": title, "abstract": abstract, "facts": facts_serialized, 'sections': sections, 'primary_category': primary_category, 'published': published, 'updated': updated}}
                 result = db.update_one(filter_query, update_data, upsert=True)
+            
+            # TODO: embed in CHROMA 
         except Exception as e:
             print(f"An error occurred during parsing or database update: {e}")
             # Optionally, handle the error, e.g., by setting response_id to None or re-raising the exception
@@ -169,7 +217,7 @@ app = FastAPI()
 class PDFRequest(BaseModel):
     pdf_url: str
 
-@app.post("/process_pdf/")
+@app.post("/process_pdf")
 async def process_pdf(request: PDFRequest):
     try:
         # Assuming preprocess_pdf is a function that processes the PDF and returns a result                
@@ -183,7 +231,15 @@ async def process_pdf(request: PDFRequest):
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF. {e}")
 
 
-
+@app.post("/fetch_papers")
+async def fetch_paper(request: PDFRequest):
+    try:
+        extract_info = extract_paper_metadata(request.pdf_url)
+        return {"message": "Arxiv Fetch successfully", "data": extract_info}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF. {e}")
+    
+    
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=3001)
+    uvicorn.run("pdf_parser_server:app", host="0.0.0.0", port=3001, reload=True)

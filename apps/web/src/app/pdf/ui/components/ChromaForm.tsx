@@ -64,9 +64,11 @@ const DocumentForm = () => {
 
         if (collectionName && source) {
             // const results = await queryItemsInCollection(collectionName, source, query)
-
             const results = await queryItemsInCollection(collectionName, source, query)
             console.log('query: ', results)
+            const { documents, metadatas, ids } = results
+
+            console.log('items: ', documents, metadatas)
         }
     }
 

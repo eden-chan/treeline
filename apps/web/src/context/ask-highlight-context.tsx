@@ -116,12 +116,12 @@ export const AskHighlightProvider: FC<{
             const highlightId = uuidv4();
             const newNode = newData.highlight.node
               ? {
-                  ...newData.highlight.node,
-                  id: uuidv4(),
-                  parentId: null,
-                  highlightId,
-                  children: [],
-                }
+                ...newData.highlight.node,
+                id: uuidv4(),
+                parentId: null,
+                highlightId,
+                children: [],
+              }
               : null;
             const newHighlight = {
               ...newData.highlight,

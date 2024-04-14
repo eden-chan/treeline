@@ -29,7 +29,20 @@ export const parsedPapersRouter = createTRPCRouter({
 
       return result;
     }),
-  fetchAllParsedPdfSources: publicProcedure.query<string[]>(async () => {
+  fetchAllParsedPapers: publicProcedure.query<ParsedPapers[]>(async () => {
+    let result: ParsedPapers[];
+    try {
+      const start = Date.now();
+      result = await db.parsedPapers.findMany();
+      const end = Date.now();
+      console.log(`Query took ${end - start}ms`);
+    } catch (error) {
+      console.error("Failed to fetch parsed paper:", error);
+      return [];
+    }
+    return result;
+  }),
+  fetchAllParsedSources: publicProcedure.query<string[]>(async () => {
     let result: string[];
     try {
       const start = Date.now();

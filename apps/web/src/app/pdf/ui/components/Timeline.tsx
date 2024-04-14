@@ -13,6 +13,7 @@ import { TabsTrigger, TabsList, Tabs, TabsContent } from "@/components/ui/tabs"
 import { SelectValue, SelectTrigger, SelectItem, SelectContent, Select } from "@/components/ui/select"
 import { Button } from '@/components/ui/button';
 import { AlignJustify, LayoutGrid } from 'lucide-react';
+import { ParsedPapers } from '@prisma/client';
 
 
 export type AnnotatedPdfWithRelationsWithTimestamp = AnnotatedPdfWithRelations & {
@@ -85,7 +86,71 @@ const ListView = ({ articles }: { articles: AnnotatedPdfWithRelationsWithTimesta
   )
 }
 
-const Timeline = memo(({ articles }: { articles: AnnotatedPdfWithRelations[] }) => {
+const ExploreGalleryView = ({ articles }: { articles: ParsedPapers[] }) => {
+  const router = useRouter();
+  const [highlightedCardId, setHighlightedCardId] = useState('');
+
+  const handleClick = (cardId: string) => {
+    setHighlightedCardId(cardId);
+  };
+  console.log('gallery', { articles })
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      {articles.map((article, index) => {
+        return (
+          <PaperCard
+            key={index}
+            description={article.abstract}
+            timeAgoCalculation={''} // set time
+            title={article.title}
+            highlightCount={1}
+            isHighlighted={highlightedCardId === article.title}
+            onClick={() => handleClick(article.title)}
+            onDoubleClick={() => {
+              router.push(`/pdf?url=${article.source}`);
+            }}
+          />
+        );
+      })}
+    </div>
+  )
+}
+
+
+const ExploreListView = ({ articles }: { articles: ParsedPapers[] }) => {
+  const router = useRouter();
+  const [highlightedCardId, setHighlightedCardId] = useState('');
+
+  return (
+    <div className="">
+      {articles.map((article, index) => {
+        return (
+          <article
+            key={index}
+            className={`mb-6 hover:cursor-pointer ${highlightedCardId === article.title ? "outline outline-2 outline-primary" : ""}`}
+            onClick={() => setHighlightedCardId(article.title)}
+            onDoubleClick={() => {
+              router.push(`/pdf?url=${article.source}`);
+            }}
+          >
+            <h2 className="text-xl font-semibold mb-1">
+              {article.title}
+            </h2>
+            <p className="text-gray-600 mb-2">
+              {/* {article.facts.length} facts */}
+            </p>
+            <p className="text-gray-500">
+              {article.abstract}
+            </p>
+            <p className="text-gray-400 text-sm mt-2">{article.id}</p>
+          </article>
+        );
+      })}
+    </div>
+  )
+}
+
+const Timeline = memo(({ articles, parsedPapers }: { articles: AnnotatedPdfWithRelations[]; parsedPapers: ParsedPapers[] }) => {
 
   const memoizedArticles: AnnotatedPdfWithRelationsWithTimestamp[] = useMemo(
     () =>
@@ -103,12 +168,12 @@ const Timeline = memo(({ articles }: { articles: AnnotatedPdfWithRelations[] }) 
 
   return (
 
-    <Tabs defaultValue="recentlyViewed" >
+    <Tabs defaultValue="explore" >
       <TabsList className='w-full flex items-center justify-between bg-white'>
         <div className='flex items-center space-x-4'>
-          <TabsTrigger value="recentlyViewed"> Recently viewed </TabsTrigger>
-          <TabsTrigger value="favorites"> Favorites </TabsTrigger>
           <TabsTrigger value="explore"> Explore </TabsTrigger>
+          <TabsTrigger value="favorites"> Favorites </TabsTrigger>
+          <TabsTrigger value="recentlyViewed"> Recently viewed </TabsTrigger>
 
           <div className="flex items-center space-x-2">
             <Select>
@@ -154,18 +219,18 @@ const Timeline = memo(({ articles }: { articles: AnnotatedPdfWithRelations[] }) 
       <TabsContent value="favorites">
         <Suspense fallback={<h1>🌀 Loading...</h1>}>
           {view === 'galleryView' ? (
-            <GalleryView articles={memoizedArticles} />
+            <ExploreGalleryView articles={parsedPapers} />
           ) : (
-            <ListView articles={memoizedArticles} />
+            <ExploreListView articles={parsedPapers} />
           )}
         </Suspense>
       </TabsContent>
       <TabsContent value="explore">
         <Suspense fallback={<h1>🌀 Loading...</h1>}>
           {view === 'galleryView' ? (
-            <GalleryView articles={memoizedArticles} />
+            <ExploreGalleryView articles={parsedPapers} />
           ) : (
-            <ListView articles={memoizedArticles} />
+            <ExploreListView articles={parsedPapers} />
           )}
         </Suspense>
       </TabsContent>

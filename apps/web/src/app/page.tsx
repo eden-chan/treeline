@@ -34,11 +34,13 @@ export default async function Page() {
       userList: [user.email, ...(user?.follows ?? [])],
     })) ?? [];
 
+  const parsedPapers = await api.parsedPapers.fetchAllParsedPapers() ?? []
+
 
   return (
     <main className="h-screen w-screen gap-0 p-4 text-black">
       <Navbar users={followedUsers} loggedInUser={user} />
-      <Timeline articles={timeline} />
+      <Timeline articles={timeline} parsedPapers={parsedPapers} />
     </main>
   );
 }
