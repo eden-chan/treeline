@@ -27,6 +27,7 @@ import { calculateTimeAgo } from "@src/lib/utils";
 import LearningActivityCalendar from "@src/components/activity-calendar";
 import BasicRadarChart from "@src/components/radar-graph";
 import { Button } from '@/components/ui/button';
+import ChromaForm from './ChromaForm';
 
 const curiousPeopleSection = {
   title: "Some curious people",
@@ -79,6 +80,7 @@ export default async function Profile({
             </Avatar>
           </div>
           <FollowButton user1={loggedInUser} user2={searchedUser} />
+          <ChromaForm />
           <div className="mt-4">
             <Link href={`https://x.com/${searchedUser.handle}`} className="text-blue-500 hover:underline">Twitter</Link>
             <Link href={'https://edenchan.ca'} className="text-blue-500 hover:underline">Website</Link>

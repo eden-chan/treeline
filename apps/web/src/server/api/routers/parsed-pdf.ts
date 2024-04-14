@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { boolean, z } from "zod";
 import { ParsedPapers } from "@prisma/client";
 
 import { db } from "@src/lib/db";
@@ -11,10 +11,10 @@ export const parsedPapersRouter = createTRPCRouter({
         source: z.string(),
       })
     )
-    .query<ParsedPapers | undefined>(async ({ ctx, input }) => {
+    .query<ParsedPapers | null>(async ({ input }) => {
       const whereClause: Record<string, string> = {};
       whereClause["source"] = input.source;
-      let result;
+      let result: ParsedPapers | null;
       try {
         const start = Date.now();
         result = await db.parsedPapers.findFirst({
@@ -24,9 +24,25 @@ export const parsedPapersRouter = createTRPCRouter({
         console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch parsed paper:", error);
-        return undefined;
+        return null;
       }
 
       return result;
     }),
+  fetchAllParsedPdfSources: publicProcedure.query<string[]>(async () => {
+    let result: string[];
+    try {
+      const start = Date.now();
+      let resp = await db.parsedPapers.findMany({ select: { source: true } });
+      result = resp
+        .filter((paper) => paper.source !== undefined)
+        .map((paper) => paper.source);
+      const end = Date.now();
+      console.log(`Query took ${end - start}ms`);
+    } catch (error) {
+      console.error("Failed to fetch parsed paper:", error);
+      return [];
+    }
+    return result;
+  }),
 });

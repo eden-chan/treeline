@@ -58,16 +58,15 @@ type ParsedPapersTextSectionsFacts {
 }
 
 model CurriculumNode {
-  id          String             @id @default(auto()) @map("_id") @db.ObjectId
-  comments    HighlightComment[]
-  prompt      String?
-  response    String?
-  timestamp   DateTime           @db.Date
-  parentId    String?            @db.ObjectId
-  parent      CurriculumNode?    @relation("SubNodes", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children    CurriculumNode[]   @relation("SubNodes")
-  highlightId String?            @unique @db.ObjectId
-  highlight   Highlight?         @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  id        String             @id @default(auto()) @map("_id") @db.ObjectId
+  comments  HighlightComment[]
+  prompt    String?
+  response  String?
+  timestamp DateTime           @db.Date
+  parentId  String?            @db.ObjectId
+  parent    CurriculumNode?    @relation("SubNodes", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children  CurriculumNode[]   @relation("SubNodes")
+  Highlight Highlight?
 }
 
 model Highlight {
@@ -75,15 +74,10 @@ model Highlight {
   content        HighlightContent
   position       HighlightPosition
   comment        HighlightComment?
-  type           HighlightType     @default(COMMENT)
-  node           CurriculumNode?
+  nodeId         String?           @unique @db.ObjectId
+  node           CurriculumNode?   @relation(fields: [nodeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   annotatedPdf   AnnotatedPdf      @relation(fields: [annotatedPdfId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   annotatedPdfId String            @db.ObjectId
-}
-
-enum HighlightType {
-  ASK
-  COMMENT
 }
 
 model AnnotatedPdf {
@@ -104,9 +98,30 @@ model User {
   last_name  String
 }
 
+type ParsedPapersFacts {
+  expectedInfo String
+  fact         String
+  nextSource   String
+  relevance    String
+}
+
+type ParsedPapersSections {
+  metadata ParsedPapersSectionsMetadata
+  text     String
+}
+
+type ParsedPapersSectionsMetadata {
+  Header_1 String?
+  Header_2 String?
+  Header_3 String?
+  Header_4 String?
+  Header_5 String?
+}
 model ParsedPapers {
-  id     String           @id @default(auto()) @map("_id") @db.ObjectId
-  source String
-  text   ParsedPapersText
-  title  String
+  id       String                 @id @default(auto()) @map("_id") @db.ObjectId
+  abstract String
+  facts    ParsedPapersFacts[]
+  sections ParsedPapersSections[]
+  source   String
+  title    String
 }

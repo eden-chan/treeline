@@ -11,7 +11,7 @@ export const userRouter = createTRPCRouter({
     .mutation(async ({ ctx, input }) => {
       // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
       const isUser1FollowingUser2 = input.user1.follows.includes(
-        input.user2.email,
+        input.user2.email
       );
 
       if (isUser1FollowingUser2) {
@@ -21,13 +21,13 @@ export const userRouter = createTRPCRouter({
           data: {
             follows: {
               set: input.user1.follows.filter(
-                (email) => email !== input.user2.email,
+                (email) => email !== input.user2.email
               ),
             },
           },
         });
         console.log(
-          `User1 unfollowed User2: ${input.user1.email} unfollowed ${input.user2.email}`,
+          `User1 unfollowed User2: ${input.user1.email} unfollowed ${input.user2.email}`
         );
         // Remove user1 from user2's followers list.
         await db.user.update({
@@ -35,13 +35,13 @@ export const userRouter = createTRPCRouter({
           data: {
             followers: {
               set: input.user2.followers.filter(
-                (email) => email !== input.user1.email,
+                (email) => email !== input.user1.email
               ),
             },
           },
         });
         console.log(
-          `User2 lost a follower: ${input.user2.email} lost follower ${input.user1.email}`,
+          `User2 lost a follower: ${input.user2.email} lost follower ${input.user1.email}`
         );
       } else {
         // If user1 is not following user2, add user2 to user1's follows list.
@@ -54,7 +54,7 @@ export const userRouter = createTRPCRouter({
           },
         });
         console.log(
-          `User1 followed User2: ${input.user1.email} followed ${input.user2.email}`,
+          `User1 followed User2: ${input.user1.email} followed ${input.user2.email}`
         );
         // Add user1 to user2's followers list.
         await db.user.update({
@@ -66,13 +66,13 @@ export const userRouter = createTRPCRouter({
           },
         });
         console.log(
-          `User2 gained a follower: ${input.user2.email} gained follower ${input.user1.email}`,
+          `User2 gained a follower: ${input.user2.email} gained follower ${input.user1.email}`
         );
       }
     }),
   fetchUser: publicProcedure
     .input(
-      z.object({ email: z.string().optional(), handle: z.string().optional() }),
+      z.object({ email: z.string().optional(), handle: z.string().optional() })
     )
     .query<User | undefined>(async ({ ctx, input }) => {
       const whereClause: Record<string, string> = {};
@@ -98,7 +98,7 @@ export const userRouter = createTRPCRouter({
         console.error("Failed to fetch user:", error);
         return undefined;
       }
-      console.log("Fetched user:", result);
+
       return result;
     }),
   fetchUsers: publicProcedure
@@ -121,7 +121,7 @@ export const userRouter = createTRPCRouter({
         console.error("Failed to fetch highlights:", error);
         return undefined;
       }
-      console.log("Fetched user:", result);
+
       return result;
     }),
 });
