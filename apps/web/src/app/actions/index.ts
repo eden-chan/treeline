@@ -42,6 +42,7 @@ export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
 };
 
 import { ChromaClient, IncludeEnum, OpenAIEmbeddingFunction } from "chromadb";
+import { metadata } from "../layout";
 
 // ESM
 const client = new ChromaClient({ path: "http://0.0.0.0:8000" });
@@ -74,20 +75,6 @@ export const upsertItemInCollection = async (
   collectionName: string,
   item: any
 ) => {
-  // await collection.upsert({
-  //   ids: ["id1", "id2", "id3"],
-  //   embeddings: [
-  //     [1.1, 2.3, 3.2],
-  //     [4.5, 6.9, 4.4],
-  //     [1.1, 2.3, 3.2],
-  //   ],
-  //   metadatas: [
-  //     { chapter: "3", verse: "16" },
-  //     { chapter: "3", verse: "5" },
-  //     { chapter: "29", verse: "11" },
-  //   ],
-  //   documents: ["doc1", "doc2", "doc3"],
-  // });
   const collection = await client.getCollection({
     name: collectionName,
     embeddingFunction: embedder,
@@ -134,12 +121,14 @@ export const peekItemsFromCollection = async (
 export const queryFacts = async (
   collectionName: string,
   source: string,
-  queryTexts?: string[],
-  queryEmbeddings?: number[],
+  queryTexts: string[] = [],
+  queryEmbeddings: number[] = [],
   limit: number = 1
 ) => {
-  if (!queryTexts && !queryEmbeddings) {
-    throw new Error("Either queryTexts or queryEmbeddings must be provided.");
+  if (queryTexts.length > 0 && queryEmbeddings.length > 0) {
+    throw new Error(
+      "Queries can be made either by texts or embeddings, not both."
+    );
   }
   const collection = await client.getCollection({
     name: collectionName,
@@ -159,8 +148,8 @@ export const queryFacts = async (
       IncludeEnum.Metadatas,
       IncludeEnum.Documents,
     ],
-    ...(queryTexts && { queryTexts: queryTexts }), // only if it exists
-    ...(queryEmbeddings && { queryEmbeddings: queryEmbeddings }), // only if its passed in
+    ...(queryTexts.length >= 1 && { queryTexts: queryTexts }),
+    ...(queryEmbeddings.length >= 1 && { queryEmbeddings: queryEmbeddings }),
   });
 
   return relevantFactsDescriptors;
@@ -169,12 +158,14 @@ export const queryFacts = async (
 export const querySourceText = async (
   collectionName: string,
   source: string,
-  queryTexts?: string[],
-  queryEmbeddings?: number[],
+  queryTexts: string[] = [],
+  queryEmbeddings: number[] = [],
   limit: number = 1
 ) => {
-  if (!queryTexts && !queryEmbeddings) {
-    throw new Error("Either queryTexts or queryEmbeddings must be provided.");
+  if (queryTexts.length > 0 && queryEmbeddings.length > 0) {
+    throw new Error(
+      "Queries can be made either by texts or embeddings, not both."
+    );
   }
   const collection = await client.getCollection({
     name: collectionName,
@@ -194,8 +185,8 @@ export const querySourceText = async (
       IncludeEnum.Metadatas,
       IncludeEnum.Documents,
     ],
-    ...(queryTexts && { queryTexts: queryTexts }), // only if it exists
-    ...(queryEmbeddings && { queryEmbeddings: queryEmbeddings }), // only if its passed in
+    ...(queryTexts.length >= 1 && { queryTexts: queryTexts }),
+    ...(queryEmbeddings.length >= 1 && { queryEmbeddings: queryEmbeddings }),
   });
 
   return retrievedRelevantSourceText;
@@ -319,29 +310,77 @@ export const loadEmbeddings = async (formData: FormData) => {
     );
   }
 };
+export const ragQuery = async (
+  collectionName: string,
+  source: string,
+  query: string
+) => {
+  if (collectionName && source) {
+    const factResults = await queryFacts(
+      collectionName,
+      source,
+      [query],
+      [],
+      2
+    );
+    const { metadatas: factMetadatas, documents: factDocuments } = factResults;
+    console.log("query facts ", factMetadatas, factDocuments);
+
+    console.log(factDocuments.filter((doc) => doc !== null)[0]);
+    const descriptors = factDocuments[0];
+
+    if (descriptors) {
+      const searchDescriptors: string[] = descriptors.filter(
+        (doc): doc is string => doc !== null
+      );
+      const sourceTextResults = await querySourceText(
+        collectionName,
+        source,
+        searchDescriptors
+      );
+      const { documents, metadatas } = sourceTextResults;
+
+      console.log("source text items: ", metadatas);
+      return metadatas;
+    }
+    return [];
+  }
+};
 
 export const search = async (formData: FormData) => {
   "use server";
-  const query = formData.get("query")!.toString() || "harvest net";
+  const query =
+    formData.get("query")!.toString() || "what is this paper about?";
   const collectionName = formData.get("collection")!.toString();
   const source = formData.get("source")!.toString();
   console.log("querying paper", query);
   if (collectionName && source) {
-    const factResults = await queryFacts(collectionName, source, query);
-    const {
-      metadatas: factMetadatas,
-      documents: factDocuments,
-      ids: factIds,
-    } = factResults;
-    console.log("query facts ", factMetadatas, factDocuments, factIds);
+    const factResults = await queryFacts(
+      collectionName,
+      source,
+      [query],
+      [],
+      3
+    );
+    const { metadatas: factMetadatas, documents: factDocuments } = factResults;
+    console.log("query facts ", factMetadatas, factDocuments);
 
-    const sourceTextResults = await querySourceText(collectionName, source, [
-      query,
-    ]);
-    // console.log("query source text: ", sourceTextResults);
-    const { documents } = sourceTextResults;
+    console.log(factDocuments.filter((doc) => doc !== null)[0]);
+    const descriptors = factDocuments[0];
 
-    console.log("source text items: ", documents);
+    if (descriptors) {
+      const searchDescriptors: string[] = descriptors.filter(
+        (doc): doc is string => doc !== null
+      );
+      const sourceTextResults = await querySourceText(
+        collectionName,
+        source,
+        searchDescriptors
+      );
+      const { documents, metadatas } = sourceTextResults;
+
+      console.log("source text items: ", metadatas);
+    }
   }
 };
 

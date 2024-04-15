@@ -17,7 +17,7 @@ import {
   NewHighlightWithRelationsInput,
   HighlightWithRelations,
 } from "@src/server/api/routers/highlight";
-import { queryFacts } from '@src/app/actions';
+import { queryFacts, ragQuery, search } from '@src/app/actions';
 
 export type ContextProps = {
   currentHighlight: Highlight | null;
@@ -176,30 +176,24 @@ export const AskHighlightProvider: FC<{
     const collectionName = 'ParsedPapers'
     const source = loadedSource
     const query = highlight.node.prompt
-    const results = await queryFacts(collectionName, source, query)
+    const results = await ragQuery(collectionName, source, query)
     console.log('query: ', { source, query, collectionName, results })
-    const { documents, metadatas, ids } = results
 
-    console.log('fetched RAG items: ', documents, metadatas)
-
-    const ragContext = highlight.content?.text
-      ? `${highlight.node.prompt}
-Answer this question with the following context:
-${highlight.content.text}`
-      : highlight.node.prompt;
-
-    // metadata contains the facts
-    // documents contain the descriptors
-    // pass in descriptors `${expectedInfo} ${nextSource}` in context to make open ai calls to get more relevant context
-    // Pass in the section text stored in mongo. 
-
+    let ragContext = ''
+    if (results && results.length > 0) {
+      const relevantChunks = results.flat().map(chunk => chunk?.text).join(' ')
+      ragContext = relevantChunks
+    }
 
 
     const promptWithContext = highlight.content?.text
       ? `${highlight.node.prompt}
 Answer this question with the following context:
+${highlight.content.text}
 ${ragContext}`
       : highlight.node.prompt;
+
+    console.log(promptWithContext)
 
     // Query AI for response
     append(
