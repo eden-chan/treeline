@@ -17,7 +17,7 @@ import {
   NewHighlightWithRelationsInput,
   HighlightWithRelations,
 } from "@src/server/api/routers/highlight";
-import { queryItemsInCollection } from '@src/app/actions';
+import { queryFacts } from '@src/app/actions';
 
 export type ContextProps = {
   currentHighlight: Highlight | null;
@@ -176,7 +176,7 @@ export const AskHighlightProvider: FC<{
     const collectionName = 'ParsedPapers'
     const source = loadedSource
     const query = highlight.node.prompt
-    const results = await queryItemsInCollection(collectionName, source, query)
+    const results = await queryFacts(collectionName, source, query)
     console.log('query: ', { source, query, collectionName, results })
     const { documents, metadatas, ids } = results
 
