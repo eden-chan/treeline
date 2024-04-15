@@ -134,50 +134,54 @@ export const peekItemsFromCollection = async (
 export const queryFacts = async (
   collectionName: string,
   source: string,
-  query: string,
-  limit: number = 5
+  queryTexts?: string[],
+  queryEmbeddings?: number[],
+  limit: number = 1
 ) => {
+  if (!queryTexts && !queryEmbeddings) {
+    throw new Error("Either queryTexts or queryEmbeddings must be provided.");
+  }
   const collection = await client.getCollection({
     name: collectionName,
     embeddingFunction: embedder,
   });
 
-  const retrievedRelevantFacts = await collection.query({
-    queryTexts: [query],
+  const relevantFactsDescriptors = await collection.query({
     where: {
-      // source: { $eq: source },
       $and: [
         { source: { $eq: source } },
         { type: { $eq: EMBEDDING_TYPE.FactDescriptor } },
       ],
     },
     nResults: limit,
-
     include: [
       IncludeEnum.Embeddings,
       IncludeEnum.Metadatas,
       IncludeEnum.Documents,
     ],
-    // whereDocument: { $contains: "value" },
+    ...(queryTexts && { queryTexts: queryTexts }), // only if it exists
+    ...(queryEmbeddings && { queryEmbeddings: queryEmbeddings }), // only if its passed in
   });
 
-  return retrievedRelevantFacts;
+  return relevantFactsDescriptors;
 };
 
 export const querySourceText = async (
   collectionName: string,
   source: string,
-  query: string,
-  limit: number = 5
+  queryTexts?: string[],
+  queryEmbeddings?: number[],
+  limit: number = 1
 ) => {
+  if (!queryTexts && !queryEmbeddings) {
+    throw new Error("Either queryTexts or queryEmbeddings must be provided.");
+  }
   const collection = await client.getCollection({
     name: collectionName,
     embeddingFunction: embedder,
   });
 
   const retrievedRelevantSourceText = await collection.query({
-    // ids: ["id1", "id2"],
-    queryTexts: [query],
     where: {
       $and: [
         { source: { $eq: source } },
@@ -185,13 +189,13 @@ export const querySourceText = async (
       ],
     },
     nResults: limit,
-
     include: [
       IncludeEnum.Embeddings,
       IncludeEnum.Metadatas,
       IncludeEnum.Documents,
     ],
-    // whereDocument: { $contains: "value" },
+    ...(queryTexts && { queryTexts: queryTexts }), // only if it exists
+    ...(queryEmbeddings && { queryEmbeddings: queryEmbeddings }), // only if its passed in
   });
 
   return retrievedRelevantSourceText;
@@ -331,15 +335,13 @@ export const search = async (formData: FormData) => {
     } = factResults;
     console.log("query facts ", factMetadatas, factDocuments, factIds);
 
-    const sourceTextResults = await querySourceText(
-      collectionName,
-      source,
-      query
-    );
+    const sourceTextResults = await querySourceText(collectionName, source, [
+      query,
+    ]);
     // console.log("query source text: ", sourceTextResults);
-    const { documents, metadatas, ids } = sourceTextResults;
+    const { documents } = sourceTextResults;
 
-    console.log("source text items: ", documents, metadatas);
+    console.log("source text items: ", documents);
   }
 };
 
