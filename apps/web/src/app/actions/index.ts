@@ -42,10 +42,9 @@ export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
 };
 
 import { ChromaClient, IncludeEnum, OpenAIEmbeddingFunction } from "chromadb";
-import { metadata } from "../layout";
 
 // ESM
-const client = new ChromaClient({ path: "http://0.0.0.0:8000" });
+const client = new ChromaClient({ path: process.env.CHROMA_URL });
 
 const embedder = new OpenAIEmbeddingFunction({
   openai_api_key: process.env.OPENAI_API_KEY as string,
@@ -135,6 +134,7 @@ export const queryFacts = async (
     embeddingFunction: embedder,
   });
 
+  console.log("chroma ", { collection });
   const relevantFactsDescriptors = await collection.query({
     where: {
       $and: [
@@ -323,13 +323,13 @@ export const ragQuery = async (
       [],
       2
     );
+
     const { metadatas: factMetadatas, documents: factDocuments } = factResults;
     console.log("query facts ", factMetadatas, factDocuments);
 
-    console.log(factDocuments.filter((doc) => doc !== null)[0]);
-    const descriptors = factDocuments[0];
-
-    if (descriptors) {
+    if (factDocuments && factDocuments.length > 0) {
+      console.log({ factDocuments });
+      const descriptors = factDocuments[0];
       const searchDescriptors: string[] = descriptors.filter(
         (doc): doc is string => doc !== null
       );

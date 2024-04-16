@@ -87,20 +87,22 @@ export default async function Page() {
 
   const allHighlightsWithProfile = allHighlights
     ? allHighlights.map((pdfHighlight) => {
-        return {
-          ...pdfHighlight,
-          userProfilePicture: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId,
-          )?.imageUrl,
-          firstName: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId,
-          )?.firstName,
-          lastName: emailToPicture.find(
-            (user) => user.email === pdfHighlight.userId,
-          )?.lastName,
-        } as PDFHighlightsWithProfile;
-      })
+      return {
+        ...pdfHighlight,
+        userProfilePicture: emailToPicture.find(
+          (user) => user.email === pdfHighlight.userId,
+        )?.imageUrl,
+        firstName: emailToPicture.find(
+          (user) => user.email === pdfHighlight.userId,
+        )?.firstName,
+        lastName: emailToPicture.find(
+          (user) => user.email === pdfHighlight.userId,
+        )?.lastName,
+      } as PDFHighlightsWithProfile;
+    })
     : [];
+
+
 
   return (
     <AskHighlightProvider
@@ -114,6 +116,7 @@ export default async function Page() {
         userId={userId}
         userHighlights={highlights}
         allHighlights={allHighlightsWithProfile}
+
       />
     </AskHighlightProvider>
   );

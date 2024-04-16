@@ -117,7 +117,7 @@ export default async function Profile({
                     <span className="text-sm text-gray-500">
 
                       {calculateTimeAgo(
-                        friend.recentPaper?.highlights?.slice(-1)[0].comment.timestamp ?? new Date()
+                        friend.recentPaper?.highlights?.slice(-1)[0].comment?.timestamp ?? new Date()
                       )}
                     </span>
                     <p className="text-sm text-gray-500">

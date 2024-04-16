@@ -56,30 +56,30 @@ export default function PDFViewer({
   const annotatedPdfMutation =
     clientApi.annotatedPdf.resetHighlights.useMutation({
       onMutate: async () => {
-        await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
-          userId: userId,
-          source: loadedSource,
-        });
+        // await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
+        //   userId: userId,
+        //   source: loadedSource,
+        // });
 
-        utils.annotatedPdf.fetchAnnotatedPdf.setData(
-          {
-            userId: userId,
-            source: loadedSource,
-          },
-          (oldData) => {
-            if (!oldData) return oldData;
-            return {
-              ...oldData,
-              highlights: [],
-            };
-          },
-        );
+        // utils.annotatedPdf.fetchAnnotatedPdf.setData(
+        //   {
+        //     userId: userId,
+        //     source: loadedSource,
+        //   },
+        //   (oldData) => {
+        //     if (!oldData) return oldData;
+        //     return {
+        //       ...oldData,
+        //       highlights: [],
+        //     };
+        //   },
+        // );
       },
       onSuccess: (input) => {
-        utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
-          userId: userId,
-          source: loadedSource,
-        });
+        // utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+        //   userId: userId,
+        //   source: loadedSource,
+        // });
       },
     });
   const highlightMutation = clientApi.highlight.createHighlight.useMutation({
@@ -127,11 +127,13 @@ export default function PDFViewer({
       });
     },
   });
+
   const highlights =
     clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
       userId: userId,
       source: loadedSource,
     }).data?.highlights || userHighlights;
+
   const [friendHighlights, setFriendHighlights] = useState<Highlight[]>([]);
   const { currentHighlight, setCurrentHighlight, createAskHighlight } =
     useAskHighlight();
@@ -244,7 +246,6 @@ export default function PDFViewer({
                       position,
                     });
                   }}
-                  parsedPaper={parsedPaper}
                   content={content}
                 />
               )}

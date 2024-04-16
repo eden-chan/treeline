@@ -160,7 +160,7 @@ suggestions.`
     onFinish,
   });
 
-  console.log({ messages })
+
   const utils = clientApi.useUtils();
   // const updateHighlightMutation = clientApi.highlight.updateHighlight.useMutation();
   const createHighlightMutation =
