@@ -104,9 +104,35 @@ model User {
   last_name  String
 }
 
-model ParsedPapers {
-  id     String           @id @default(auto()) @map("_id") @db.ObjectId
-  source String
-  text   ParsedPapersText
-  title  String
+type ParsedPapersFacts {
+  expectedInfo String
+  fact         String
+  nextSource   String
+  relevance    String
 }
+
+type ParsedPapersSections {
+  metadata ParsedPapersSectionsMetadata
+  text     String
+}
+
+type ParsedPapersSectionsMetadata {
+  Header_1 String?
+  Header_2 String?
+  Header_3 String?
+  Header_4 String?
+  Header_5 String?
+}
+
+model ParsedPapers {
+  id               String                 @id @default(auto()) @map("_id") @db.ObjectId
+  abstract         String
+  facts            ParsedPapersFacts[]
+  primary_category String
+  published        DateTime               @db.Date
+  sections         ParsedPapersSections[]
+  source           String
+  title            String
+  updated          DateTime               @db.Date
+}
+

@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { z } from "zod";
 import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
 
@@ -28,7 +29,7 @@ export const annotatedPdfRouter = createTRPCRouter({
         userId: z.string(),
         source: z.string(),
         id: z.string(), // mongo id is provided ahead of time for new documents
-      }),
+      })
     )
     .mutation<AnnotatedPdf | null>(async ({ ctx, input }) => {
       let res: AnnotatedPdf;
@@ -61,7 +62,7 @@ export const annotatedPdfRouter = createTRPCRouter({
       z.object({
         userId: z.string(),
         source: z.string(),
-      }),
+      })
     )
     .query<AnnotatedPdfWithRelations | null>(async ({ ctx, input }) => {
       let result: AnnotatedPdfWithRelations | null;
@@ -93,7 +94,7 @@ export const annotatedPdfRouter = createTRPCRouter({
       z.object({
         source: z.string().optional(),
         userList: z.array(z.string()),
-      }),
+      })
     )
     .query<AnnotatedPdfWithRelations[] | null>(async ({ ctx, input }) => {
       const whereClause: Record<string, any> = {};
@@ -131,7 +132,7 @@ export const annotatedPdfRouter = createTRPCRouter({
     .input(
       z.object({
         id: z.string(),
-      }),
+      })
     )
     .mutation<boolean>(async ({ ctx, input }) => {
       try {

@@ -4,14 +4,19 @@
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PDFHighlightsWithProfile } from "../types";
+import { AnnotatedPdf } from '@src/lib/types';
 
+interface AnnotatedPdfWithProfile extends AnnotatedPdf {
+  userProfilePicture: string;
+  firstName: string;
+  lastName: string;
+}
 export default function FloatingProfiles({
   setDisplayHighlights,
   allHighlightsWithProfile,
 }: {
   setDisplayHighlights: any;
-  allHighlightsWithProfile: PDFHighlightsWithProfile[];
+  allHighlightsWithProfile: AnnotatedPdfWithProfile[];
 }) {
   return (
     <div className="fixed top-0 right-0 z-50 flex items-center space-x-2">

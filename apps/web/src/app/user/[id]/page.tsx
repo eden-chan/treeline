@@ -58,6 +58,8 @@ export default async function Page({ params }: { params: { id: string } }) {
     return null;
   }
 
+  const parsedPapers = (await api.parsedPapers.fetchAllParsedPapers()) ?? [];
+
   return (
     <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">
       <Navbar users={users} loggedInUser={loggedInUser} />
@@ -67,6 +69,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         searchedUser={searchedUser}
         searchedUserImageUrl={searchedUserClerk.imageUrl}
         loggedInUser={loggedInUser}
+        parsedPapers={parsedPapers}
       />
     </main>
   );

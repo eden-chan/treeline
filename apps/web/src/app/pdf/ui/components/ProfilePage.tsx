@@ -6,36 +6,14 @@
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import Link from "next/link";
 import Timeline from "./Timeline";
-import { AnnotatedPdf, User } from "@prisma/client";
+import { ParsedPapers, User } from "@prisma/client";
 import FollowButton from "./FollowButton";
-
-const navLinks = [
-  { name: "Pages", href: "#" },
-  { name: "Notes", href: "#" },
-  { name: "Favorites", href: "#" },
-  { name: "To Read", href: "#" },
-  { name: "Your Org", href: "#" },
-];
-
-const readingSection = {
-  title: "Reading Interesting Things",
-  links: [{ name: "Trails", href: "#" }],
-};
 
 import { useMemo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
 import LearningActivityCalendar from "@src/components/activity-calendar";
-import BasicRadarChart from "@src/components/radar-graph";
-import { Button } from "@/components/ui/button";
-
-const curiousPeopleSection = {
-  title: "Some curious people",
-  people: [
-    { name: "Rishi Kothari", mutuals: " 5 mutuals" },
-    { name: "Steven Zhang", mutuals: " 3 mutuals" },
-    { name: "Tazik Shahjahan", mutuals: " 2 mutuals" },
-  ],
-};
+import ChromaForm from './ChromaForm';
+import { AnnotatedPdf } from '@src/lib/types';
 
 export default async function Profile({
   users,
@@ -43,12 +21,14 @@ export default async function Profile({
   searchedUser,
   loggedInUser,
   searchedUserImageUrl,
+  parsedPapers,
 }: {
   users: User[];
   timeline: AnnotatedPdf[];
   searchedUser: User;
   loggedInUser: User;
   searchedUserImageUrl: string;
+  parsedPapers: ParsedPapers[]
 }) {
   const userHighlights = useMemo(
     () =>
@@ -76,6 +56,7 @@ export default async function Profile({
             </Avatar>
           </div>
           <FollowButton user1={loggedInUser} user2={searchedUser} />
+          <ChromaForm />
           <div className="mt-4">
             <Link
               href={`https://x.com/${searchedUser.handle}`}
@@ -103,7 +84,7 @@ export default async function Profile({
         {RenderUserProfileSection()}
         <main className="w-3/5 p-6">
           <h2 className="text-lg font-semibold mb-4">Recent</h2>
-          <Timeline articles={timeline} />
+          <Timeline articles={timeline} parsedPapers={parsedPapers} />
         </main>
         <aside className="w-1/5 p-6">
           <div className="mb-6">
@@ -111,37 +92,15 @@ export default async function Profile({
               {friendsSection.title}
             </h2>
             <ul className="space-y-2">
-              {friendsSection.friends.map((friend) => (
-                <li key={friend.clerk_id}>
-                  <Link className="block" href={`/user/${friend.handle}`}>
-                    <span className="font-medium">{friend.first_name}</span>
-                    <span className="text-sm text-gray-500">
-                      {" "}
-                      {calculateTimeAgo(
-                        friend.recentPaper?.highlights?.slice(-1)[0]
-                          ?.timestamp ?? new Date(),
-                      )}{" "}
-                    </span>
-                    <p className="text-sm text-gray-500">
-                      {friend.recentPaper?.source}
-                    </p>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h2 className="text-lg font-semibold mb-4">
-              {curiousPeopleSection.title}
-            </h2>
-            <ul className="space-y-2">
-              {curiousPeopleSection.people.map((person) => (
-                <li key={person.name + "-" + person.mutuals}>
-                  <Link className="block" href="#">
-                    <span className="font-medium">{person.name}</span>
-                    <span className="text-sm text-gray-500">
-                      {person.mutuals}
-                    </span>
+              {friendsSection.friends.map(({ clerk_id, handle, first_name, recentPaper }) => (
+                <li key={clerk_id}>
+                  <Link className="block" href={`/${handle}`}>
+                    <span className="font-medium">{first_name}</span>
+                    {recentPaper?.highlights?.slice(-1)?.[0]?.comment?.timestamp && (
+                      <span className="text-sm text-gray-500">
+                        {" " + calculateTimeAgo(recentPaper.highlights.slice(-1)[0].comment.timestamp)}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}

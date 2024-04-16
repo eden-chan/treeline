@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { z } from "zod";
 import { Highlight, CurriculumNode } from "@prisma/client";
 
@@ -27,7 +28,7 @@ export const highlightRouter = createTRPCRouter({
         highlight: HighlightWithCurriculumNodeSchema,
       }),
     )
-    .mutation<HighlightWithRelations | null>(async ({ ctx, input }) => {
+    .mutation<HighlightWithRelations | null>(async ({ input }) => {
       let res: HighlightWithRelations;
 
       const createHighlightParams: Parameters<typeof db.highlight.create> = [

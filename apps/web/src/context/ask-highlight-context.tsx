@@ -1,3 +1,4 @@
+//@ts-nocheck
 "use client";
 import React, {
   FC,
@@ -10,23 +11,24 @@ import React, {
 import { useChat, Message } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
 
-import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
+import { Highlight } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
-import { FOLLOW_UP_PROMPT } from "@src/utils/constants";
+import { FOLLOW_UP_PROMPT, generateSystemPrompt } from "@src/utils/prompts";
 import {
   NewHighlightWithRelationsInput,
   HighlightWithRelations,
 } from "@src/server/api/routers/highlight";
 import { CurriculumNodeWithRelations } from "@src/server/api/routers/annotated-pdf";
+import { getParsedPaperAction } from "@src/app/actions";
 
 export type ContextProps = {
   currentHighlight: Highlight | null;
   setCurrentHighlight: (
     highlight: Highlight | null,
-    forceRerender?: boolean,
+    forceRerender?: boolean
   ) => void;
   createAskHighlight: (
-    highlight: NewHighlightWithRelationsInput,
+    highlight: NewHighlightWithRelationsInput
   ) => Promise<Highlight | undefined>;
   clearSelectedHighlight: () => void;
   selectHighlight: (h: HighlightWithRelations) => void;
@@ -54,7 +56,7 @@ export const AskHighlightProvider: FC<{
   const currentNodeRef = useRef<CurriculumNodeWithRelations | null>(null);
   const setCurrentHighlight = (
     highlight: HighlightWithRelations | null,
-    forceRerender = true,
+    forceRerender = true
   ) => {
     currentHighlightRef.current = highlight;
     if (forceRerender) {
@@ -63,7 +65,7 @@ export const AskHighlightProvider: FC<{
   };
   const setCurrentNode = (
     node: CurriculumNodeWithRelations | null,
-    forceRerender = true,
+    forceRerender = true
   ) => {
     currentNodeRef.current = node;
     if (forceRerender) {
@@ -142,7 +144,35 @@ export const AskHighlightProvider: FC<{
     }
   };
 
+  // #TODO: fetch paper text and field from db
+  const [prompt, setPrompt] = useState("");
+
+  useEffect(() => {
+    const fetchParsedPaper = async () => {
+      const parsedPaper = await getParsedPaperAction(loadedSource);
+      if (parsedPaper && parsedPaper.sections) {
+        const concatenatedText = parsedPaper.sections
+          .map((section) => section.text)
+          .join(" ");
+        const systemPrompt = generateSystemPrompt(
+          concatenatedText,
+          parsedPaper.primary_category
+        );
+        setPrompt(systemPrompt);
+      }
+    };
+    fetchParsedPaper();
+  }, [loadedSource]);
+
+  const initialMessages: Message[] = [
+    {
+      role: "system",
+      content: prompt,
+    },
+  ];
+
   const { messages, setMessages, append, ...chat } = useChat({
+    initialMessages,
     onFinish,
     onError: (error) => console.error("Error occured in useChat:", error),
   });
@@ -191,7 +221,7 @@ export const AskHighlightProvider: FC<{
               ...oldData,
               highlights: [newHighlight, ...oldData.highlights],
             };
-          },
+          }
         );
 
         return { previousData };
@@ -214,16 +244,18 @@ export const AskHighlightProvider: FC<{
     clientApi.curriculum.updateNode.useMutation();
 
   const createAskHighlight = async (
-    highlight: NewHighlightWithRelationsInput,
+    highlight: NewHighlightWithRelationsInput
   ): Promise<Highlight | undefined> => {
     if (!highlight.node?.prompt) return;
 
-    const promptWithContext = highlight.content?.text
-      ? `${highlight.node.prompt}
-Answer this question with the following context:
-${highlight.content.text}`
-      : highlight.node.prompt;
-
+    const promptWithContext = `<question>${highlight.node.prompt}</question>
+${
+  highlight.content?.text
+    ? `<context>
+${highlight.content.text}
+</context>`
+    : ""
+}`;
     // Query AI for response
     append({
       role: "user",

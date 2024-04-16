@@ -1,3 +1,4 @@
+
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -7,6 +8,8 @@ import { useState } from "react";
 import SuperJSON from "superjson";
 
 import { type AppRouter } from "@src/server/api/root";
+
+
 
 const createQueryClient = () => new QueryClient();
 
@@ -34,6 +37,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             (op.direction === "down" && op.result instanceof Error),
         }),
         unstable_httpBatchStreamLink({
+          //@ts-ignore
           transformer: SuperJSON,
           url: getBaseUrl() + "/api/trpc",
           headers: () => {

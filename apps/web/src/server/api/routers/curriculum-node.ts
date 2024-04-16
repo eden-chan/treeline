@@ -1,3 +1,4 @@
+//@ts-nocheck
 import { z } from "zod";
 import { Highlight, CurriculumNode } from "@prisma/client";
 
@@ -21,7 +22,7 @@ export const curriculumNodeRouter = createTRPCRouter({
     .input(
       z.object({
         curriculumNode: ICurriculumNodeSchema,
-      }),
+      })
     )
     .mutation<CurriculumNodeWithMaybeRelations | null>(
       async ({ ctx, input }) => {
@@ -64,6 +65,6 @@ export const curriculumNodeRouter = createTRPCRouter({
           return null;
         }
         return res;
-      },
+      }
     ),
 });
