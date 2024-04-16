@@ -618,7 +618,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
                     { image },
                     () => this.hideTipAndSelection(),
                     () => {
-                      console.log("setting ghost highlight", scaledPosition);
+
                       this.setState(
                         {
                           ghostHighlight: {

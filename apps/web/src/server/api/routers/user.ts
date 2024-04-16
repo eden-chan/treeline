@@ -26,7 +26,7 @@ export const userRouter = createTRPCRouter({
             },
           },
         });
-        console.log(
+        console.debug(
           `User1 unfollowed User2: ${input.user1.email} unfollowed ${input.user2.email}`
         );
         // Remove user1 from user2's followers list.
@@ -40,7 +40,7 @@ export const userRouter = createTRPCRouter({
             },
           },
         });
-        console.log(
+        console.debug(
           `User2 lost a follower: ${input.user2.email} lost follower ${input.user1.email}`
         );
       } else {
@@ -53,7 +53,7 @@ export const userRouter = createTRPCRouter({
             },
           },
         });
-        console.log(
+        console.debug(
           `User1 followed User2: ${input.user1.email} followed ${input.user2.email}`
         );
         // Add user1 to user2's followers list.
@@ -65,7 +65,7 @@ export const userRouter = createTRPCRouter({
             },
           },
         });
-        console.log(
+        console.debug(
           `User2 gained a follower: ${input.user2.email} gained follower ${input.user1.email}`
         );
       }
@@ -90,7 +90,7 @@ export const userRouter = createTRPCRouter({
           where: whereClause,
         });
         const end = Date.now();
-        // console.log(`Query took ${end - start}ms`);
+        // console.debug(`Query took ${end - start}ms`);
         if (!result) {
           return undefined;
         }
@@ -116,7 +116,7 @@ export const userRouter = createTRPCRouter({
           where: whereClause,
         });
         const end = Date.now();
-        // console.log(`Query took ${end - start}ms`);
+        // console.debug(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
         return undefined;

@@ -7,7 +7,7 @@ import { api } from "@src/trpc/server";
 
 // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
 export const followAction = async (searchedUser: User, loggedInUser: User) => {
-  console.log("follow action");
+  console.debug("follow action");
   try {
     const updatedFollowStatus = await api.user.updateFollowStatus({
       user1: loggedInUser,
@@ -134,7 +134,7 @@ export const queryFacts = async (
     embeddingFunction: embedder,
   });
 
-  console.log("chroma ", { collection });
+  console.debug("chroma ", { collection });
   const relevantFactsDescriptors = await collection.query({
     where: {
       $and: [
@@ -258,14 +258,14 @@ export const loadEmbeddings = async (formData: FormData) => {
       metadatas: metadata.slice(0, minLengthFactDescriptors),
       documents: documents.slice(0, minLengthFactDescriptors),
     };
-    console.log(item);
+    console.debug(item);
 
-    console.log("upserting fact-descriptors...", metadata);
+    console.debug("upserting fact-descriptors...", metadata);
     let startTime = performance.now();
     await upsertItemInCollection(collectionName, item);
 
     let endTime = performance.now();
-    console.log(
+    console.debug(
       `Time taken to upsert fact descriptors in collection: ${endTime - startTime} milliseconds`
     );
 
@@ -296,16 +296,16 @@ export const loadEmbeddings = async (formData: FormData) => {
       documents: sectionSourceTextLocation.slice(0, minLength),
     };
 
-    // console.log(sectionItem);
+    // console.debug(sectionItem);
     // Object.keys(sectionItem).forEach((key) =>
-    //   console.log(`${key}: ${sectionItem[key].length}`)
+    //   console.debug(`${key}: ${sectionItem[key].length}`)
     // );
 
-    console.log("upserting section source text...");
+    console.debug("upserting section source text...");
     startTime = performance.now();
     await upsertItemInCollection(collectionName, sectionItem);
     endTime = performance.now();
-    console.log(
+    console.debug(
       `Time taken to upsert source text in collection: ${endTime - startTime} milliseconds`
     );
   }
@@ -325,10 +325,8 @@ export const ragQuery = async (
     );
 
     const { metadatas: factMetadatas, documents: factDocuments } = factResults;
-    console.log("query facts ", factMetadatas, factDocuments);
 
     if (factDocuments && factDocuments.length > 0) {
-      console.log({ factDocuments });
       const descriptors = factDocuments[0];
       const searchDescriptors: string[] = descriptors.filter(
         (doc): doc is string => doc !== null
@@ -340,7 +338,6 @@ export const ragQuery = async (
       );
       const { documents, metadatas } = sourceTextResults;
 
-      console.log("source text items: ", metadatas);
       return metadatas;
     }
     return [];
@@ -353,7 +350,7 @@ export const search = async (formData: FormData) => {
     formData.get("query")!.toString() || "what is this paper about?";
   const collectionName = formData.get("collection")!.toString();
   const source = formData.get("source")!.toString();
-  console.log("querying paper", query);
+  console.debug("querying paper", query);
   if (collectionName && source) {
     const factResults = await queryFacts(
       collectionName,
@@ -363,9 +360,9 @@ export const search = async (formData: FormData) => {
       3
     );
     const { metadatas: factMetadatas, documents: factDocuments } = factResults;
-    console.log("query facts ", factMetadatas, factDocuments);
+    console.debug("query facts ", factMetadatas, factDocuments);
 
-    console.log(factDocuments.filter((doc) => doc !== null)[0]);
+    console.debug(factDocuments.filter((doc) => doc !== null)[0]);
     const descriptors = factDocuments[0];
 
     if (descriptors) {
@@ -379,7 +376,7 @@ export const search = async (formData: FormData) => {
       );
       const { documents, metadatas } = sourceTextResults;
 
-      console.log("source text items: ", metadatas);
+      console.debug("source text items: ", metadatas);
     }
   }
 };
@@ -387,14 +384,14 @@ export const search = async (formData: FormData) => {
 export const handleDeleteCollection = async (formData: FormData) => {
   const collectionName = formData.get("collection")?.toString();
   const response = await deleteCollection(collectionName || "ParsedPapers");
-  console.log(`Deleted Collection ${collectionName}:`, { response });
+  console.debug(`Deleted Collection ${collectionName}:`, { response });
 };
 
 export const handleMakeNewCollection = async (formData: FormData) => {
   try {
     const collectionName = formData.get("query")?.toString();
     const response = await makeNewCollection(collectionName || "ParsedPapers");
-    console.log("New Collection Created:", { response });
+    console.debug("New Collection Created:", { response });
   } catch (error) {
     // console.error('Error creating new collection:', error);
   }
@@ -405,7 +402,7 @@ export const handleGetItemsFromCollection = async (formData: FormData) => {
   const source = formData.get("source")!.toString();
 
   const response = await getItemsFromCollection(collectionName, source);
-  console.log(`getItemsFromCollection ${collectionName} by ${source}:`, {
+  console.debug(`getItemsFromCollection ${collectionName} by ${source}:`, {
     response,
   });
 };

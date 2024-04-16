@@ -30,7 +30,7 @@ export default authMiddleware({
     requestHeaders.set("x-url", req.url);
 
     if (!auth.userId && !auth.isPublicRoute) {
-      console.log("redirect to sign in", req.url);
+      console.debug("redirect to sign in", req.url);
       return redirectToSignIn({ returnBackUrl: req.url });
     }
     // Redirect signed in users to organization selection page if they are not active in an organization

@@ -110,19 +110,15 @@ export default async function Profile({
               {friendsSection.title}
             </h2>
             <ul className="space-y-2">
-              {friendsSection.friends.map((friend) => (
-                <li key={friend.clerk_id}>
-                  <Link className="block" href={`/${friend.handle}`}>
-                    <span className="font-medium">{friend.first_name}</span>
-                    <span className="text-sm text-gray-500">
-
-                      {calculateTimeAgo(
-                        friend.recentPaper?.highlights?.slice(-1)[0].comment?.timestamp ?? new Date()
-                      )}
-                    </span>
-                    <p className="text-sm text-gray-500">
-                      {friend.recentPaper?.source}
-                    </p>
+              {friendsSection.friends.map(({ clerk_id, handle, first_name, recentPaper }) => (
+                <li key={clerk_id}>
+                  <Link className="block" href={`/${handle}`}>
+                    <span className="font-medium">{first_name}</span>
+                    {recentPaper?.highlights?.slice(-1)?.[0]?.comment?.timestamp && (
+                      <span className="text-sm text-gray-500">
+                        {" " + calculateTimeAgo(recentPaper.highlights.slice(-1)[0].comment.timestamp)}
+                      </span>
+                    )}
                   </Link>
                 </li>
               ))}

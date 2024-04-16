@@ -247,7 +247,7 @@ suggestions.`
     const source = loadedSource
     const query = highlight.node.prompt
     // const results = await ragQuery(collectionName, source, query)
-    // console.log('query: ', { source, query, collectionName, results })
+    // console.debug('query: ', { source, query, collectionName, results })
 
     let ragContext = ''
     // if (results && results.length > 0) {

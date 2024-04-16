@@ -26,7 +26,7 @@ export const parsedPapersRouter = createTRPCRouter({
           where: whereClause,
         });
         const end = Date.now();
-        // console.log(`Query took ${end - start}ms`);
+        // console.debug(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch parsed paper:", error);
         return null;
@@ -40,7 +40,7 @@ export const parsedPapersRouter = createTRPCRouter({
       const start = Date.now();
       result = await db.parsedPapers.findMany();
       const end = Date.now();
-      // console.log(`Query took ${end - start}ms`);
+      // console.debug(`Query took ${end - start}ms`);
     } catch (error) {
       console.error("Failed to fetch parsed paper:", error);
       return [];
@@ -60,7 +60,7 @@ export const parsedPapersRouter = createTRPCRouter({
           return { source: paper.source, title: paper.title };
         });
       const end = Date.now();
-      // console.log(`Query took ${end - start}ms`);
+      // console.debug(`Query took ${end - start}ms`);
     } catch (error) {
       console.error("Failed to fetch parsed paper:", error);
       return [];
