@@ -145,12 +145,12 @@ export const CurriculumNodeSchemaBase = z.object({
   timestamp: z.date(),
 });
 
-type ICurriculumNodeSchema = z.infer<typeof CurriculumNodeSchemaBase> & {
+type ICurriculumNodeSchemaType = z.infer<typeof CurriculumNodeSchemaBase> & {
   id: string;
-  children: ICurriculumNodeSchema[];
+  children: ICurriculumNodeSchemaType[];
 };
 
-export const ICurriculumNodeSchema: z.ZodType<ICurriculumNodeSchema> =
+export const ICurriculumNodeSchema: z.ZodType<ICurriculumNodeSchemaType> =
   CurriculumNodeSchemaBase.extend({
     id: z.string(),
     children: z.lazy(() => ICurriculumNodeSchema.array()),
