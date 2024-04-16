@@ -86,7 +86,6 @@ export const annotatedPdfRouter = createTRPCRouter({
         console.error("Failed to fetch highlights:", error);
         return null;
       }
-      console.log("Fetched single highlights:", result);
       return result;
     }),
   fetchAllAnnotatedPdfs: publicProcedure

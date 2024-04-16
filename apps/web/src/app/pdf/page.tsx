@@ -1,15 +1,15 @@
 import React from "react";
 
-import { api } from "@src/trpc/server";
-import { PDFHighlightsWithProfile } from "./ui";
-
 import dynamic from "next/dynamic";
 import { ObjectId } from "mongodb";
 import { User, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { headers } from "next/headers";
 import { AnnotatedPdf, Highlight } from "@prisma/client";
-import { AskHighlightProvider } from "@src/context/ask-highlight-context";
 import { RedirectToSignIn } from "@clerk/nextjs";
+
+import { api } from "@src/trpc/server";
+import { AskHighlightProvider } from "@src/context/ask-highlight-context";
+import { PDFHighlightsWithProfile } from "./ui";
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });

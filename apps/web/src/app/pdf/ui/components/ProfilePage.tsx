@@ -26,7 +26,7 @@ import { useMemo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
 import LearningActivityCalendar from "@src/components/activity-calendar";
 import BasicRadarChart from "@src/components/radar-graph";
-import { Button } from '@/components/ui/button';
+import { Button } from "@/components/ui/button";
 
 const curiousPeopleSection = {
   title: "Some curious people",
@@ -36,8 +36,6 @@ const curiousPeopleSection = {
     { name: "Tazik Shahjahan", mutuals: " 2 mutuals" },
   ],
 };
-
-
 
 export default async function Profile({
   users,
@@ -67,7 +65,6 @@ export default async function Profile({
     friends: userHighlights,
   };
 
-
   const RenderUserProfileSection = () => {
     return (
       <nav className="w-1/5 p-6 h-screen">
@@ -80,20 +77,29 @@ export default async function Profile({
           </div>
           <FollowButton user1={loggedInUser} user2={searchedUser} />
           <div className="mt-4">
-            <Link href={`https://x.com/${searchedUser.handle}`} className="text-blue-500 hover:underline">Twitter</Link>
-            <Link href={'https://edenchan.ca'} className="text-blue-500 hover:underline">Website</Link>
+            <Link
+              href={`https://x.com/${searchedUser.handle}`}
+              className="text-blue-500 hover:underline"
+            >
+              Twitter
+            </Link>
+            <Link
+              href={"https://edenchan.ca"}
+              className="text-blue-500 hover:underline"
+            >
+              Website
+            </Link>
           </div>
         </div>
         <div className="mt-8">
           <LearningActivityCalendar />
         </div>
       </nav>
-    )
-  }
+    );
+  };
   return (
     <div className="min-h-screen">
       <div className="flex">
-
         {RenderUserProfileSection()}
         <main className="w-3/5 p-6">
           <h2 className="text-lg font-semibold mb-4">Recent</h2>
@@ -107,7 +113,7 @@ export default async function Profile({
             <ul className="space-y-2">
               {friendsSection.friends.map((friend) => (
                 <li key={friend.clerk_id}>
-                  <Link className="block" href={`/${friend.handle}`}>
+                  <Link className="block" href={`/user/${friend.handle}`}>
                     <span className="font-medium">{friend.first_name}</span>
                     <span className="text-sm text-gray-500">
                       {" "}
