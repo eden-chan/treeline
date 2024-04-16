@@ -150,7 +150,7 @@ async def parse_pdf(pdf_url):
                 update_data = {"$set": {"title": title, "abstract": abstract, "facts": facts_serialized, 'sections': sections, 'primary_category': primary_category, 'published': published, 'updated': updated}}
                 result = db.update_one(filter_query, update_data, upsert=True)
                 
-            chroma_client = chromadb.HttpClient(host='localhost', port=8000)
+            chroma_client = chromadb.HttpClient(host=os.environ.get('CHROMA_URL'))
             collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
 
             metadata = [{"fact": fact_descriptor["fact"], "relevance": fact_descriptor["relevance"], "source": pdf_url} for fact_descriptor in facts_serialized]
@@ -215,12 +215,13 @@ async def fetch_paper(request: PDFRequest):
 
     
 if __name__ == "__main__":
+    # chroma_client = chromadb.HttpClient(host=os.environ.get('CHROMA_URL'))
+    # collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
+    # results = collection.get(where={   "source": {         "$eq":"https://arxiv.org/pdf/2403.11207.pdf"     }}) 
+    # import pdb; pdb.set_trace()
     import uvicorn
     uvicorn.run("pdf_parser_server:app", host="0.0.0.0", port=3001, reload=True)
-    # chroma_client = chromadb.HttpClient(host='localhost', port=8000)
-    # collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
-    # import pdb; pdb.set_trace()
-    # results = collection.get(where={   "source": {         "$eq":"https://arxiv.org/pdf/2403.11207.pdf"     }}) 
+    
      
 
 
