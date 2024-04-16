@@ -255,15 +255,11 @@ suggestions.`
     }
 
 
-    const promptWithContext = highlight.content?.text
-      ? `${highlight.node.prompt}
-Answer this question with the following context:
+
+    const promptWithContext = `<question>${highlight.node.prompt}</question>
+${highlight.content?.text ? `<context>
 ${highlight.content.text}
-${ragContext}`
-      : highlight.node.prompt;
-
-    console.log(promptWithContext)
-
+${ragContext}</context>` : ''}`;
     // Query AI for response
     append(
       {
