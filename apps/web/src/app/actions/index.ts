@@ -4,6 +4,7 @@ import { ParsedPapers, ParsedPapersFacts, User } from "@prisma/client";
 import { EMBEDDING_TYPE } from "@src/lib/types";
 import { TitleSourcePair } from "@src/server/api/routers/parsed-pdf";
 import { api } from "@src/trpc/server";
+import { ChromaClient, IncludeEnum, OpenAIEmbeddingFunction } from "chromadb";
 
 // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
 export const followAction = async (searchedUser: User, loggedInUser: User) => {
@@ -40,8 +41,6 @@ export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
     throw new Error(`Failed to get parsed papers: ${error}`);
   }
 };
-
-import { ChromaClient, IncludeEnum, OpenAIEmbeddingFunction } from "chromadb";
 
 // ESM
 const client = new ChromaClient({ path: process.env.CHROMA_URL });
@@ -295,11 +294,6 @@ export const loadEmbeddings = async (formData: FormData) => {
       metadatas: sectionSourceTextContent.slice(0, minLength),
       documents: sectionSourceTextLocation.slice(0, minLength),
     };
-
-    // console.debug(sectionItem);
-    // Object.keys(sectionItem).forEach((key) =>
-    //   console.debug(`${key}: ${sectionItem[key].length}`)
-    // );
 
     console.debug("upserting section source text...");
     startTime = performance.now();
