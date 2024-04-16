@@ -18,6 +18,9 @@ from llama_index.core.node_parser import MarkdownNodeParser
 import arxiv
 from datetime import datetime
 import httpx
+import pysqlite3
+import sys
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 import chromadb
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from starlette.middleware.cors import CORSMiddleware
@@ -210,10 +213,9 @@ async def fetch_paper(request: PDFRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF. {e}")
 
-
     
-import uvicorn
 if __name__ == "__main__":
+    import uvicorn
     uvicorn.run("pdf_parser_server:app", host="0.0.0.0", port=3001, reload=True)
     # chroma_client = chromadb.HttpClient(host='localhost', port=8000)
     # collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
