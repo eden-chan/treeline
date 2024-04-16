@@ -8,6 +8,8 @@ import SuperJSON from "superjson";
 
 import { type AppRouter } from "@src/server/api/root";
 
+
+
 const createQueryClient = () => new QueryClient();
 
 let clientQueryClientSingleton: QueryClient | undefined = undefined;
@@ -34,7 +36,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
             (op.direction === "down" && op.result instanceof Error),
         }),
         unstable_httpBatchStreamLink({
-          transformer: SuperJSON,
+          // transformer: SuperJSON,
           url: getBaseUrl() + "/api/trpc",
           headers: () => {
             const headers = new Headers();

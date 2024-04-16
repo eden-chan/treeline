@@ -86,7 +86,7 @@ export async function POST(req: Request) {
         followers: [],
       },
     });
-    return new Response(newUser, { status: 200 });
+    return new Response(JSON.stringify(newUser), { status: 200 });
   }
 
   return new Response("", { status: 200 });

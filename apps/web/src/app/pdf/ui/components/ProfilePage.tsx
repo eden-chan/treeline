@@ -6,7 +6,7 @@
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import Link from "next/link";
 import Timeline from "./Timeline";
-import { AnnotatedPdf, User } from "@prisma/client";
+import { ParsedPapers, User } from "@prisma/client";
 import FollowButton from "./FollowButton";
 
 const navLinks = [
@@ -28,6 +28,7 @@ import LearningActivityCalendar from "@src/components/activity-calendar";
 import BasicRadarChart from "@src/components/radar-graph";
 import { Button } from '@/components/ui/button';
 import ChromaForm from './ChromaForm';
+import { AnnotatedPdf } from '@src/lib/types';
 
 const curiousPeopleSection = {
   title: "Some curious people",
@@ -114,11 +115,10 @@ export default async function Profile({
                   <Link className="block" href={`/${friend.handle}`}>
                     <span className="font-medium">{friend.first_name}</span>
                     <span className="text-sm text-gray-500">
-                      {" "}
+
                       {calculateTimeAgo(
-                        friend.recentPaper?.highlights?.slice(-1)[0]
-                          ?.timestamp ?? new Date(),
-                      )}{" "}
+                        friend.recentPaper?.highlights?.slice(-1)[0].comment.timestamp ?? new Date()
+                      )}
                     </span>
                     <p className="text-sm text-gray-500">
                       {friend.recentPaper?.source}

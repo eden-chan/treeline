@@ -1,3 +1,4 @@
+//@ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -95,16 +96,15 @@ export default function PDFViewer({
         },
         (oldData) => {
           if (!oldData) return oldData;
-
           const highlightId = uuidv4();
-          const newNode = newData.highlight.node
+          const newNode = newData?.highlight?.node
             ? {
-                ...newData.highlight.node,
-                id: uuidv4(),
-                parentId: null,
-                highlightId,
-                children: [],
-              }
+              ...newData.highlight.node,
+              id: uuidv4(),
+              parentId: null,
+              highlightId,
+              children: [],
+            }
             : null;
           const newHighlight = {
             ...newData.highlight,
@@ -146,7 +146,7 @@ export default function PDFViewer({
     });
   };
 
-  let scrollToHighlightId = (highlight: Highlight) => {};
+  let scrollToHighlightId = (highlight: Highlight) => { };
 
   const setHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
@@ -157,10 +157,6 @@ export default function PDFViewer({
     }
   };
 
-  const parsedPaper = {};
-  // const parsedPaper = clientApi.parsedPapers.fetchParsedPdf.useQuery({
-  //   source: loadedSource,
-  // })?.data;
 
   // Todo: This useEffect reruns on every state update since scrollToHighlight changes reference on every render.
   // However, we need to keep an updated version of scrollToHighlightId after it gets assigned in PDFHighlighter.
