@@ -17,7 +17,6 @@ export type HighlightWithRelations = Highlight & {
 export type NewHighlightWithRelationsInput = Omit<
   Highlight & {
     node?: Omit<CurriculumNode, "id" | "parentId" | "highlightId"> | null;
-    type: "ASK" | "COMMENT";
   },
   "id"
 >;
@@ -27,7 +26,7 @@ export const highlightRouter = createTRPCRouter({
     .input(
       z.object({
         highlight: HighlightWithCurriculumNodeSchema,
-      })
+      }),
     )
     .mutation<HighlightWithRelations | null>(async ({ ctx, input }) => {
       let res: HighlightWithRelations;
@@ -36,7 +35,7 @@ export const highlightRouter = createTRPCRouter({
         {
           data: {
             ...Object.fromEntries(
-              Object.entries(input.highlight).filter(([key]) => key !== "type")
+              Object.entries(input.highlight).filter(([key]) => key !== "type"),
             ),
             annotatedPdfId: undefined,
             annotatedPdf: {
