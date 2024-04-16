@@ -1,6 +1,6 @@
 'use client'
 import { useState } from 'react'
-import { Copy } from "lucide-react"
+
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
@@ -16,15 +16,38 @@ import {
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from '@/components/ui/use-toast'
 
 const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762.pdf"
 export function ImportButton() {
     const [link, setLink] = useState(DEFAULT_PDF_URL)
     const router = useRouter()
 
-    const handleEnterOrSubmit = (e) => {
+    const handleEnterOrSubmit = async (e) => {
         e.preventDefault()
-        router.push(`/pdf?url=${link}`)
+        const arxivLinkPattern = /^https?:\/\/(?:www\.)?arxiv\.org\/pdf\/[0-9]+\.[0-9]+(?:v[0-9]+)?\.pdf$/
+        if (!arxivLinkPattern.test(link)) {
+            console.error("Invalid arXiv link.");
+            toast({
+                title: "Error",
+                description: "Please add a valid arXiv link.",
+                variant: 'destructive'
+            })
+            return;
+        }
+        try {
+            fetch('http://localhost:3001/process_pdf', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ pdf_url: link }),
+            });
+
+            router.push(`/pdf?url=${link}`)
+        } catch (error) {
+            console.error("Failed to fetch: ", error);
+        }
     }
 
     return (

@@ -20,10 +20,25 @@ from datetime import datetime
 import httpx
 import chromadb
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
+from starlette.middleware.cors import CORSMiddleware
 
 
 embedding_function = OpenAIEmbeddingFunction(api_key=os.environ.get('OPENAI_API_KEY'))
 app = FastAPI()
+origins = [
+    "http://localhost:3000", 
+    "https://ourslash.company",# Adjust if your Next.js app runs on a different port
+]
+
+# Add CORSMiddleware to your FastAPI app
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,  # Allows specified origins
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods
+    allow_headers=["*"],  # Allows all headers
+)
+
 client = instructor.patch(OpenAI())
     
 class PaperMetadata(BaseModel):
