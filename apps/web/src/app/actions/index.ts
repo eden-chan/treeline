@@ -7,7 +7,6 @@ import { api } from "@src/trpc/server";
 export const followAction = async (searchedUser: User, loggedInUser: User) => {
   "use server";
 
-  console.log("follow action");
   try {
     const updatedFollowStatus = await api.user.updateFollowStatus({
       user1: loggedInUser,

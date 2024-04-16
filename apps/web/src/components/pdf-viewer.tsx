@@ -180,7 +180,6 @@ export default function PDFViewer({
   const createCommentHighlight = async (
     highlight: NewHighlightWithRelationsInput,
   ) => {
-    console.log("highlight", highlight);
     highlightMutation.mutate({
       highlight,
     });

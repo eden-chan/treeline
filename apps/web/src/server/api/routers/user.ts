@@ -26,9 +26,6 @@ export const userRouter = createTRPCRouter({
             },
           },
         });
-        console.log(
-          `User1 unfollowed User2: ${input.user1.email} unfollowed ${input.user2.email}`,
-        );
         // Remove user1 from user2's followers list.
         await db.user.update({
           where: { id: input.user2.id },
@@ -40,9 +37,6 @@ export const userRouter = createTRPCRouter({
             },
           },
         });
-        console.log(
-          `User2 lost a follower: ${input.user2.email} lost follower ${input.user1.email}`,
-        );
       } else {
         // If user1 is not following user2, add user2 to user1's follows list.
         await db.user.update({
@@ -53,9 +47,6 @@ export const userRouter = createTRPCRouter({
             },
           },
         });
-        console.log(
-          `User1 followed User2: ${input.user1.email} followed ${input.user2.email}`,
-        );
         // Add user1 to user2's followers list.
         await db.user.update({
           where: { id: input.user2.id },
@@ -65,9 +56,6 @@ export const userRouter = createTRPCRouter({
             },
           },
         });
-        console.log(
-          `User2 gained a follower: ${input.user2.email} gained follower ${input.user1.email}`,
-        );
       }
     }),
   fetchUser: publicProcedure
@@ -85,12 +73,9 @@ export const userRouter = createTRPCRouter({
 
       let result;
       try {
-        const start = Date.now();
         result = await db.user.findFirst({
           where: whereClause,
         });
-        const end = Date.now();
-        console.log(`Query took ${end - start}ms`);
         if (!result) {
           return undefined;
         }
@@ -98,7 +83,6 @@ export const userRouter = createTRPCRouter({
         console.error("Failed to fetch user:", error);
         return undefined;
       }
-      console.log("Fetched user:", result);
       return result;
     }),
   fetchUsers: publicProcedure
@@ -111,17 +95,13 @@ export const userRouter = createTRPCRouter({
 
       let result;
       try {
-        const start = Date.now();
         result = await db.user.findMany({
           where: whereClause,
         });
-        const end = Date.now();
-        console.log(`Query took ${end - start}ms`);
       } catch (error) {
         console.error("Failed to fetch highlights:", error);
         return undefined;
       }
-      console.log("Fetched user:", result);
       return result;
     }),
 });

@@ -115,9 +115,7 @@ export const AskHighlightProvider: FC<{
         isGeneratingFollowUpsRef.current = true;
       }, 500);
     } else if (isGeneratingFollowUpsRef.current && currentNodeRef.current) {
-      console.log("message.content:", message.content);
       const newPrompts = [...message.content.split("\n")];
-      console.log("new prompts:", newPrompts);
       const newChildren = newPrompts.map((prompt) => {
         return {
           id: uuidv4(),
