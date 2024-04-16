@@ -76,8 +76,7 @@ model Highlight {
   position       HighlightPosition
   comment        HighlightComment?
   type           HighlightType     @default(COMMENT)
-  nodeId         String?           @unique @db.ObjectId
-  node           CurriculumNode?   @relation(fields: [nodeId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  node           CurriculumNode?
   annotatedPdf   AnnotatedPdf      @relation(fields: [annotatedPdfId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   annotatedPdfId String            @db.ObjectId
 }
@@ -86,8 +85,6 @@ enum HighlightType {
   ASK
   COMMENT
 }
-
-
 
 model AnnotatedPdf {
   id         String      @id @default(auto()) @map("_id") @db.ObjectId
@@ -126,6 +123,7 @@ type ParsedPapersSectionsMetadata {
   Header_4 String?
   Header_5 String?
 }
+
 model ParsedPapers {
   id               String                 @id @default(auto()) @map("_id") @db.ObjectId
   abstract         String
@@ -137,3 +135,4 @@ model ParsedPapers {
   title            String
   updated          DateTime               @db.Date
 }
+
