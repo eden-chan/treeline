@@ -91,7 +91,7 @@ export default async function Page() {
       const userProfile = userProfiles.find(
         (user) => user.email === annotatedPdf.userId
       );
-      
+
       if (!userProfile) continue;
 
       annotatedPdfsWithProfile.push({
@@ -119,7 +119,7 @@ export default async function Page() {
         loadedSource={source}
         userId={userId}
         userHighlights={highlights}
-        allHighlights={annotatedPdfsWithProfile}
+        annotatedPdfsWithProfile={annotatedPdfsWithProfile}
       />
     </AskHighlightProvider>
   );
