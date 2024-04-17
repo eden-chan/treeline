@@ -145,17 +145,6 @@ export const CurriculumNodeSchemaBase = z.object({
   timestamp: z.date(),
 });
 
-type ICurriculumNodeSchema = z.infer<typeof CurriculumNodeSchemaBase> & {
-  id: string;
-  children: ICurriculumNodeSchema[];
-};
-
-export const ICurriculumNodeSchema: z.ZodType<ICurriculumNodeSchema> =
-  CurriculumNodeSchemaBase.extend({
-    id: z.string(),
-    children: z.lazy(() => ICurriculumNodeSchema.array()),
-  });
-
 export const HighlightTypeSchema = z.enum(["ASK", "COMMENT"]);
 
 export const HighlightSchema = z.object({

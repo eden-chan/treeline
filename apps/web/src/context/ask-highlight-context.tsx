@@ -166,12 +166,13 @@ export const AskHighlightProvider: FC<{
     onFinish,
     onError: (error) => console.error("Error occured in useChat:", error),
   });
-
   const utils = clientApi.useUtils();
   // const updateHighlightMutation = clientApi.highlight.updateHighlight.useMutation();
   const createHighlightMutation =
     clientApi.highlight.createHighlight.useMutation({
       onMutate: async (newData) => {
+        console.debug('chatMessages', messages)
+
         await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
           userId: userId,
           source: loadedSource,
