@@ -91,11 +91,14 @@ export default async function Page() {
       const userProfile = userProfiles.find(
         (user) => user.email === annotatedPdf.userId
       );
+      
+      if (!userProfile) continue;
+
       annotatedPdfsWithProfile.push({
         ...annotatedPdf,
-        userProfilePicture: userProfile?.imageUrl || "",
-        firstName: userProfile?.firstName || "",
-        lastName: userProfile?.lastName || "",
+        userProfilePicture: userProfile.imageUrl,
+        firstName: userProfile.firstName || "",
+        lastName: userProfile.lastName || "",
       });
     }
   }
