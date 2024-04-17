@@ -43,13 +43,13 @@ export default function PDFViewer({
   loadedSource,
   userId,
   userHighlights,
-  allHighlights,
+  annotatedPdfsWithProfile,
 }: {
   annotatedPdfId: string;
   loadedSource: string;
   userId: string;
   userHighlights: Highlight[];
-  allHighlights: AnnotatedPdfWithProfile[];
+  annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
 }): JSX.Element {
   const utils = clientApi.useUtils();
   const annotatedPdfMutation =
@@ -187,7 +187,7 @@ export default function PDFViewer({
     <div className="App" style={{ display: "flex", height: "100vh" }}>
       <FloatingProfiles
         setDisplayHighlights={setFriendHighlights}
-        allHighlightsWithProfile={allHighlights}
+        allHighlightsWithProfile={annotatedPdfsWithProfile}
       />
       <div
         style={{
