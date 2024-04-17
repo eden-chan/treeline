@@ -105,7 +105,7 @@ export default async function Page() {
 
   const parsedPaper = await api.parsedPapers.fetchParsedPdf({
     source: pdfUrl.href,
-  });
+  }) ?? null;
 
   return (
     <AskHighlightProvider
@@ -119,7 +119,7 @@ export default async function Page() {
         loadedSource={source}
         userId={userId}
         userHighlights={highlights}
-        annotatedPdfsWithProfile={annotatedPdfsWithProfile}
+        allHighlights={annotatedPdfsWithProfile}
       />
     </AskHighlightProvider>
   );
