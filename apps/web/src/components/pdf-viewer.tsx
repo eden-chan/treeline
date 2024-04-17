@@ -100,12 +100,12 @@ export default function PDFViewer({
           const highlightId = uuidv4();
           const newNode = newData?.highlight?.node
             ? {
-                ...newData.highlight.node,
-                id: uuidv4(),
-                parentId: null,
-                highlightId,
-                children: [],
-              }
+              ...newData.highlight.node,
+              id: uuidv4(),
+              parentId: null,
+              highlightId,
+              children: [],
+            }
             : null;
           const newHighlight = {
             ...newData.highlight,
@@ -153,7 +153,7 @@ export default function PDFViewer({
     });
   };
 
-  let scrollToHighlightId = (highlight: Highlight) => {};
+  let scrollToHighlightId = (highlight: Highlight) => { };
 
   const setHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());

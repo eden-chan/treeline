@@ -4,13 +4,14 @@ import React, {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useRef,
   useState,
 } from "react";
 import { useChat, Message } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
 
-import { Highlight } from "@prisma/client";
+import { Highlight, ParsedPapers } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
 import { FOLLOW_UP_PROMPT, generateSystemPrompt } from "@src/utils/prompts";
 import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
@@ -45,7 +46,8 @@ export const AskHighlightProvider: FC<{
   userId: string;
   loadedSource: string;
   children: ReactNode;
-}> = ({ annotatedPdfId, userId, loadedSource, children }) => {
+  parsedPaper: ParsedPapers | null;
+}> = ({ annotatedPdfId, userId, loadedSource, children, parsedPaper }) => {
   const [_, setForceRerender] = useState<Boolean>(false);
   // Refs are required so that their values are not cached in callback functions
   const currentHighlightRef = useRef<HighlightWithRelations | null>(null);
@@ -141,33 +143,15 @@ export const AskHighlightProvider: FC<{
   };
 
   // #TODO: fetch paper text and field from db
-  const [prompt, setPrompt] = useState("");
-
-  useEffect(() => {
-    const fetchParsedPaper = async () => {
-      const parsedPaper = await getParsedPaperAction(loadedSource);
-      if (parsedPaper && parsedPaper.sections) {
-        const concatenatedText = parsedPaper.sections
-          .map((section) => section.text)
-          .join(" ");
-        const systemPrompt = generateSystemPrompt(
-          concatenatedText,
-          parsedPaper.primary_category
-        );
-        setPrompt(systemPrompt);
-      }
-    };
-    fetchParsedPaper();
-  }, [loadedSource]);
-
-  const initialMessages: Message[] = [
-    {
-      id: uuidv4(),
-      role: "system",
-      content: prompt,
-    },
-  ];
-
+  // fetch paper text and field from db
+  const concatenatedText = useMemo(() => parsedPaper?.sections.map(section => section.text).join(" "), [parsedPaper?.sections]);
+  const systemPrompt = useMemo(() => generateSystemPrompt(concatenatedText ?? '', parsedPaper?.primary_category ?? ''), [concatenatedText, parsedPaper?.primary_category]);
+  const systemPromptId = useMemo(() => uuidv4(), [])
+  const initialMessages: Message[] = [{
+    id: systemPromptId,
+    role: 'system',
+    content: systemPrompt,
+  }]
   const { messages, setMessages, append, ...chat } = useChat({
     initialMessages,
     onFinish,
@@ -200,12 +184,12 @@ export const AskHighlightProvider: FC<{
             const highlightId = uuidv4();
             const newNode = newData.highlight.node
               ? {
-                  ...newData.highlight.node,
-                  id: uuidv4(),
-                  parentId: null,
-                  highlightId,
-                  children: [],
-                }
+                ...newData.highlight.node,
+                id: uuidv4(),
+                parentId: null,
+                highlightId,
+                children: [],
+              }
               : null;
             const newHighlight = {
               ...newData.highlight,
@@ -246,13 +230,12 @@ export const AskHighlightProvider: FC<{
     if (!highlight.node?.prompt) return;
 
     const promptWithContext = `<question>${highlight.node.prompt}</question>
-${
-  highlight.content?.text
-    ? `<context>
+${highlight.content?.text
+        ? `<context>
 ${highlight.content.text}
 </context>`
-    : ""
-}`;
+        : ""
+      }`;
     // Query AI for response
     append({
       role: "user",
