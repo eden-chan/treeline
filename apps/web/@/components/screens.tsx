@@ -20,7 +20,7 @@ import { Dock } from "./dock";
 
 export function Screens() {
   const router = useRouter();
-  const [activeApp, setActiveApp] = useState<"cal" | "midday">("midday");
+  const [activeApp, setActiveApp] = useState<"cal" | "MySpace">("MySpace");
 
   const apps = [
     {
@@ -29,10 +29,10 @@ export function Screens() {
       name: "Finder",
     },
     {
-      id: "midday",
+      id: "MySpace",
       icon: require("public/dock/midday.png"),
-      name: "Midday",
-      onClick: () => setActiveApp("midday"),
+      name: "MySpace",
+      onClick: () => setActiveApp("MySpace"),
     },
     {
       id: "cal",
@@ -44,7 +44,7 @@ export function Screens() {
       id: "notion",
       icon: require("public/dock/notion.png"),
       name: "Open Roadmap",
-      onClick: () => router.push("https://go.midday.ai/4bHhyra", {}),
+      onClick: () => router.push("https://go.MySpace.ai/4bHhyra", {}),
     },
     {
       id: "discord",
@@ -52,7 +52,7 @@ export function Screens() {
       name: "Join the community",
       onClick: () =>
         window.open(
-          "https://go.midday.ai/anPiuRx",
+          "https://go.MySpace.ai/anPiuRx",
           "_blank",
           "noopener,noreferrer"
         ),
@@ -62,13 +62,13 @@ export function Screens() {
       icon: require("public/dock/github.png"),
       name: "Open Repository",
       onClick: () =>
-        window.open("https://git.new/midday", "_blank", "noopener,noreferrer"),
+        window.open("https://git.new/MySpace", "_blank", "noopener,noreferrer"),
     },
   ];
 
   const renderActiveApp = () => {
     switch (activeApp) {
-      case "midday":
+      case "MySpace":
         return (
           <div className="relative">
             <BlurryCircle className="absolute -top-2 right-[320px]  hidden md:block bg-[#FFECBB] dark:bg-[#FFECBB]/40" />
@@ -155,7 +155,7 @@ export function Screens() {
       case "cal":
         return (
           <div className="w-full max-h-[760px] overflow-auto md:h-[600px] md:mt-[70px]">
-            <CalEmbed calLink="pontus-midday/15min" />
+            <CalEmbed calLink="pontus-MySpace/15min" />
           </div>
         );
       default:

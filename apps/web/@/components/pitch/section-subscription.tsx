@@ -7,7 +7,7 @@ export function SectionSubscription() {
       <div className="absolute left-4 right-4 md:left-8 md:right-8 top-4 flex justify-between text-lg">
         <span>How we will make money</span>
         <span className="text-[#878787]">
-          <Link href="/">midday.ai</Link>
+          <Link href="/">MySpace.ai</Link>
         </span>
       </div>
       <div className="flex flex-col min-h-screen justify-center container">
@@ -88,7 +88,7 @@ export function SectionSubscription() {
 
           <div className="px-4 md:px-0">
             <a
-              href="https://midday.ai/engine"
+              href="https://MySpace.ai/engine"
               target="_blank"
               rel="noreferrer"
               className="block"
@@ -96,7 +96,7 @@ export function SectionSubscription() {
               <div className="ful-w p-4 border border-border bg-[#121212] rounded-xl px-6 mt-8 text-center flex flex-col justify-center items-center space-y-4 pb-8">
                 <h2>Engine</h2>
                 <p className="text-[#878787] text-sm text-center max-w-[800px]">
-                  Midday Engine streamlines banking integrations with a single
+                  MySpace Engine streamlines banking integrations with a single
                   API, effortlessly connecting to multiple providers and get one
                   unified format and UI. We currently utilize our Engine
                   internally, but we will soon offer it as a paid service.

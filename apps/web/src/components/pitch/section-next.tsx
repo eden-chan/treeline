@@ -4,7 +4,7 @@ import app from "./app.png";
 import apps from "./apps.png";
 import engine from "./engine.png";
 import invoice from "./invoice.png";
-import ai from "./midday-ai.png";
+import ai from "./MySpace-ai.png";
 import { Card } from "./ui";
 
 export function SectionNext() {
@@ -13,7 +13,7 @@ export function SectionNext() {
       <div className="absolute left-4 right-4 md:left-8 md:right-8 top-4 flex justify-between text-lg">
         <span>Whats coming next</span>
         <span className="text-[#878787]">
-          <Link href="/">midday.ai</Link>
+          <Link href="/">MySpace.ai</Link>
         </span>
       </div>
       <div className="flex flex-col min-h-screen justify-center container">
@@ -26,7 +26,7 @@ export function SectionNext() {
             </Card>
 
             <a
-              href="https://midday.ai/engine"
+              href="https://MySpace.ai/engine"
               target="_blank"
               rel="noreferrer"
               className="block"
@@ -40,9 +40,9 @@ export function SectionNext() {
           </div>
           <div className="space-y-8">
             <Card className="min-h-[370px]">
-              <h2 className="text-xl">Midday AI</h2>
+              <h2 className="text-xl">MySpace AI</h2>
               <span />
-              <Image src={ai} width={362} alt="Midday AI" quality={100} />
+              <Image src={ai} width={362} alt="MySpace AI" quality={100} />
             </Card>
 
             <Card className="min-h-[370px]">

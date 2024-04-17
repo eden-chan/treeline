@@ -7,7 +7,7 @@ export function SectionBook() {
     <div className="min-h-screen relative w-screen">
       <div className="absolute left-4 right-4 md:left-8 md:right-8 top-4 flex justify-between text-lg">
         <span>Book a meeting</span>
-        <Link href="https://app.midday.ai">
+        <Link href="https://app.MySpace.ai">
           <Button variant="outline">Sign up</Button>
         </Link>
       </div>
@@ -18,7 +18,7 @@ export function SectionBook() {
         </div>
 
         <div className="flex justify-center mt-10 md:mt-0">
-          <a href="https://git.new/midday" target="_blank" rel="noreferrer">
+          <a href="https://git.new/MySpace" target="_blank" rel="noreferrer">
             <Button variant="outline" className="font-normal">
               Proudly Open Source
             </Button>

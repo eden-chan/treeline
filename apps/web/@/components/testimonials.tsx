@@ -57,7 +57,7 @@ const testimonials = [
       "https://pbs.twimg.com/profile_images/1729977047999524864/suW5VpQZ_400x400.jpg",
     handle: "@calcom",
     verified: true,
-    quote: "We love @middayai 🖤",
+    quote: "We love @MySpaceai 🖤",
   },
   {
     name: "Kyle @ KyTech",
@@ -73,7 +73,7 @@ const testimonials = [
       "https://pbs.twimg.com/profile_images/1506792347840888834/dS-r50Je_400x400.jpg",
     handle: "@steventey",
     verified: true,
-    quote: `Just found my new favorite open-source project → http://midday.ai
+    quote: `Just found my new favorite open-source project → http://MySpace.ai
 
     It's a modern layer on top of Quickbooks/Xero that lets you automate the tedious accounting aspects of your business and focus on what matters – your product.
     
@@ -98,7 +98,7 @@ const testimonials = [
     handle: "@peer_rich",
     verified: true,
     quote:
-      "the best thing i couldve done as a founder is build something that helps other founders. so proud 🖤 @middayai",
+      "the best thing i couldve done as a founder is build something that helps other founders. so proud 🖤 @MySpaceai",
   },
 ];
 

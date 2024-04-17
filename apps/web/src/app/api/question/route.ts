@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     for await (const result of extractionStream) {
       try {
         const chunk = JSON.stringify(result) + "\n";
-        console.log(chunk);
+        // console.log(chunk);
         await writer.write(chunk);
       } catch (e) {
         console.log(e);

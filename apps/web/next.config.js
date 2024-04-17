@@ -2,7 +2,12 @@
 module.exports = {
   transpilePackages: ["@repo/ui"],
   images: {
-    domains: ["pbs.twimg.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "pbs.twimg.com",
+      },
+    ],
   },
   webpack: (config, { isServer }) => {
     if (!isServer) {

@@ -22,7 +22,7 @@ export function SectionStart() {
           </svg>
         </div>
         <h1 className="text-[110px] bottom-[250px] left-2 md:text-[426px] absolute md:right-0 md:bottom-8 md:left-auto">
-          Midday
+          MySpace
         </h1>
       </div>
     </div>

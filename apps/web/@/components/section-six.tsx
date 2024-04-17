@@ -41,7 +41,7 @@ export function SectionSix() {
           </h3>
 
           <p className="text-[#878787]">
-            With Midday AI, you can ask anything and gain insights into your
+            With MySpace AI, you can ask anything and gain insights into your
             financial situation. Understand your major expenses and income
             sources. Inquire about transactions without receipts or explore
             revenue patterns like Burn rate or MRR. Learning from your financial

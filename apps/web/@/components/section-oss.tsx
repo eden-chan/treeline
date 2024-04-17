@@ -22,7 +22,7 @@ export function SectionOSS() {
         <p className="text-[#707070]">
           We believe in being as transparent as possible, from{" "}
           <a
-            href="https://git.new/midday"
+            href="https://git.new/MySpace"
             target="_blank"
             rel="noreferrer"
             className="underline"
@@ -60,11 +60,11 @@ export function SectionOSS() {
                   <div className="flex-col">
                     <p>
                       All of our code is fully open source, clone, fork and
-                      contribute to Midday.
+                      contribute to MySpace.
                     </p>
 
                     <a
-                      href="https://git.new/midday"
+                      href="https://git.new/MySpace"
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -90,7 +90,7 @@ export function SectionOSS() {
                       shares expertise and offers support.
                     </p>
                     <a
-                      href="https://go.midday.ai/anPiuRx"
+                      href="https://go.MySpace.ai/anPiuRx"
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -116,7 +116,7 @@ export function SectionOSS() {
                       contribute the code, or even fork the repository.
                     </p>
                     <a
-                      href="https://go.midday.ai/aTNyqQH"
+                      href="https://go.MySpace.ai/aTNyqQH"
                       target="_blank"
                       rel="noreferrer"
                     >
@@ -145,11 +145,11 @@ export function SectionOSS() {
             </Accordion>
           </div>
           <div className="md:basis-1/2">
-            <a href="https://git.new/midday" target="_blank" rel="noreferrer">
+            <a href="https://git.new/MySpace" target="_blank" rel="noreferrer">
               <div className="aspect-square md:max-h-[280px] w-full md:border border-border rounded-2xl md:p-10 mt-0 md:mt-0">
                 <div className="md:border-b-[1px] border-border pb-8 mb-8">
                   <h3 className="font-medium text-xl md:text-2xl hidden md:block">
-                    Midday
+                    MySpace
                   </h3>
                 </div>
 
