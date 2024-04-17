@@ -98,10 +98,13 @@ export default async function Page() {
         lastName: emailToPicture.find(
           (user) => user.email === pdfHighlight.userId,
         )?.lastName,
-      } as PDFHighlightsWithProfile;
+      }
     })
     : [];
 
+  const parsedPaper = await api.parsedPapers.fetchParsedPdf({
+    source: pdfUrl.href,
+  });
 
 
   return (
@@ -109,6 +112,7 @@ export default async function Page() {
       annotatedPdfId={id}
       userId={userId}
       loadedSource={source}
+      parsedPaper={parsedPaper}
     >
       <PDFViewer
         annotatedPdfId={id}

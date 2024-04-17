@@ -36,7 +36,7 @@ export function ImportButton() {
             return;
         }
         try {
-            fetch('http://localhost:3001/process_pdf', {
+            fetch(`${process.env.PREPROCESSOR_URL}/process_pdf`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

@@ -7,6 +7,7 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useMemo
 } from "react";
 import { useChat, Message } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
@@ -14,12 +15,17 @@ import { v4 as uuidv4 } from "uuid";
 import { Highlight } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
 import { FOLLOW_UP_PROMPT, generateSystemPrompt } from "@src/utils/prompts";
+import { ragQuery } from '@src/app/actions';
+
+
+import { ParsedPapers } from "@prisma/client";
 import {
   NewHighlightWithRelationsInput,
   HighlightWithRelations,
 } from "@src/server/api/routers/highlight";
 import { CurriculumNodeWithRelations } from "@src/server/api/routers/annotated-pdf";
-import { getParsedPaperAction } from "@src/app/actions";
+
+
 
 export type ContextProps = {
   currentHighlight: Highlight | null;
@@ -48,8 +54,9 @@ export const AskHighlightProvider: FC<{
   annotatedPdfId: string;
   userId: string;
   loadedSource: string;
+  parsedPaper: ParsedPapers,
   children: ReactNode;
-}> = ({ annotatedPdfId, userId, loadedSource, children }) => {
+}> = ({ annotatedPdfId, userId, loadedSource, parsedPaper, children }) => {
   const [_, setForceRerender] = useState<Boolean>(false);
   // Refs are required so that their values are not cached in callback functions
   const currentHighlightRef = useRef<HighlightWithRelations | null>(null);
@@ -144,32 +151,15 @@ export const AskHighlightProvider: FC<{
     }
   };
 
-  // #TODO: fetch paper text and field from db
-  const [prompt, setPrompt] = useState("");
 
-  useEffect(() => {
-    const fetchParsedPaper = async () => {
-      const parsedPaper = await getParsedPaperAction(loadedSource);
-      if (parsedPaper && parsedPaper.sections) {
-        const concatenatedText = parsedPaper.sections
-          .map((section) => section.text)
-          .join(" ");
-        const systemPrompt = generateSystemPrompt(
-          concatenatedText,
-          parsedPaper.primary_category
-        );
-        setPrompt(systemPrompt);
-      }
-    };
-    fetchParsedPaper();
-  }, [loadedSource]);
+  // fetch paper text and field from db
+  const concatenatedText = useMemo(() => parsedPaper.sections.map(section => section.text).join(" "), [parsedPaper.sections]);
+  const systemPrompt = useMemo(() => generateSystemPrompt(concatenatedText, parsedPaper.primary_category), [concatenatedText, parsedPaper.primary_category]);
 
-  const initialMessages: Message[] = [
-    {
-      role: "system",
-      content: prompt,
-    },
-  ];
+  const initialMessages: Message[] = [{
+    role: 'system',
+    content: systemPrompt,
+  }]
 
   const { messages, setMessages, append, ...chat } = useChat({
     initialMessages,
@@ -203,12 +193,12 @@ export const AskHighlightProvider: FC<{
             const highlightId = uuidv4();
             const newNode = newData.highlight.node
               ? {
-                  ...newData.highlight.node,
-                  id: uuidv4(),
-                  parentId: null,
-                  highlightId,
-                  children: [],
-                }
+                ...newData.highlight.node,
+                id: uuidv4(),
+                parentId: null,
+                highlightId,
+                children: [],
+              }
               : null;
             const newHighlight = {
               ...newData.highlight,
@@ -248,14 +238,42 @@ export const AskHighlightProvider: FC<{
   ): Promise<Highlight | undefined> => {
     if (!highlight.node?.prompt) return;
 
+
+
+    // Walking RAG - Cyclical Generation
+    // Fetch most relevant chunks (descriptors)
+    // fetch fact - descriptors for pdf.use chroma to embed the descriptors and store the embeddings
+    // vector search on user query over all descriptors for the pdf.
+    // retrieve relevant facts to inject into context
+
+    const collectionName = 'ParsedPapers'
+    const source = loadedSource
+    const query = highlight.node.prompt
+    let ragContext = ''
+    try {
+
+      const results = await ragQuery(collectionName, source, query)
+      const { documents } = results;
+
+
+      if (documents && documents.length > 0) {
+        const relevantChunks = documents.flat().join(' ')
+        ragContext = relevantChunks
+        console.debug('retrieved ragContext: ', ragContext)
+      }
+    } catch (e) {
+      console.debug('Error fetching RAG context. Continuing gracefully without rag context: ', e)
+    }
+
+
     const promptWithContext = `<question>${highlight.node.prompt}</question>
-${
-  highlight.content?.text
-    ? `<context>
+${highlight.content?.text
+        ? `<context>
 ${highlight.content.text}
 </context>`
-    : ""
-}`;
+        : ""
+      }`;
+
     // Query AI for response
     append({
       role: "user",
