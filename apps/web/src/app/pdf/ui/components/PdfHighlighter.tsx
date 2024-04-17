@@ -137,7 +137,6 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     this.containerNodeRef = React.createRef();
     this.zoomIn = this.zoomIn.bind(this);
     this.zoomOut = this.zoomOut.bind(this);
-    this.setZoom = this.setZoom.bind(this);
     this.handleZoomInput = this.handleZoomInput.bind(this);
   }
 
@@ -173,7 +172,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     }
   };
 
-  componentDidUpdate(prevProps: Props<T_HT>) {
+  componentDidUpdate(prevProps: Props<T_HT>, prevState: State<T_HT>) {
     if (prevProps.pdfDocument !== this.props.pdfDocument) {
       this.init();
       return;
@@ -187,6 +186,13 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
     if (this.props.highlight !== prevProps.highlight && this.props.highlight) {
       this.scrollTo(this.props.highlight);
+    }
+    console.log("update");
+    if (prevState.scale != this.state.scale) {
+      if (this.viewer) {
+        // Maximum for pdf scale is 1.25 from empirical observations
+        this.viewer.currentScale = this.state.scale;
+      }
     }
   }
 
@@ -217,46 +223,37 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
   zoomIn() {
     if (this.viewer) {
-      this.setState(
-        (prevState) => ({
-          scale: prevState.scale + 0.2,
-          scaleInput: (prevState.scale + 0.2) * 100,
-        }),
-        () => {
-          this.viewer.currentScale = this.state.scale;
-        }
-      );
+      this.setState((prevState) => {
+        // Maximum scale is 1
+        const newScale = Math.min(prevState.scale + 0.25, 1);
+        return {
+          scale: newScale,
+          scaleInput: newScale * 100,
+        };
+      });
     }
   }
 
   zoomOut() {
     if (this.viewer) {
-      this.setState(
-        (prevState) => ({
-          scale: prevState.scale - 0.2,
-          scaleInput: (prevState.scale - 0.2) * 100,
-        }),
-        () => {
-          this.viewer.currentScale = this.state.scale;
-        }
-      );
-    }
-  }
-
-  setZoom(scale: number) {
-    if (this.viewer) {
-      this.setState({
-        scale: scale,
+      this.setState((prevState) => {
+        // Minimum scale is 0.25
+        const newScale = Math.max(prevState.scale - 0.25, 0.25);
+        return {
+          scale: newScale,
+          scaleInput: newScale * 100,
+        };
       });
-      this.viewer.currentScale = this.state.scale;
     }
   }
 
   handleZoomInput(e) {
+    const maxZoom = 100;
+    const minZoom = 25;
     if (e.key == "Enter") {
-      if (e.target.value > 50 && e.target.value < 300) {
-        this.setZoom(e.target.value / 100);
+      if (e.target.value > minZoom && e.target.value < maxZoom) {
         this.setState({
+          scale: e.target.value / 100,
           scaleInput: e.target.value,
         });
       } else {
@@ -710,10 +707,18 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
             onChange={(e) => this.setState({ scaleInput: e.target.value })}
             onKeyDown={this.handleZoomInput}
           ></Input>
-          <Button className="m-1" onClick={this.zoomIn}>
+          <Button
+            className="m-1"
+            onClick={this.zoomIn}
+            disabled={this.state.scale >= 1}
+          >
             +
           </Button>
-          <Button className="m-1" onClick={this.zoomOut}>
+          <Button
+            className="m-1"
+            onClick={this.zoomOut}
+            disabled={this.state.scale <= 0.25}
+          >
             -
           </Button>
         </div>
