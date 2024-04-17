@@ -31,10 +31,10 @@ export type ContextProps = {
   currentHighlight: Highlight | null;
   setCurrentHighlight: (
     highlight: Highlight | null,
-    forceRerender?: boolean
+    forceRerender?: boolean,
   ) => void;
   createAskHighlight: (
-    highlight: NewHighlightWithRelationsInput
+    highlight: NewHighlightWithRelationsInput,
   ) => Promise<Highlight | undefined>;
   clearSelectedHighlight: () => void;
   selectHighlight: (h: HighlightWithRelations) => void;
@@ -63,7 +63,7 @@ export const AskHighlightProvider: FC<{
   const currentNodeRef = useRef<CurriculumNodeWithRelations | null>(null);
   const setCurrentHighlight = (
     highlight: HighlightWithRelations | null,
-    forceRerender = true
+    forceRerender = true,
   ) => {
     currentHighlightRef.current = highlight;
     if (forceRerender) {
@@ -72,7 +72,7 @@ export const AskHighlightProvider: FC<{
   };
   const setCurrentNode = (
     node: CurriculumNodeWithRelations | null,
-    forceRerender = true
+    forceRerender = true,
   ) => {
     currentNodeRef.current = node;
     if (forceRerender) {
@@ -212,7 +212,7 @@ export const AskHighlightProvider: FC<{
               ...oldData,
               highlights: [newHighlight, ...oldData.highlights],
             };
-          }
+          },
         );
 
         return { previousData };
@@ -235,7 +235,7 @@ export const AskHighlightProvider: FC<{
     clientApi.curriculum.updateNode.useMutation();
 
   const createAskHighlight = async (
-    highlight: NewHighlightWithRelationsInput
+    highlight: NewHighlightWithRelationsInput,
   ): Promise<Highlight | undefined> => {
     if (!highlight.node?.prompt) return;
 
