@@ -69,7 +69,7 @@ export default async function Page() {
 
   const users = await clerkClient.users.getUserList();
   const userEmails = users.map(
-    (user) => user.emailAddresses[0]?.emailAddress ?? "",
+    (user) => user.emailAddresses[0]?.emailAddress ?? ""
   );
   const userProfiles = users.map((user) => {
     return {
@@ -88,19 +88,21 @@ export default async function Page() {
   let annotatedPdfsWithProfile: AnnotatedPdfWithProfile[] = [];
   if (annotatedPdfs) {
     for (let annotatedPdf of annotatedPdfs) {
-      const userProfile = userProfiles.find((user) => user.email === annotatedPdf.userId);
+      const userProfile = userProfiles.find(
+        (user) => user.email === annotatedPdf.userId
+      );
       annotatedPdfsWithProfile.push({
         ...annotatedPdf,
         userProfilePicture: userProfile?.imageUrl || "",
         firstName: userProfile?.firstName || "",
         lastName: userProfile?.lastName || "",
-      }); 
+      });
+    }
   }
 
   const parsedPaper = await api.parsedPapers.fetchParsedPdf({
     source: pdfUrl.href,
   });
-
 
   return (
     <AskHighlightProvider
@@ -115,7 +117,6 @@ export default async function Page() {
         userId={userId}
         userHighlights={highlights}
         annotatedPdfsWithProfile={annotatedPdfsWithProfile}
-
       />
     </AskHighlightProvider>
   );
