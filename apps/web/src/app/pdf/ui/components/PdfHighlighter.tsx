@@ -39,6 +39,11 @@ import getBoundingRect from "../lib/get-bounding-rect";
 import getClientRects from "../lib/get-client-rects";
 import { HighlightLayer } from "./HighlightLayer";
 import { Highlight, HighlightPosition } from "@prisma/client";
+import {
+  ZoomInIcon,
+  ZoomOutIcon,
+  RotateCounterClockwiseIcon,
+} from "@radix-ui/react-icons";
 
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
 
@@ -631,7 +636,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
           className="PdfHighlighter"
           onContextMenu={(e) => e.preventDefault()}
         >
-          <div className="pdfViewer" />
+          <div className="pdfViewer w-full m-0" />
           {this.renderTip()}
           {typeof enableAreaSelection === "function" ? (
             <MouseSelection
@@ -701,25 +706,37 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         </div>
         <div className="flex gray-600 relative float-right m-3 pl-3 pt-1 z-10">
           <Input
-            className="text-black text-center w-20"
+            className="text-black text-center w-20 m-1 
+              [appearance:textfield]
+              [&::-webkit-outer-spin-button]:appearance-none 
+              [&::-webkit-inner-spin-button]:appearance-none" // disable input box incrementer
             type="number"
             value={this.state.scaleInput}
             onChange={(e) => this.setState({ scaleInput: e.target.value })}
             onKeyDown={this.handleZoomInput}
           ></Input>
           <Button
-            className="m-1"
             onClick={this.zoomIn}
             disabled={this.state.scale >= 1}
+            size="icon"
+            className="m-1"
           >
-            +
+            <ZoomInIcon></ZoomInIcon>
           </Button>
           <Button
+            size="icon"
             className="m-1"
             onClick={this.zoomOut}
             disabled={this.state.scale <= 0.25}
           >
-            -
+            <ZoomOutIcon></ZoomOutIcon>
+          </Button>
+          <Button
+            className="m-1"
+            size="icon"
+            onClick={() => (this.viewer.pagesRotation -= 90)}
+          >
+            <RotateCounterClockwiseIcon></RotateCounterClockwiseIcon>
           </Button>
         </div>
       </div>
