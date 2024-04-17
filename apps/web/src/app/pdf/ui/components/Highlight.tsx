@@ -1,8 +1,9 @@
 import React, { Component } from "react";
+import { HighlightComment } from "@prisma/client";
 
 import "../style/Highlight.css";
 
-import type { Comment, LTWHP } from "../types.js";
+import type { LTWHP } from "../types.js";
 
 interface Props {
   position: {
@@ -12,7 +13,7 @@ interface Props {
   onClick?: () => void;
   onMouseOver?: () => void;
   onMouseOut?: () => void;
-  comments: Array<Comment>;
+  comments: Array<HighlightComment>;
   isScrolledTo: boolean;
 }
 

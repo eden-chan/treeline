@@ -269,7 +269,7 @@ export default function PDFViewer({
                   <PDFHighlight
                     isScrolledTo={isScrolledTo}
                     position={highlight.position}
-                    comments={highlight.comments}
+                    comments={highlight.comment ? [highlight.comment] : []}
                   />
                 ) : (
                   <AreaHighlight

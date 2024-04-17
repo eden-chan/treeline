@@ -18,7 +18,7 @@ import { getParsedPaperAction } from "@src/app/actions";
 import { CurriculumNodeWithRelations, HighlightWithRelations } from "@src/lib/types";
 
 export type ContextProps = {
-  currentHighlight: Highlight | null;
+  currentHighlight: HighlightWithRelations | null;
   setCurrentHighlight: (
     highlight: Highlight | null,
     forceRerender?: boolean
