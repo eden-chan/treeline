@@ -702,7 +702,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
             />
           ) : null}
         </div>
-        <div className="flex gray-600 border relative float-right m-3 pl-3 pt-1 z-10">
+        <div className="flex gray-600 relative float-right m-3 pl-3 pt-1 z-10">
           <Input
             className="text-black text-center w-20"
             type="number"
