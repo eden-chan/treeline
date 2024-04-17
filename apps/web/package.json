@@ -50,6 +50,7 @@
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.51.3",
     "react-pdf": "^7.7.1",
+    "react-resizable-panels": "^2.0.17",
     "react-rnd": "^10.1.10",
     "react-search-autocomplete": "^8.5.2",
     "react-vis": "^1.12.1",
