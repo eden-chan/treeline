@@ -86,7 +86,6 @@ export function PitchCarusel() {
           <SectionBook />
         </CarouselItem>
       </CarouselContent>
-
       <CarouselToolbar views={views} />
     </Carousel>
   );
