@@ -230,10 +230,10 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     if (this.viewer) {
       this.setState((prevState) => {
         // Maximum scale is 1
-        const newScale = Math.min(prevState.scale + 0.25, 1);
+        const newScale = Math.min(prevState.scale + 0.2, 1);
         return {
           scale: newScale,
-          scaleInput: newScale * 100,
+          scaleInput: Math.trunc(newScale * 100),
         };
       });
     }
@@ -243,10 +243,10 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     if (this.viewer) {
       this.setState((prevState) => {
         // Minimum scale is 0.25
-        const newScale = Math.max(prevState.scale - 0.25, 0.25);
+        const newScale = Math.max(prevState.scale - 0.2, 0.25);
         return {
           scale: newScale,
-          scaleInput: newScale * 100,
+          scaleInput: Math.trunc(newScale * 100),
         };
       });
     }
@@ -256,10 +256,15 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     const maxZoom = 100;
     const minZoom = 25;
     if (e.key == "Enter") {
-      if (e.target.value > minZoom && e.target.value < maxZoom) {
+      if (e.target.value < minZoom) {
         this.setState({
-          scale: e.target.value / 100,
-          scaleInput: e.target.value,
+          scale: minZoom / 100,
+          scaleInput: minZoom,
+        });
+      } else if (e.target.value > maxZoom) {
+        this.setState({
+          scale: maxZoom / 100,
+          scaleInput: maxZoom,
         });
       } else {
         // "out of bounds," reset input number
@@ -704,13 +709,15 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
             />
           ) : null}
         </div>
-        <div className="flex gray-600 relative float-right m-3 pl-3 pt-1 z-10">
+        <div className="flex gray-600 relative float-right m-3 mr-5 pl-3 pt-1 z-10">
           <Input
             className="text-black text-center w-20 m-1 
               [appearance:textfield]
               [&::-webkit-outer-spin-button]:appearance-none 
               [&::-webkit-inner-spin-button]:appearance-none" // disable input box incrementer
             type="number"
+            min={25}
+            step={1}
             value={this.state.scaleInput}
             onChange={(e) => this.setState({ scaleInput: e.target.value })}
             onKeyDown={this.handleZoomInput}
@@ -730,13 +737,6 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
             disabled={this.state.scale <= 0.25}
           >
             <ZoomOutIcon></ZoomOutIcon>
-          </Button>
-          <Button
-            className="m-1"
-            size="icon"
-            onClick={() => (this.viewer.pagesRotation -= 90)}
-          >
-            <RotateCounterClockwiseIcon></RotateCounterClockwiseIcon>
           </Button>
         </div>
       </div>
