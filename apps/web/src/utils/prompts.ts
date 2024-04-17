@@ -56,3 +56,9 @@ to gain a deeper understanding of the topic.
 Remember, your goal is to help me cultivate intuition in this field by guiding me to ask better
 questions. Use your expertise and the information in the paper to provide valuable insights and
 suggestions.`;
+
+export const SUMMARIZE_FOR_MEMORY_PROMPT = (
+  research_field: string
+) => `Summarize the key points of the conversation between USER and TEACHER about ${research_field}, focusing on the insights and intuitions shared that help develop a strong understanding of the field. Include the main concepts discussed, important connections highlighted, and illustrative examples provided. 
+Organize the summary with bullet points, capturing the central ideas and key takeaways that contribute to building intuition. Personalize the summary by mentioning specific insights or examples shared by each participant. 
+Keep the summary concise, around 4-6 bullet points, and aim for a clear, jargon-free synopsis that is easy to reference and helps solidify the intuitive understanding of ${research_field}.`;
