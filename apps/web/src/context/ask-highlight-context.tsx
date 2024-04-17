@@ -15,16 +15,19 @@ import { clientApi } from "@src/trpc/react";
 import { FOLLOW_UP_PROMPT, generateSystemPrompt } from "@src/utils/prompts";
 import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
 import { getParsedPaperAction } from "@src/app/actions";
-import { CurriculumNodeWithRelations, HighlightWithRelations } from "@src/lib/types";
+import {
+  CurriculumNodeWithRelations,
+  HighlightWithRelations,
+} from "@src/lib/types";
 
 export type ContextProps = {
   currentHighlight: HighlightWithRelations | null;
   setCurrentHighlight: (
     highlight: Highlight | null,
-    forceRerender?: boolean
+    forceRerender?: boolean,
   ) => void;
   createAskHighlight: (
-    highlight: NewHighlightWithRelationsInput
+    highlight: NewHighlightWithRelationsInput,
   ) => Promise<Highlight | undefined>;
   clearSelectedHighlight: () => void;
   selectHighlight: (h: HighlightWithRelations) => void;
@@ -52,7 +55,7 @@ export const AskHighlightProvider: FC<{
   const currentNodeRef = useRef<CurriculumNodeWithRelations | null>(null);
   const setCurrentHighlight = (
     highlight: HighlightWithRelations | null,
-    forceRerender = true
+    forceRerender = true,
   ) => {
     currentHighlightRef.current = highlight;
     if (forceRerender) {
@@ -61,7 +64,7 @@ export const AskHighlightProvider: FC<{
   };
   const setCurrentNode = (
     node: CurriculumNodeWithRelations | null,
-    forceRerender = true
+    forceRerender = true,
   ) => {
     currentNodeRef.current = node;
     if (forceRerender) {
@@ -135,7 +138,7 @@ export const AskHighlightProvider: FC<{
         curriculumNode: newNode,
       });
 
-      setCurrentNode(newNode, false);
+      setCurrentNode(newNode, true);
       isGeneratingFollowUpsRef.current = false;
     }
   };
@@ -152,7 +155,7 @@ export const AskHighlightProvider: FC<{
           .join(" ");
         const systemPrompt = generateSystemPrompt(
           concatenatedText,
-          parsedPaper.primary_category
+          parsedPaper.primary_category,
         );
         setPrompt(systemPrompt);
       }
@@ -218,7 +221,7 @@ export const AskHighlightProvider: FC<{
               ...oldData,
               highlights: [newHighlight, ...oldData.highlights],
             };
-          }
+          },
         );
 
         return { previousData };
@@ -241,7 +244,7 @@ export const AskHighlightProvider: FC<{
     clientApi.curriculum.updateNode.useMutation();
 
   const createAskHighlight = async (
-    highlight: NewHighlightWithRelationsInput
+    highlight: NewHighlightWithRelationsInput,
   ): Promise<Highlight | undefined> => {
     if (!highlight.node?.prompt) return;
 
