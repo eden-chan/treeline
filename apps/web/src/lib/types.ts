@@ -1,10 +1,19 @@
-import { Prisma } from "@prisma/client";
+import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
 
-export type AnnotatedPdf = Prisma.AnnotatedPdfGetPayload<{
-  include: { highlights: true };
-}>;
+export type CurriculumNodeWithRelations = CurriculumNode & {
+  children?: CurriculumNodeWithRelations[];
+};
 
-export enum EMBEDDING_TYPE {
-  SourceText = "SourceText",
-  FactDescriptor = "FactDescriptor",
+export type HighlightWithRelations = Highlight & {
+  node?: CurriculumNodeWithRelations | null;
+};
+
+export type AnnotatedPdfWithRelations = AnnotatedPdf & {
+  highlights: HighlightWithRelations[];
+};
+
+export type AnnotatedPdfWithProfile = AnnotatedPdfWithRelations & {
+  userProfilePicture: string;
+  firstName: string;
+  lastName: string;
 }

@@ -1,4 +1,3 @@
-//@ts-nocheck
 import { z } from "zod";
 import { Highlight, CurriculumNode } from "@prisma/client";
 import { CurriculumNodeSchemaBase } from "@src/app/pdf/ui/types";
@@ -18,7 +17,7 @@ export type NewHighlightWithRelationsInput = Omit<
 
 type ICurriculumNodeSchemaType = z.infer<typeof CurriculumNodeSchemaBase> & {
   id: string;
-  children: ICurriculumNodeSchemaType[];
+  children?: ICurriculumNodeSchemaType[];
 };
 
 const ICurriculumNodeSchema: z.ZodType<ICurriculumNodeSchemaType> =
@@ -55,7 +54,7 @@ export const curriculumNodeRouter = createTRPCRouter({
           },
         ];
 
-        if (input.curriculumNode.children.length) {
+        if (input.curriculumNode?.children) {
           updateNodeParams[0].data.children = {
             createMany: {
               data: input.curriculumNode.children.map((child) => ({

@@ -1,4 +1,3 @@
-//@ts-nocheck
 "use client";
 import React, {
   FC,
@@ -7,7 +6,6 @@ import React, {
   useEffect,
   useRef,
   useState,
-  useMemo
 } from "react";
 import { useChat, Message } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
@@ -15,26 +13,18 @@ import { v4 as uuidv4 } from "uuid";
 import { Highlight } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
 import { FOLLOW_UP_PROMPT, generateSystemPrompt } from "@src/utils/prompts";
-import { ragQuery } from '@src/app/actions';
-
-
-import { ParsedPapers } from "@prisma/client";
-import {
-  NewHighlightWithRelationsInput,
-  HighlightWithRelations,
-} from "@src/server/api/routers/highlight";
-import { CurriculumNodeWithRelations } from "@src/server/api/routers/annotated-pdf";
-
-
+import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
+import { getParsedPaperAction } from "@src/app/actions";
+import { CurriculumNodeWithRelations, HighlightWithRelations } from "@src/lib/types";
 
 export type ContextProps = {
   currentHighlight: Highlight | null;
   setCurrentHighlight: (
     highlight: Highlight | null,
-    forceRerender?: boolean,
+    forceRerender?: boolean
   ) => void;
   createAskHighlight: (
-    highlight: NewHighlightWithRelationsInput,
+    highlight: NewHighlightWithRelationsInput
   ) => Promise<Highlight | undefined>;
   clearSelectedHighlight: () => void;
   selectHighlight: (h: HighlightWithRelations) => void;
@@ -54,16 +44,15 @@ export const AskHighlightProvider: FC<{
   annotatedPdfId: string;
   userId: string;
   loadedSource: string;
-  parsedPaper: ParsedPapers,
   children: ReactNode;
-}> = ({ annotatedPdfId, userId, loadedSource, parsedPaper, children }) => {
+}> = ({ annotatedPdfId, userId, loadedSource, children }) => {
   const [_, setForceRerender] = useState<Boolean>(false);
   // Refs are required so that their values are not cached in callback functions
   const currentHighlightRef = useRef<HighlightWithRelations | null>(null);
   const currentNodeRef = useRef<CurriculumNodeWithRelations | null>(null);
   const setCurrentHighlight = (
     highlight: HighlightWithRelations | null,
-    forceRerender = true,
+    forceRerender = true
   ) => {
     currentHighlightRef.current = highlight;
     if (forceRerender) {
@@ -72,7 +61,7 @@ export const AskHighlightProvider: FC<{
   };
   const setCurrentNode = (
     node: CurriculumNodeWithRelations | null,
-    forceRerender = true,
+    forceRerender = true
   ) => {
     currentNodeRef.current = node;
     if (forceRerender) {
@@ -151,28 +140,45 @@ export const AskHighlightProvider: FC<{
     }
   };
 
+  // #TODO: fetch paper text and field from db
+  const [prompt, setPrompt] = useState("");
 
-  // fetch paper text and field from db
-  const concatenatedText = useMemo(() => parsedPaper.sections.map(section => section.text).join(" "), [parsedPaper.sections]);
-  const systemPrompt = useMemo(() => generateSystemPrompt(concatenatedText, parsedPaper.primary_category), [concatenatedText, parsedPaper.primary_category]);
+  useEffect(() => {
+    const fetchParsedPaper = async () => {
+      const parsedPaper = await getParsedPaperAction(loadedSource);
+      if (parsedPaper && parsedPaper.sections) {
+        const concatenatedText = parsedPaper.sections
+          .map((section) => section.text)
+          .join(" ");
+        const systemPrompt = generateSystemPrompt(
+          concatenatedText,
+          parsedPaper.primary_category
+        );
+        setPrompt(systemPrompt);
+      }
+    };
+    fetchParsedPaper();
+  }, [loadedSource]);
 
-  const initialMessages: Message[] = [{
-    role: 'system',
-    content: systemPrompt,
-  }]
+  const initialMessages: Message[] = [
+    {
+      id: uuidv4(),
+      role: "system",
+      content: prompt,
+    },
+  ];
 
   const { messages, setMessages, append, ...chat } = useChat({
     initialMessages,
     onFinish,
     onError: (error) => console.error("Error occured in useChat:", error),
   });
+
   const utils = clientApi.useUtils();
   // const updateHighlightMutation = clientApi.highlight.updateHighlight.useMutation();
   const createHighlightMutation =
     clientApi.highlight.createHighlight.useMutation({
       onMutate: async (newData) => {
-        console.debug('chatMessages', messages)
-
         await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
           userId: userId,
           source: loadedSource,
@@ -194,12 +200,12 @@ export const AskHighlightProvider: FC<{
             const highlightId = uuidv4();
             const newNode = newData.highlight.node
               ? {
-                ...newData.highlight.node,
-                id: uuidv4(),
-                parentId: null,
-                highlightId,
-                children: [],
-              }
+                  ...newData.highlight.node,
+                  id: uuidv4(),
+                  parentId: null,
+                  highlightId,
+                  children: [],
+                }
               : null;
             const newHighlight = {
               ...newData.highlight,
@@ -212,7 +218,7 @@ export const AskHighlightProvider: FC<{
               ...oldData,
               highlights: [newHighlight, ...oldData.highlights],
             };
-          },
+          }
         );
 
         return { previousData };
@@ -235,46 +241,18 @@ export const AskHighlightProvider: FC<{
     clientApi.curriculum.updateNode.useMutation();
 
   const createAskHighlight = async (
-    highlight: NewHighlightWithRelationsInput,
+    highlight: NewHighlightWithRelationsInput
   ): Promise<Highlight | undefined> => {
     if (!highlight.node?.prompt) return;
 
-
-
-    // Walking RAG - Cyclical Generation
-    // Fetch most relevant chunks (descriptors)
-    // fetch fact - descriptors for pdf.use chroma to embed the descriptors and store the embeddings
-    // vector search on user query over all descriptors for the pdf.
-    // retrieve relevant facts to inject into context
-
-    const collectionName = 'ParsedPapers'
-    const source = loadedSource
-    const query = highlight.node.prompt
-    let ragContext = ''
-    try {
-
-      const results = await ragQuery(collectionName, source, query)
-      const { documents } = results;
-
-
-      if (documents && documents.length > 0) {
-        const relevantChunks = documents.flat().join(' ')
-        ragContext = relevantChunks
-        console.debug('retrieved ragContext: ', ragContext)
-      }
-    } catch (e) {
-      console.debug('Error fetching RAG context. Continuing gracefully without rag context: ', e)
-    }
-
-
     const promptWithContext = `<question>${highlight.node.prompt}</question>
-${highlight.content?.text
-        ? `<context>
+${
+  highlight.content?.text
+    ? `<context>
 ${highlight.content.text}
 </context>`
-        : ""
-      }`;
-
+    : ""
+}`;
     // Query AI for response
     append({
       role: "user",

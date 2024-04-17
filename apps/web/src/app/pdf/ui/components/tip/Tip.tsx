@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
 
-import { useAskHighlight } from "@src/context/ask-highlight-context";
 import { Comment } from "./Comment";
 import { Question } from "./Question";
 
@@ -11,7 +10,6 @@ interface Props {
   onCommentConfirm: (comment: { text: string; emoji: string }) => void;
   onPromptConfirm: (prompt: string) => void;
   onOpen: () => void;
-  parsedPaper: Record<string, string>;
   content: { text?: string; emoji?: string };
 }
 

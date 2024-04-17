@@ -22,7 +22,7 @@ export const followAction = async (searchedUser: User, loggedInUser: User) => {
 };
 
 export const getParsedPaperAction = async (
-  pdfUrl: string
+  pdfUrl: string,
 ): Promise<ParsedPapers | null> => {
   try {
     const parsedPaper = await api.parsedPapers.fetchParsedPdf({
@@ -59,7 +59,7 @@ export const countItemsInCollection = async (collectionName: string) => {
 
 export const addItemToCollection = async (
   collectionName: string,
-  item: any
+  item: any,
 ) => {
   item = JSON.parse(item);
   const collection = await client.getCollection({
@@ -71,7 +71,7 @@ export const addItemToCollection = async (
 
 export const upsertItemInCollection = async (
   collectionName: string,
-  item: any
+  item: any,
 ) => {
   const collection = await client.getCollection({
     name: collectionName,
@@ -82,7 +82,7 @@ export const upsertItemInCollection = async (
 
 export const getItemsFromCollection = async (
   collectionName: string,
-  source: string
+  source: string,
 ) => {
   const collection = await client.getCollection({
     name: collectionName,
@@ -107,7 +107,7 @@ export const getItemsFromCollection = async (
 
 export const peekItemsFromCollection = async (
   collectionName: string,
-  limit: number = 5
+  limit: number = 5,
 ) => {
   const collection = await client.getCollection({
     name: collectionName,
@@ -121,11 +121,11 @@ export const queryFacts = async (
   source: string,
   queryTexts: string[] = [],
   queryEmbeddings: number[] = [],
-  limit: number = 1
+  limit: number = 1,
 ) => {
   if (queryTexts.length > 0 && queryEmbeddings.length > 0) {
     throw new Error(
-      "Queries can be made either by texts or embeddings, not both."
+      "Queries can be made either by texts or embeddings, not both.",
     );
   }
   const collection = await client.getCollection({
@@ -133,7 +133,6 @@ export const queryFacts = async (
     embeddingFunction: embedder,
   });
 
-  console.debug("chroma ", { collection });
   const relevantFactsDescriptors = await collection.query({
     where: {
       $and: [
@@ -159,11 +158,11 @@ export const querySourceText = async (
   source: string,
   queryTexts: string[] = [],
   queryEmbeddings: number[] = [],
-  limit: number = 1
+  limit: number = 1,
 ) => {
   if (queryTexts.length > 0 && queryEmbeddings.length > 0) {
     throw new Error(
-      "Queries can be made either by texts or embeddings, not both."
+      "Queries can be made either by texts or embeddings, not both.",
     );
   }
   const collection = await client.getCollection({
@@ -204,7 +203,7 @@ export const listAllCollections = async () => {
 };
 
 export const makeNewCollection = async (
-  collectionName: string = "ParsedPapers"
+  collectionName: string = "ParsedPapers",
 ) => {
   return await client.createCollection({
     name: collectionName,
@@ -242,12 +241,12 @@ export const loadEmbeddings = async (formData: FormData) => {
     }));
     const documents = facts.map(
       ({ expectedInfo, nextSource }: ParsedPapersFacts) =>
-        `${expectedInfo} ${nextSource}`
+        `${expectedInfo} ${nextSource}`,
     );
     // We can embed the descriptors, and use them to search the document for new chunks of information that were missed by the previous round of retrieval.
     const minLengthFactDescriptors = Math.min(
       metadata.length,
-      documents.length
+      documents.length,
     );
 
     const item = {
@@ -265,7 +264,7 @@ export const loadEmbeddings = async (formData: FormData) => {
 
     let endTime = performance.now();
     console.debug(
-      `Time taken to upsert fact descriptors in collection: ${endTime - startTime} milliseconds`
+      `Time taken to upsert fact descriptors in collection: ${endTime - startTime} milliseconds`,
     );
 
     // Descriptors $`{expectedInfo + nextSource}` embedding semantic distance is close to Section Location, to get associated section source text
@@ -285,7 +284,7 @@ export const loadEmbeddings = async (formData: FormData) => {
 
     const minLength = Math.min(
       sectionSourceTextContent.length,
-      sectionSourceTextLocation.length
+      sectionSourceTextLocation.length,
     );
     const sectionItem = {
       ids: Array(minLength)
@@ -300,14 +299,14 @@ export const loadEmbeddings = async (formData: FormData) => {
     await upsertItemInCollection(collectionName, sectionItem);
     endTime = performance.now();
     console.debug(
-      `Time taken to upsert source text in collection: ${endTime - startTime} milliseconds`
+      `Time taken to upsert source text in collection: ${endTime - startTime} milliseconds`,
     );
   }
 };
 export const ragQuery = async (
   collectionName: string,
   source: string,
-  query: string
+  query: string,
 ) => {
   if (collectionName && source) {
     const factResults = await queryFacts(
@@ -315,7 +314,7 @@ export const ragQuery = async (
       source,
       [query],
       [],
-      2
+      2,
     );
 
     const { metadatas: factMetadatas, documents: factDocuments } = factResults;
@@ -323,12 +322,12 @@ export const ragQuery = async (
     if (factDocuments && factDocuments.length > 0) {
       const descriptors = factDocuments[0] ?? [];
       const searchDescriptors: string[] = descriptors.filter(
-        (doc): doc is string => doc !== null
+        (doc): doc is string => doc !== null,
       );
       const sourceTextResults = await querySourceText(
         collectionName,
         source,
-        searchDescriptors
+        searchDescriptors,
       );
 
       return sourceTextResults;
@@ -350,7 +349,7 @@ export const search = async (formData: FormData) => {
       source,
       [query],
       [],
-      3
+      3,
     );
     const { metadatas: factMetadatas, documents: factDocuments } = factResults;
     console.debug("query facts ", factMetadatas, factDocuments);
@@ -360,12 +359,12 @@ export const search = async (formData: FormData) => {
 
     if (descriptors) {
       const searchDescriptors: string[] = descriptors.filter(
-        (doc): doc is string => doc !== null
+        (doc): doc is string => doc !== null,
       );
       const sourceTextResults = await querySourceText(
         collectionName,
         source,
-        searchDescriptors
+        searchDescriptors,
       );
       const { documents, metadatas } = sourceTextResults;
 

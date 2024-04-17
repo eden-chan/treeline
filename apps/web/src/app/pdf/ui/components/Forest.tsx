@@ -1,5 +1,4 @@
-import React, { useMemo, useState } from "react";
-import { Highlight, CurriculumNode } from "@prisma/client";
+import React, { useMemo } from "react";
 import QuestionNode from "./flownodes/QuestionNode";
 import { Button } from "@/components/ui/button";
 import ReactFlow, {
@@ -12,10 +11,10 @@ import ReactFlow, {
   NodeTypes,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { HighlightWithRelations } from "@src/server/api/routers/highlight";
+import { CurriculumNodeWithRelations } from "@src/lib/types";
 
 interface Props {
-  highlight: Highlight;
+  node: CurriculumNodeWithRelations;
   returnHome: () => void;
 }
 
@@ -34,60 +33,48 @@ const defaultViewPort = {
 };
 
 const generateNodesAndEdges = (
-  highlight: HighlightWithRelations,
+  node: CurriculumNodeWithRelations,
+  x: number = 0,
+  y: number = 0,
 ): { nodes: Node[]; edges: Edge[] } => {
   const currentNode: Node[] = [
     {
-      id: highlight!.id,
-      position: { x: 0, y: 0 },
+      id: node.id,
+      position: { x, y },
       data: {
-        ...(highlight.node?.prompt
-          ? {
-              question: highlight.node.prompt,
-              answer: highlight.node.response,
-            }
-          : {
-              label: highlight.comment?.text,
-            }),
+        question: node.prompt,
+        answer: node.response,
       },
-      type: highlight.node?.prompt ? "question" : "input",
+      type: "question",
     },
   ];
-  const currentEdges: Edge[] = [];
 
-  // if (highlight.node && "children" in highlight.node) {
-  //   for (let child of highlight.node.children) {
-  //     const { nodes, edges } = generateNodesAndEdges(child);
-  //     currentNode.push(...nodes);
-  //     currentEdges.push(...edges);
-  //     currentEdges.push({
-  //       id: `${highlight.id}-${child.id}`,
-  //       source: highlight.id,
-  //       target: child.id,
-  //     });
-  //   }
-  // }
+  const currentEdges: Edge[] = [];
+  let new_x = x - 500;
+  let new_y = y + 500;
+  if (node.children) {
+    for (let child of node.children) {
+      const { nodes, edges } = generateNodesAndEdges(child, new_x, new_y);
+      currentNode.push(...nodes);
+      currentEdges.push(...edges);
+      currentEdges.push({
+        id: `${node.id}-${child.id}`,
+        source: node.id,
+        target: child.id,
+      });
+      new_x += 500;
+    }
+  }
 
   return { nodes: currentNode, edges: currentEdges };
 };
 
-export function Forest({ highlight, returnHome }: Props) {
-  const { nodes, edges } = useMemo(
-    () => generateNodesAndEdges(highlight),
-    [highlight],
-  );
+export function Forest({ node, returnHome }: Props) {
+  const { nodes, edges } = useMemo(() => generateNodesAndEdges(node), [node]);
 
-  // const onNodesChange: OnNodesChange = useCallback(
-  //   // @ts-ignore
-  //   (changes) => setNodes((nds) => applyNodeChanges(changes, nds)),
-  //   [],
-  // );
-  //
-  // const onEdgesChange: OnEdgesChange = useCallback(
-  //   // @ts-ignore
-  //   (changes) => setEdges((eds) => applyEdgeChanges(changes, eds)),
-  //   [],
-  // );
+  console.log("node", node);
+  console.log("nodes", nodes);
+  console.log("edges", edges);
 
   return (
     <div style={{ width: "50vw", height: "100vh", position: "relative" }}>
@@ -100,9 +87,7 @@ export function Forest({ highlight, returnHome }: Props) {
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        // onNodesChange={onNodesChange}
-        // onEdgesChange={onEdgesChange}
-        onNodeClick={(_, node) => updateHash(node.id)}
+        // onNodeClick={(_, node) => updateHash(node.id)}
         nodeTypes={nodeTypes}
         defaultViewport={defaultViewPort}
       >

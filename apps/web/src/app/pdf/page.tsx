@@ -9,7 +9,7 @@ import { RedirectToSignIn } from "@clerk/nextjs";
 
 import { api } from "@src/trpc/server";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
-import { PDFHighlightsWithProfile } from "./ui";
+import { AnnotatedPdfWithProfile } from "@src/lib/types";
 const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
@@ -71,36 +71,31 @@ export default async function Page() {
   const userEmails = users.map(
     (user) => user.emailAddresses[0]?.emailAddress ?? "",
   );
-  const emailToPicture = users.map((user) => {
+  const userProfiles = users.map((user) => {
     return {
-      email: user!.emailAddresses[0]?.emailAddress ?? "",
-      imageUrl: user!.imageUrl,
-      firstName: user!.firstName,
-      lastName: user!.lastName,
+      email: user.emailAddresses[0]?.emailAddress ?? "",
+      imageUrl: user.imageUrl,
+      firstName: user.firstName,
+      lastName: user.lastName,
     };
   });
 
-  const allHighlights = await api.annotatedPdf.fetchAllAnnotatedPdfs({
+  const annotatedPdfs = await api.annotatedPdf.fetchAllAnnotatedPdfs({
     source: pdfUrl.href,
     userList: userEmails,
   });
 
-  const allHighlightsWithProfile = allHighlights
-    ? allHighlights.map((pdfHighlight) => {
-      return {
-        ...pdfHighlight,
-        userProfilePicture: emailToPicture.find(
-          (user) => user.email === pdfHighlight.userId,
-        )?.imageUrl,
-        firstName: emailToPicture.find(
-          (user) => user.email === pdfHighlight.userId,
-        )?.firstName,
-        lastName: emailToPicture.find(
-          (user) => user.email === pdfHighlight.userId,
-        )?.lastName,
-      }
-    })
-    : [];
+  let annotatedPdfsWithProfile: AnnotatedPdfWithProfile[] = [];
+  if (annotatedPdfs) {
+    for (let annotatedPdf of annotatedPdfs) {
+      const userProfile = userProfiles.find((user) => user.email === annotatedPdf.userId);
+      annotatedPdfsWithProfile.push({
+        ...annotatedPdf,
+        userProfilePicture: userProfile?.imageUrl || "",
+        firstName: userProfile?.firstName || "",
+        lastName: userProfile?.lastName || "",
+      }); 
+  }
 
   const parsedPaper = await api.parsedPapers.fetchParsedPdf({
     source: pdfUrl.href,
@@ -119,7 +114,7 @@ export default async function Page() {
         loadedSource={source}
         userId={userId}
         userHighlights={highlights}
-        allHighlights={allHighlightsWithProfile}
+        annotatedPdfsWithProfile={annotatedPdfsWithProfile}
 
       />
     </AskHighlightProvider>

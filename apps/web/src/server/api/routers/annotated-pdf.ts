@@ -1,28 +1,10 @@
-//@ts-nocheck
 import { z } from "zod";
-import {
-  Prisma,
-  AnnotatedPdf,
-  Highlight,
-  CurriculumNode,
-} from "@prisma/client";
-import { ObjectId } from "mongodb";
+import { AnnotatedPdf } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { IHighlightSchema } from "@src/app/pdf/ui/types";
-
-export type CurriculumNodeWithRelations = CurriculumNode & {
-  children?: CurriculumNodeWithRelations[];
-};
-
-export type HighlightWithRelations = Highlight & {
-  node?: CurriculumNodeWithRelations | null;
-};
-
-export type AnnotatedPdfWithRelations = AnnotatedPdf & {
-  highlights: HighlightWithRelations[];
-};
+import { AnnotatedPdfWithRelations, CurriculumNodeWithRelations } from "@src/lib/types";
 
 export const annotatedPdfRouter = createTRPCRouter({
   // Create new highlight object if doesn't exist
@@ -73,9 +55,13 @@ export const annotatedPdfRouter = createTRPCRouter({
     .query<AnnotatedPdfWithRelations | null>(async ({ ctx, input }) => {
       let result: AnnotatedPdfWithRelations | null;
 
+      // Currently Prism does not support nested include queries
+      // Github: https://github.com/prisma/prisma/issues/3725
       // TODO: add bark for recursive tree structure quieries: https://prisma-extension-bark.gitbook.io/docs/getting-started
-      try {
-        result = await db.annotatedPdf.findFirst({
+      const findFirstAnnotatedPdfParams: Parameters<
+        typeof db.annotatedPdf.findFirst
+      > = [
+        {
           where: input,
           include: {
             highlights: {
@@ -88,9 +74,28 @@ export const annotatedPdfRouter = createTRPCRouter({
               },
             },
           },
-        });
+        },
+      ];
+
+      // Recursive query to fetch all children
+      let currentChildPointer =
+        // @ts-ignore
+        findFirstAnnotatedPdfParams[0].include.highlights.include.node.include;
+      for (let i = 0; i < 20; i++) {
+        currentChildPointer.children = {
+          include: {
+            children: true,
+          },
+        };
+        currentChildPointer = currentChildPointer.children.include;
+      }
+
+      try {
+        result = (await db.annotatedPdf.findFirst(
+          ...findFirstAnnotatedPdfParams
+        )) as AnnotatedPdfWithRelations | null;
       } catch (error) {
-        console.error("Failed to fetch highlights:", error);
+        console.error("Failed to fetch annotated pdf:", error);
         return null;
       }
       return result;
@@ -110,7 +115,7 @@ export const annotatedPdfRouter = createTRPCRouter({
       if (input.source) {
         whereClause["source"] = input.source;
       }
-      let result;
+      let result: AnnotatedPdfWithRelations[];
       try {
         result = await db.annotatedPdf.findMany({
           where: whereClause,
@@ -127,7 +132,7 @@ export const annotatedPdfRouter = createTRPCRouter({
           },
         });
       } catch (error) {
-        console.error("Failed to fetch highlights:", error);
+        console.error("Failed to fetch fetch annotated pdfs:", error);
         return null;
       }
 
@@ -159,7 +164,12 @@ export const annotatedPdfRouter = createTRPCRouter({
         },
       });
 
-      const nodeIds: string[] = [];
+      if (!annotatedPdf) {
+        console.error("failed to find annotated pdf:", input);
+        return false;
+      }
+
+      const nodeIds: Record<string, string>[] = [];
 
       const addNodeIdsDfs = (node: CurriculumNodeWithRelations) => {
         if (node.children) {
@@ -187,7 +197,7 @@ export const annotatedPdfRouter = createTRPCRouter({
                 q: { _id: { $in: nodeIds } },
                 limit: 0,
               },
-            ]
+            ],
           }),
           db.annotatedPdf.update({
             where: input,

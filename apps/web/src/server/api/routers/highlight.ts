@@ -1,18 +1,10 @@
-//@ts-nocheck
 import { z } from "zod";
 import { Highlight, CurriculumNode } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { HighlightWithCurriculumNodeSchema } from "@src/app/pdf/ui/types";
-
-export type CurriculumNodeWithRelations = CurriculumNode & {
-  children: CurriculumNodeWithRelations[];
-};
-
-export type HighlightWithRelations = Highlight & {
-  node?: CurriculumNodeWithRelations | null;
-};
+import { HighlightWithRelations } from "@src/lib/types";
 
 export type NewHighlightWithRelationsInput = Omit<
   Highlight & {
@@ -35,13 +27,13 @@ export const highlightRouter = createTRPCRouter({
         {
           data: {
             ...input.highlight,
-            annotatedPdfId: undefined,
+            annotatedPdfId: undefined, 
+            node: undefined,
             annotatedPdf: {
               connect: {
                 id: input.highlight.annotatedPdfId,
               },
             },
-            node: undefined,
           },
           include: {
             node: true,

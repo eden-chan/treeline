@@ -1,4 +1,3 @@
-//@ts-nocheck
 "use client";
 import React, { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
@@ -14,12 +13,12 @@ import {
   AreaHighlight,
   Spinner,
   Sidebar,
-  PDFHighlightsWithProfile,
 } from "../app/pdf/ui";
 import { Highlight, HighlightComment } from "@prisma/client";
 
 import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
+import { AnnotatedPdfWithProfile } from "@src/lib/types";
 
 import "../app/pdf/ui/style/main.css";
 import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
@@ -50,7 +49,7 @@ export default function PDFViewer({
   loadedSource: string;
   userId: string;
   userHighlights: Highlight[];
-  allHighlights: PDFHighlightsWithProfile[];
+  allHighlights: AnnotatedPdfWithProfile[];
 }): JSX.Element {
   const utils = clientApi.useUtils();
   const annotatedPdfMutation =
@@ -306,9 +305,9 @@ export default function PDFViewer({
           )}
         </PdfLoader>
       </div>
-      {currentHighlight ? (
+      {currentHighlight?.node ? (
         <Forest
-          highlight={currentHighlight}
+          node={currentHighlight.node}
           returnHome={() => {
             document.location.hash = "";
             clearSelectedHighlight();

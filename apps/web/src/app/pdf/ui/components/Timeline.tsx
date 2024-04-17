@@ -6,7 +6,7 @@ import { useMemo, memo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
 import { PaperCard } from "@src/components/paper-card";
 import { useRouter } from "next/navigation";
-import { AnnotatedPdfWithRelations } from '@src/server/api/routers/annotated-pdf';
+import { AnnotatedPdfWithRelations } from '@src/lib/types';
 
 
 import { TabsTrigger, TabsList, Tabs, TabsContent } from "@/components/ui/tabs"

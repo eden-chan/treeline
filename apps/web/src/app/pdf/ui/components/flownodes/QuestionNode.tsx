@@ -1,5 +1,4 @@
-import { Node, NodeProps } from "reactflow";
-import { useCallback } from "react";
+import { NodeProps } from "reactflow";
 import { Handle, Position } from "reactflow";
 
 const handleStyle = { left: 10 };

@@ -1,4 +1,3 @@
-
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -8,8 +7,6 @@ import { useState } from "react";
 import SuperJSON from "superjson";
 
 import { type AppRouter } from "@src/server/api/root";
-
-
 
 const createQueryClient = () => new QueryClient();
 
@@ -47,7 +44,7 @@ export function TRPCReactProvider(props: { children: React.ReactNode }) {
           },
         }),
       ],
-    })
+    }),
   );
 
   return (
