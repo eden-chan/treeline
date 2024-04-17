@@ -1,6 +1,6 @@
 import React from "react";
 import { Highlight } from "@prisma/client";
-import { HighlightWithRelations } from "@src/server/api/routers/highlight";
+import { HighlightWithRelations } from "@src/lib/types";
 
 interface Props {
   highlights: Array<HighlightWithRelations>;
@@ -13,7 +13,7 @@ const updateHash = (highlight: Highlight) => {
 
 export function Sidebar({ highlights, resetHighlights }: Props) {
   return (
-    <div className="sidebar" style={{ width: "50vw" }}>
+    <div className="sidebar">
       <div className="description" style={{ padding: "1rem" }}>
         <p>
           <small>
@@ -64,6 +64,7 @@ export function Sidebar({ highlights, resetHighlights }: Props) {
           <button onClick={resetHighlights}>Reset highlights</button>
         </div>
       ) : null}
+
     </div>
   );
 }

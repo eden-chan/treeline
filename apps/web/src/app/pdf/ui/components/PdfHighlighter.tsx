@@ -37,7 +37,8 @@ import getBoundingRect from "../lib/get-bounding-rect";
 import getClientRects from "../lib/get-client-rects";
 import { HighlightLayer } from "./HighlightLayer";
 import { Highlight, HighlightPosition } from "@prisma/client";
-
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
 
 interface State<T_HT> {
@@ -55,6 +56,8 @@ interface State<T_HT> {
   tipChildren: JSX.Element | null;
   isAreaSelectionInProgress: boolean;
   scrolledToHighlightId: string;
+  scale: number;
+  scaleInput: number; // Zoom number in toolbar
 }
 
 interface Props<T_HT> {
@@ -105,6 +108,8 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     tip: null,
     tipPosition: null,
     tipChildren: null,
+    scale: 1.0,
+    scaleInput: 100,
   };
 
   eventBus = new EventBus();
@@ -129,6 +134,10 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
       this.resizeObserver = new ResizeObserver(this.debouncedScaleValue);
     }
     this.containerNodeRef = React.createRef();
+    this.zoomIn = this.zoomIn.bind(this);
+    this.zoomOut = this.zoomOut.bind(this);
+    this.setZoom = this.setZoom.bind(this);
+    this.handleZoomInput = this.handleZoomInput.bind(this);
   }
 
   componentDidMount() {
@@ -202,6 +211,62 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     // debug
     (window as any).PdfViewer = this;
   }
+
+  // TODO: Consolidate zoomIn and zoomOut
+
+  zoomIn() {
+    if (this.viewer) {
+      this.setState(
+        (prevState) => ({
+          scale: prevState.scale + 0.2,
+          scaleInput: (prevState.scale + 0.2) * 100,
+        }),
+        () => {
+          this.viewer.currentScale = this.state.scale;
+        }
+      );
+    }
+  }
+
+  zoomOut() {
+    if (this.viewer) {
+      this.setState(
+        (prevState) => ({
+          scale: prevState.scale - 0.2,
+          scaleInput: (prevState.scale - 0.2) * 100,
+        }),
+        () => {
+          this.viewer.currentScale = this.state.scale;
+        }
+      );
+    }
+  }
+
+  setZoom(scale: number) {
+    if (this.viewer) {
+      this.setState({
+        scale: scale,
+      });
+      this.viewer.currentScale = this.state.scale;
+    }
+  }
+
+  handleZoomInput(e) {
+    if (e.key == "Enter") {
+      if (e.target.value > 50 && e.target.value < 300) {
+        this.setZoom(e.target.value / 100);
+        this.setState({
+          scaleInput: e.target.value,
+        });
+      } else {
+        // "out of bounds," reset input number
+        this.setState({
+          scaleInput: this.state.scale * 100,
+        });
+      }
+    }
+  }
+
 
   componentWillUnmount() {
     this.unsubscribe();
@@ -637,6 +702,21 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
               }}
             />
           ) : null}
+        </div>
+        <div className="flex gray-600 relative float-right m-3 pl-3 pt-1 z-10">
+          <Input
+            className="text-black text-center w-20"
+            type="number"
+            value={this.state.scaleInput}
+            onChange={(e) => this.setState({ scaleInput: e.target.value })}
+            onKeyDown={this.handleZoomInput}
+          ></Input>
+          <Button className="m-1" onClick={this.zoomIn}>
+            +
+          </Button>
+          <Button className="m-1" onClick={this.zoomOut}>
+            -
+          </Button>
         </div>
       </div>
     );
