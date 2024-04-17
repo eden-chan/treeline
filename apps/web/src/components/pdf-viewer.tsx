@@ -101,12 +101,12 @@ export default function PDFViewer({
           const highlightId = uuidv4();
           const newNode = newData?.highlight?.node
             ? {
-              ...newData.highlight.node,
-              id: uuidv4(),
-              parentId: null,
-              highlightId,
-              children: [],
-            }
+                ...newData.highlight.node,
+                id: uuidv4(),
+                parentId: null,
+                highlightId,
+                children: [],
+              }
             : null;
           const newHighlight = {
             ...newData.highlight,
@@ -149,13 +149,12 @@ export default function PDFViewer({
   };
 
   const resetHighlights = () => {
-    console.log("annotatedPdfId", annotatedPdfId);
     annotatedPdfMutation.mutate({
       id: annotatedPdfId,
     });
   };
 
-  let scrollToHighlightId = (highlight: Highlight) => { };
+  let scrollToHighlightId = (highlight: Highlight) => {};
 
   const setHighlightFromHash = () => {
     const highlight = getHighlightById(parseIdFromHash());
@@ -165,7 +164,6 @@ export default function PDFViewer({
       scrollToHighlightId(highlight);
     }
   };
-
 
   // Todo: This useEffect reruns on every state update since scrollToHighlight changes reference on every render.
   // However, we need to keep an updated version of scrollToHighlightId after it gets assigned in PDFHighlighter.
