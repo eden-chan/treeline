@@ -321,7 +321,7 @@ export const ragQuery = async (
     const { metadatas: factMetadatas, documents: factDocuments } = factResults;
 
     if (factDocuments && factDocuments.length > 0) {
-      const descriptors = factDocuments[0];
+      const descriptors = factDocuments[0] ?? [];
       const searchDescriptors: string[] = descriptors.filter(
         (doc): doc is string => doc !== null
       );
@@ -330,9 +330,8 @@ export const ragQuery = async (
         source,
         searchDescriptors
       );
-      const { documents, metadatas } = sourceTextResults;
 
-      return metadatas;
+      return sourceTextResults;
     }
     return [];
   }

@@ -7,18 +7,20 @@ import React, {
   useEffect,
   useRef,
   useState,
+  useMemo
 } from "react";
-import { useChat, Message, CreateMessage } from "ai/react";
+import { useChat, Message } from "ai/react";
+import { ragQuery } from '@src/app/actions';
 import { v4 as uuidv4 } from "uuid";
 
-import { AnnotatedPdf, Highlight, CurriculumNode, ParsedPapers } from "@prisma/client";
+import { Highlight, ParsedPapers } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
-import { FOLLOW_UP_PROMPT } from "@src/utils/constants";
+import { generateSystemPrompt } from "@src/utils/constants";
 import {
   NewHighlightWithRelationsInput,
   HighlightWithRelations,
 } from "@src/server/api/routers/highlight";
-import { getParsedPaperAction, queryFacts, ragQuery, search } from '@src/app/actions';
+
 
 export type ContextProps = {
   currentHighlight: Highlight | null;
@@ -45,8 +47,9 @@ export const AskHighlightProvider: FC<{
   annotatedPdfId: string;
   userId: string;
   loadedSource: string;
+  parsedPaper: ParsedPapers,
   children: ReactNode;
-}> = ({ annotatedPdfId, userId, loadedSource, children }) => {
+}> = ({ annotatedPdfId, userId, loadedSource, parsedPaper, children }) => {
   const [_, setForceRerender] = useState<Boolean>(false);
   const currentHighlightRef = useRef<HighlightWithRelations | null>(null);
   const setCurrentHighlight = (
@@ -88,72 +91,14 @@ export const AskHighlightProvider: FC<{
     setMessages([]);
   };
 
-  // #TODO: fetch paper text and field from db
-  const [prompt, setPrompt] = useState<string>('')
+  // fetch paper text and field from db
+  const concatenatedText = useMemo(() => parsedPaper.sections.map(section => section.text).join(" "), [parsedPaper.sections]);
+  const systemPrompt = useMemo(() => generateSystemPrompt(concatenatedText, parsedPaper.primary_category), [concatenatedText, parsedPaper.primary_category]);
 
-
-  useEffect(() => {
-    const fetchParsedPaper = async () => {
-      const parsedPaper = await getParsedPaperAction(loadedSource);
-      if (parsedPaper && parsedPaper.sections) {
-        const concatenatedText = parsedPaper.sections.map(section => section.text).join(" ");
-        const systemPrompt = generateSystemPrompt(concatenatedText, parsedPaper.primary_category)
-        setPrompt(systemPrompt)
-      }
-    };
-    fetchParsedPaper();
-  }, [loadedSource]);
-
-  const generateSystemPrompt = (paperText: string, field: string) => `
-    Variables:
-
-{'$PAPER_TEXT', '$CONTEXT', '$QUESTION'}
-
-************************
-
-Prompt:
-You are an expert educator helping me cultivate intuition in the field of ${field}. I will provide you
-with a paper text related to this field. Your task is to carefully read the paper, identify key
-sections, and use the information to help me ask smarter, more insightful questions about the topic.
-
-Here is the paper text:
-<paper>
-${paperText}
-</paper>
-
-After reading the paper, I will ask you a question and provide additional context that I think is
-relevant to my question. The context will usually be specific sections from the paper.
-
-<question>MY_QUESTION</question>
-<context>My_CONTEXT</context>
-
-Using the provided context, identify the most relevant sections in the paper that can help address
-the question. Think critically about the information in these sections and how it relates to the
-question.
-
-<thinking>
-In this section, brainstorm ideas and connections between the question, context, and relevant
-sections of the paper. Consider how the information in the paper can help deepen understanding of
-the topic and lead to more insightful questions.
-</thinking>
-
-Based on your analysis, provide suggestions for asking smarter, more insightful questions related to
-the topic. Your suggestions should demonstrate a deep understanding of the field and the specific
-information in the paper.
-
-<suggestions>
-Write your suggested questions here, focusing on questions that show critical thinking and a desire
-to gain a deeper understanding of the topic.
-</suggestions>
-
-Remember, your goal is to help me cultivate intuition in this field by guiding me to ask better
-questions. Use your expertise and the information in the paper to provide valuable insights and
-suggestions.`
-
-  const initialMessages = [{
+  const initialMessages: Message[] = [{
     role: 'system',
-    content: prompt,
-  }] as Message[]
+    content: systemPrompt,
+  }]
 
   const { messages, setMessages, append, isLoading, ...chat } = useChat({
     initialMessages,
@@ -233,10 +178,6 @@ suggestions.`
     if (!highlight.node?.prompt) return;
 
 
-
-
-
-
     // Walking RAG - Cyclical Generation
     // Fetch most relevant chunks (descriptors)
     // fetch fact - descriptors for pdf.use chroma to embed the descriptors and store the embeddings
@@ -246,16 +187,21 @@ suggestions.`
     const collectionName = 'ParsedPapers'
     const source = loadedSource
     const query = highlight.node.prompt
-    // const results = await ragQuery(collectionName, source, query)
-    // console.debug('query: ', { source, query, collectionName, results })
-
     let ragContext = ''
-    // if (results && results.length > 0) {
-    //   const relevantChunks = results.flat().map(chunk => chunk?.text).join(' ')
-    //   ragContext = relevantChunks
-    // }
+    try {
+
+      const results = await ragQuery(collectionName, source, query)
+      const { documents } = results;
 
 
+      if (documents && documents.length > 0) {
+        const relevantChunks = documents.flat().join(' ')
+        ragContext = relevantChunks
+        console.debug('retrieved ragContext: ', ragContext)
+      }
+    } catch (e) {
+      console.debug('Error fetching RAG context. Continuing gracefully without rag context: ', e)
+    }
 
     const promptWithContext = `<question>${highlight.node.prompt}</question>
 ${highlight.content?.text ? `<context>
