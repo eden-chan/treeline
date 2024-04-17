@@ -39,6 +39,12 @@ const HighlightPopup = ({ comment }: { comment: HighlightComment | null }) => {
   ) : null;
 };
 
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+
 export default function PDFViewer({
   annotatedPdfId,
   loadedSource,
@@ -190,19 +196,14 @@ export default function PDFViewer({
         setDisplayHighlights={setFriendHighlights}
         allHighlightsWithProfile={allHighlights}
       />
-      <div
-        className="grid"
-        style={{
-          gridTemplateColumns: "20fr 50fr 20fr",
-          width: "100vw",
-        }}
-      >
-        <div></div>
-        <div
+      <ResizablePanelGroup className="w-full" direction="horizontal">
+        <ResizablePanel></ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel
           style={{
-            height: "100vh",
             position: "relative",
           }}
+          defaultSize={75}
         >
           <PdfLoader url={loadedSource} beforeLoad={<Spinner />}>
             {(pdfDocument) => (
@@ -310,8 +311,9 @@ export default function PDFViewer({
               />
             )}
           </PdfLoader>
-        </div>
-        <div className="">
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel className="">
           {currentHighlight ? (
             <Forest
               highlight={currentHighlight}
@@ -326,8 +328,8 @@ export default function PDFViewer({
               resetHighlights={resetHighlights}
             />
           )}
-        </div>
-      </div>
+        </ResizablePanel>
+      </ResizablePanelGroup>
     </div>
   );
 }
