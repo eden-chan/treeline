@@ -20,7 +20,6 @@ import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 import { AnnotatedPdfWithProfile } from "@src/lib/types";
 
-import "../app/pdf/ui/style/main.css";
 import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
 import {
   ResizableHandle,
@@ -197,11 +196,8 @@ export default function PDFViewer({
       />
 
       <ResizablePanelGroup className="w-full" direction="horizontal">
-        <ResizablePanel></ResizablePanel>
         <ResizablePanel
-          style={{
-            position: "relative",
-          }}
+          className='relative'
           defaultSize={70}
         >
           <PdfLoader url={loadedSource} beforeLoad={<Spinner />}>
