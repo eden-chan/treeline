@@ -133,7 +133,6 @@ export const queryFacts = async (
     embeddingFunction: embedder,
   });
 
-  console.debug("chroma ", { collection });
   const relevantFactsDescriptors = await collection.query({
     where: {
       $and: [

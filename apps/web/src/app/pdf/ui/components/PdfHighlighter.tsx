@@ -316,8 +316,8 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
   screenshot(position: LTWH, pageNumber: number) {
     const canvas = this.viewer.getPageView(pageNumber - 1).canvas;
-
-    return getAreaAsPng(canvas, position);
+    const image = getAreaAsPng(canvas, position);
+    return image
   }
 
   hideTipAndSelection = () => {

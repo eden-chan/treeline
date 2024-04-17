@@ -253,6 +253,22 @@ export const AskHighlightProvider: FC<{
     let ragContext = ''
     try {
 
+      // const response = await fetch("/api/question", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     query,
+      //   }),
+      // });
+
+      // const data = await response.json();
+      // if (!response.ok) {
+      //   throw new Error(data.message || "Failed to fetch from /api/question");
+      // }
+      // console.log("instructor", data);
+
       const results = await ragQuery(collectionName, source, query)
       const { documents } = results;
 
@@ -266,21 +282,53 @@ export const AskHighlightProvider: FC<{
       console.debug('Error fetching RAG context. Continuing gracefully without rag context: ', e)
     }
 
+    let promptWithContext = ''
 
-    const promptWithContext = `<question>${highlight.node.prompt}</question>
+    if (/^data:image\/[a-zA-Z]+;base64,/.test(highlight.content?.image)) {
+      // use gpt-4-vision-preview
+      console.log('base64 encode me ')
+
+      promptWithContext = `You are an expert image processor. Analyze and provide detailed intuition on the provided image and answer the following question: <question>${highlight.node.prompt}</question>
 ${highlight.content?.text
-        ? `<context>
+          ? `<context>
 ${highlight.content.text}
 </context>`
-        : ""
-      }`;
+          : ""
+        }`;
 
-    // Query AI for response
-    append({
-      role: "user",
-      content: promptWithContext,
-      createdAt: new Date(),
-    });
+      // Query AI for response
+      append([{
+        role: "user", // todo: ask process image
+        content: promptWithContext,
+      },
+      {
+        role: "user",
+        content: [
+          {
+            type: "image_url",
+            image_url: {
+              url: highlight.content.image,
+            },
+          },
+        ],
+      }]);
+
+    } else {
+      promptWithContext = `<question>${highlight.node.prompt}</question>
+${highlight.content?.text
+          ? `<context>
+${highlight.content.text}
+</context>`
+          : ""
+        }`;
+
+      // Query AI for response
+      append({
+        role: "user",
+        content: promptWithContext,
+        createdAt: new Date(),
+      });
+    }
 
     // Add node to DB
     createHighlightMutation.mutate({
