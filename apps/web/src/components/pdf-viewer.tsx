@@ -22,6 +22,12 @@ import { AnnotatedPdfWithProfile } from "@src/lib/types";
 
 import "../app/pdf/ui/style/main.css";
 import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@/components/ui/resizable";
+
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -189,136 +195,147 @@ export default function PDFViewer({
         setDisplayHighlights={setFriendHighlights}
         allHighlightsWithProfile={annotatedPdfsWithProfile}
       />
-      <div
-        style={{
-          height: "100vh",
-          width: "50vw",
-          position: "relative",
-        }}
-      >
-        <PdfLoader url={loadedSource} beforeLoad={<Spinner />}>
-          {(pdfDocument) => (
-            <PdfHighlighter
-              pdfDocument={pdfDocument}
-              enableAreaSelection={(event) => event.altKey}
-              onScrollChange={resetHash}
-              highlight={currentHighlight ?? undefined}
-              scrollRef={(scrollTo) => {
-                scrollToHighlightId = scrollTo;
-              }}
-              onSelectionFinished={(
-                position,
-                content,
-                hideTipAndSelection,
-                transformSelection,
-              ) => (
-                <Tip
-                  onOpen={transformSelection}
-                  onCommentConfirm={(comment) => {
-                    createCommentHighlight({
-                      content: {
-                        text: content?.text ?? "",
-                        image: content?.image ?? "",
-                      },
-                      comment: {
-                        ...comment,
-                        timestamp: new Date(),
-                        userId,
-                      },
-                      type: "COMMENT",
-                      annotatedPdfId,
-                      position,
-                    });
-                    hideTipAndSelection();
-                  }}
-                  onPromptConfirm={(prompt: string) => {
-                    createAskHighlight({
-                      content: {
-                        text: content?.text ?? "",
-                        image: content?.image ?? "",
-                      },
-                      comment: null,
-                      annotatedPdfId,
-                      type: "ASK",
-                      node: {
-                        prompt,
-                        response: null,
-                        timestamp: new Date(),
-                        comments: [],
-                      },
-                      position,
-                    });
-                  }}
-                  content={content}
-                />
-              )}
-              highlightTransform={(
-                highlight,
-                index,
-                setTip,
-                hideTip,
-                viewportToScaled,
-                screenshot,
-                isScrolledTo,
-              ) => {
-                const isTextHighlight = !(
-                  highlight.content && highlight.content.image
-                );
 
-                const component = isTextHighlight ? (
-                  <PDFHighlight
-                    isScrolledTo={isScrolledTo}
-                    position={highlight.position}
-                    comments={highlight.comment ? [highlight.comment] : []}
-                  />
-                ) : (
-                  <AreaHighlight
-                    isScrolledTo={isScrolledTo}
-                    highlight={highlight}
-                    onChange={(boundingRect) => {
-                      // updateHighlight(
-                      //   highlight.id,
-                      //   { boundingRect: viewportToScaled(boundingRect) },
-                      //   { image: screenshot(boundingRect) },
-                      // );
-                    }}
-                  />
-                );
-
-                return (
-                  <Popup
-                    popupContent={
-                      <HighlightPopup comment={highlight.comment} />
-                    }
-                    onMouseOver={(popupContent) =>
-                      setTip(highlight, (highlight) => popupContent)
-                    }
-                    onMouseOut={hideTip}
-                    key={index}
-                    children={component}
-                  />
-                );
-              }}
-              highlights={highlights ?? []}
-              displayHighlights={friendHighlights}
-            />
-          )}
-        </PdfLoader>
-      </div>
-      {currentHighlight?.node ? (
-        <Forest
-          node={currentHighlight.node}
-          returnHome={() => {
-            document.location.hash = "";
-            clearSelectedHighlight();
+      <ResizablePanelGroup className="w-full" direction="horizontal">
+        <ResizablePanel></ResizablePanel>
+        <ResizablePanel
+          style={{
+            position: "relative",
           }}
-        />
-      ) : (
-        <Sidebar
-          highlights={highlights ?? []}
-          resetHighlights={resetHighlights}
-        />
-      )}
-    </div>
+          defaultSize={70}
+        >
+          <PdfLoader url={loadedSource} beforeLoad={<Spinner />}>
+            {(pdfDocument) => (
+              <PdfHighlighter
+                pdfDocument={pdfDocument}
+                enableAreaSelection={(event) => event.altKey}
+                onScrollChange={resetHash}
+                highlight={currentHighlight ?? undefined}
+                scrollRef={(scrollTo) => {
+                  scrollToHighlightId = scrollTo;
+                }}
+                onSelectionFinished={(
+                  position,
+                  content,
+                  hideTipAndSelection,
+                  transformSelection,
+                ) => (
+                  <Tip
+                    onOpen={transformSelection}
+                    onCommentConfirm={(comment) => {
+                      createCommentHighlight({
+                        content: {
+                          text: content?.text ?? "",
+                          image: content?.image ?? "",
+                        },
+                        comment: {
+                          ...comment,
+                          timestamp: new Date(),
+                          userId,
+                        },
+                        type: "COMMENT",
+                        annotatedPdfId,
+                        position,
+                      });
+                      hideTipAndSelection();
+                    }}
+                    onPromptConfirm={(prompt: string) => {
+                      createAskHighlight({
+                        content: {
+                          text: content?.text ?? "",
+                          image: content?.image ?? "",
+                        },
+                        comment: null,
+                        annotatedPdfId,
+                        type: "ASK",
+                        node: {
+                          prompt,
+                          response: null,
+                          timestamp: new Date(),
+                          comments: [],
+                        },
+                        position,
+                      });
+                    }}
+                    content={content}
+                  />
+                )}
+                highlightTransform={(
+                  highlight,
+                  index,
+                  setTip,
+                  hideTip,
+                  viewportToScaled,
+                  screenshot,
+                  isScrolledTo,
+                ) => {
+                  const isTextHighlight = !(
+                    highlight.content && highlight.content.image
+                  );
+
+                  const component = isTextHighlight ? (
+                    <PDFHighlight
+                      isScrolledTo={isScrolledTo}
+                      position={highlight.position}
+                      comments={highlight.comment ? [highlight.comment] : []}
+                    />
+                  ) : (
+                    <AreaHighlight
+                      isScrolledTo={isScrolledTo}
+                      highlight={highlight}
+                      onChange={(boundingRect) => {
+                        // updateHighlight(
+                        //   highlight.id,
+                        //   { boundingRect: viewportToScaled(boundingRect) },
+                        //   { image: screenshot(boundingRect) },
+                        // );
+                      }}
+                    />
+                  );
+
+                  return (
+                    <Popup
+                      popupContent={
+                        <HighlightPopup comment={highlight.comment} />
+                      }
+                      onMouseOver={(popupContent) =>
+                        setTip(highlight, (highlight) => popupContent)
+                      }
+                      onMouseOut={hideTip}
+                      key={index}
+                      children={component}
+                    />
+                  );
+                }}
+                highlights={highlights ?? []}
+                displayHighlights={friendHighlights}
+              />
+            )}
+          </PdfLoader>
+        </ResizablePanel>
+        <ResizableHandle withHandle />
+        <ResizablePanel className="">
+
+          {
+            currentHighlight?.node ? (
+              <Forest
+                node={currentHighlight.node}
+                returnHome={() => {
+                  document.location.hash = "";
+                  clearSelectedHighlight();
+                }}
+              />
+            ) : (
+              <Sidebar
+                highlights={highlights ?? []}
+                resetHighlights={resetHighlights}
+              />
+            )
+          }
+        </ResizablePanel>
+      </ResizablePanelGroup>
+
+
+    </div >
   );
 }
