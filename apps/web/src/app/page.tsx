@@ -3,6 +3,7 @@ import { api } from "@src/trpc/server";
 import Timeline from "./pdf/ui/components/Timeline";
 import { RedirectToSignIn, SignIn, currentUser } from "@clerk/nextjs";
 import Navbar from "./pdf/ui/components/Navbar";
+import { BentoGridThirdDemo } from '@src/components/paper-card';
 
 
 export default async function Page() {
@@ -40,6 +41,7 @@ export default async function Page() {
   return (
     <main className="h-screen w-screen gap-0 p-4 text-black">
       <Navbar users={followedUsers} loggedInUser={user} />
+      <BentoGridThirdDemo />
       <Timeline articles={timeline} parsedPapers={parsedPapers} />
     </main>
   );

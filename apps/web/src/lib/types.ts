@@ -16,4 +16,9 @@ export type AnnotatedPdfWithProfile = AnnotatedPdfWithRelations & {
   userProfilePicture: string;
   firstName: string;
   lastName: string;
-}
+};
+export type UserSearchResult = {
+  id: string;
+  name: string;
+  handle: string;
+};
