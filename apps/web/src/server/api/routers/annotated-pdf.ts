@@ -159,7 +159,7 @@ export const annotatedPdfRouter = createTRPCRouter({
         },
       });
 
-      const responses: string = [];
+      const nodeIds: string[] = [];
 
       const addNodeIdsDfs = (node: CurriculumNodeWithRelations) => {
         if (node.children) {
@@ -167,11 +167,7 @@ export const annotatedPdfRouter = createTRPCRouter({
             addNodeIdsDfs(child);
           }
         }
-        // TODO: Find a better solution to this. Ids are of type ObjectId which isn't supported by Prisma runCommandRaw yet.
-        // Potential solution: https://github.com/prisma/prisma/issues/11830
-        if (node.response) {
-          responses.push(node.response);
-        }
+        nodeIds.push({ $oid: node.id });
       };
 
       for (const highlight of annotatedPdf.highlights) {
@@ -185,12 +181,13 @@ export const annotatedPdfRouter = createTRPCRouter({
           db.$runCommandRaw({
             delete: "CurriculumNode",
             bypassDocumentValidation: true,
+            // References: https://github.com/prisma/prisma/issues/11830
             deletes: [
               {
-                q: { response: { $in: responses } },
+                q: { _id: { $in: nodeIds } },
                 limit: 0,
               },
-            ],
+            ]
           }),
           db.annotatedPdf.update({
             where: input,
