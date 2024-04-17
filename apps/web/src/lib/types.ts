@@ -5,6 +5,6 @@ export type AnnotatedPdf = Prisma.AnnotatedPdfGetPayload<{
 }>;
 
 export enum EMBEDDING_TYPE {
-  SourceText = "sourceText",
-  FactDescriptor = "factDescriptor",
+  SourceText = "SourceText",
+  FactDescriptor = "FactDescriptor",
 }

@@ -6,7 +6,7 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, BeforeValidator
 import time
 import os
-from models import AbstractRanker, ExtractFactDescriptor, FactDescriptor, ClientType, TitleRanker
+from models import EMBEDDING_TYPE, AbstractRanker, ExtractFactDescriptor, FactDescriptor, ClientType, TitleRanker
 import instructor
 from openai import OpenAI
 
@@ -18,6 +18,9 @@ from llama_index.core.node_parser import MarkdownNodeParser
 import arxiv
 from datetime import datetime
 import httpx
+import pysqlite3
+import sys
+sys.modules["sqlite3"] = sys.modules.pop("pysqlite3")
 import chromadb
 from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
 from starlette.middleware.cors import CORSMiddleware
@@ -40,7 +43,8 @@ app.add_middleware(
 )
 
 client = instructor.patch(OpenAI())
-    
+chroma_client = chromadb.HttpClient(host=os.environ.get('CHROMA_URL'))
+
 class PaperMetadata(BaseModel):
     title: str
     summary: str
@@ -147,18 +151,31 @@ async def parse_pdf(pdf_url):
                 update_data = {"$set": {"title": title, "abstract": abstract, "facts": facts_serialized, 'sections': sections, 'primary_category': primary_category, 'published': published, 'updated': updated}}
                 result = db.update_one(filter_query, update_data, upsert=True)
                 
-            chroma_client = chromadb.HttpClient(host='localhost', port=8000)
             collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
 
-            metadata = [{"fact": fact_descriptor["fact"], "relevance": fact_descriptor["relevance"], "source": pdf_url} for fact_descriptor in facts_serialized]
+            metadata = [{"fact": fact_descriptor["fact"], "nextSource":fact_descriptor['nextSource'], "relevance": fact_descriptor["relevance"], "source": pdf_url, 'type': EMBEDDING_TYPE.FactDescriptor.value} for fact_descriptor in facts_serialized]
             # We can embed the descriptors, and use them to search the document for new chunks of information that were missed by the previous round of retrieval.
-            documents = [f"{fact_descriptor['expectedInfo']} {fact_descriptor['nextSource']}" for fact_descriptor in facts_serialized]
+            documents = [f"{fact_descriptor['expectedInfo']}" for fact_descriptor in facts_serialized]
             ids = [str(uuid.uuid4()) for _ in metadata]
 
+            # Delete all documents where metadata source equals pdf_url to for upsert
+            delete_filter = {"source": pdf_url}
+            
+            collection.delete(where=delete_filter)
+            
             collection.upsert(
                 documents=documents,
                 metadatas=metadata,
                 ids=ids
+            )
+            # insert source text
+            sectionText = [section['text'] for section in sections]
+            sectionMetadata = [{'source': pdf_url, 'type': EMBEDDING_TYPE.SourceText.value} for section in sections]
+            sectionIds = [str(uuid.uuid4()) for _ in sectionText]
+            collection.upsert(
+                documents=sectionText,
+                metadatas=sectionMetadata,
+                ids=sectionIds
             )
         except Exception as e:
             print(f"An error occurred during parsing or database update: {e}")
@@ -210,15 +227,16 @@ async def fetch_paper(request: PDFRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF. {e}")
 
-
     
-import uvicorn
 if __name__ == "__main__":
-    uvicorn.run("pdf_parser_server:app", host="0.0.0.0", port=3001, reload=True)
-    # chroma_client = chromadb.HttpClient(host='localhost', port=8000)
-    # collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
-    # import pdb; pdb.set_trace()
-    # results = collection.get(where={   "source": {         "$eq":"https://arxiv.org/pdf/2403.11207.pdf"     }}) 
+    chroma_client = chromadb.HttpClient(host=os.environ.get('CHROMA_URL'))
+    collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
+    results = collection.get(where={ "$and": [{"source": {         "$eq":"https://arxiv.org/pdf/1706.03762.pdf"}}, {"type": {"$eq": "FactDescriptor"}} ]     })   
+    print(len(results['ids']))
+    import pdb; pdb.set_trace()
+    # import uvicorn
+    # uvicorn.run("pdf_parser_server:app", host="0.0.0.0", port=3001, reload=True)
+    
      
 
 

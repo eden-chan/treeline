@@ -14,7 +14,7 @@ export const parsedPapersRouter = createTRPCRouter({
     .input(
       z.object({
         source: z.string(),
-      }),
+      })
     )
     .query<ParsedPapers | null>(async ({ input }) => {
       const whereClause: Record<string, string> = {};

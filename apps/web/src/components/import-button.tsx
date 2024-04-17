@@ -36,7 +36,7 @@ export function ImportButton() {
             return;
         }
         try {
-            fetch('http://localhost:3001/process_pdf', {
+            fetch('/api/preprocess', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

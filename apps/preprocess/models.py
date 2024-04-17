@@ -3,6 +3,7 @@ from typing import List
 from pydantic import BaseModel, Field, conlist, Field, BeforeValidator
 from enum import Enum, auto
 from typing_extensions import Annotated
+from enum import Enum
 import instructor
 # Define data models using Pydantic for type validation and settings
 class User(BaseModel):
@@ -66,10 +67,10 @@ class AbstractRanker(BaseModel):
             instructor.llm_validator("ensure abstracts don't contain objectionable content", allow_override=True)
         ),
     ]
-    
 
-
-
+class EMBEDDING_TYPE(Enum):
+    FactDescriptor = "FactDescriptor"
+    SourceText = "SourceText"
 class ClientType(Enum):
     ANTHROPIC = auto()
     OPENAI = auto()

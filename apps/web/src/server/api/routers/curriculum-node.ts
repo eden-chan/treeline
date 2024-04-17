@@ -1,21 +1,9 @@
 //@ts-nocheck
 import { z } from "zod";
 import { Highlight, CurriculumNode } from "@prisma/client";
-
+import { CurriculumNodeSchemaBase } from "@src/app/pdf/ui/types";
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
-import { CurriculumNodeSchemaBase } from "@src/app/pdf/ui/types";
-
-type ICurriculumNodeSchemaType = z.infer<typeof CurriculumNodeSchemaBase> & {
-  id: string;
-  children: ICurriculumNodeSchemaType[];
-};
-
-export const ICurriculumNodeSchema: z.ZodType<ICurriculumNodeSchemaType> =
-  CurriculumNodeSchemaBase.extend({
-    id: z.string(),
-    children: z.lazy(() => ICurriculumNodeSchema.array()),
-  });
 
 export type CurriculumNodeWithMaybeRelations = CurriculumNode & {
   children?: CurriculumNodeWithMaybeRelations[];
@@ -27,6 +15,17 @@ export type NewHighlightWithRelationsInput = Omit<
   },
   "id" | "nodeId"
 >;
+
+type ICurriculumNodeSchemaType = z.infer<typeof CurriculumNodeSchemaBase> & {
+  id: string;
+  children: ICurriculumNodeSchemaType[];
+};
+
+const ICurriculumNodeSchema: z.ZodType<ICurriculumNodeSchemaType> =
+  CurriculumNodeSchemaBase.extend({
+    id: z.string(),
+    children: z.lazy(() => ICurriculumNodeSchema.array()),
+  });
 
 export const curriculumNodeRouter = createTRPCRouter({
   updateNode: publicProcedure
