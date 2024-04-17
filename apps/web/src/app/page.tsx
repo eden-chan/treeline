@@ -1,7 +1,7 @@
 import React from "react";
 import { api } from "@src/trpc/server";
 import Timeline from "./pdf/ui/components/Timeline";
-import { RedirectToSignIn, SignIn, currentUser } from "@clerk/nextjs";
+import { RedirectToSignIn, currentUser } from "@clerk/nextjs";
 import Navbar from "./pdf/ui/components/Navbar";
 
 
