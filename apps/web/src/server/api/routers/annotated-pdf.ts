@@ -1,6 +1,12 @@
 //@ts-nocheck
 import { z } from "zod";
-import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
+import {
+  Prisma,
+  AnnotatedPdf,
+  Highlight,
+  CurriculumNode,
+} from "@prisma/client";
+import { ObjectId } from "mongodb";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
@@ -135,17 +141,68 @@ export const annotatedPdfRouter = createTRPCRouter({
       })
     )
     .mutation<boolean>(async ({ ctx, input }) => {
-      try {
-        await db.annotatedPdf.update({
-          where: input,
-          data: {
-            highlights: {
-              deleteMany: {},
+      // Jank implementation is due to the fact that deleting self-related documents is not supported in Prisma.
+      // NoAction in onDelete and onUpdate in Prisma effectively works as restrict.
+      // source: https://github.com/prisma/prisma/issues/17649#issuecomment-1491003365
+      const annotatedPdf = await db.annotatedPdf.findFirst({
+        where: input,
+        include: {
+          highlights: {
+            include: {
+              node: {
+                include: {
+                  children: true,
+                },
+              },
             },
           },
-        });
-      } catch {
-        console.error("Failed to reset highlights");
+        },
+      });
+
+      const responses: string = [];
+
+      const addNodeIdsDfs = (node: CurriculumNodeWithRelations) => {
+        if (node.children) {
+          for (const child of node.children) {
+            addNodeIdsDfs(child);
+          }
+        }
+        // TODO: Find a better solution to this. Ids are of type ObjectId which isn't supported by Prisma runCommandRaw yet.
+        // Potential solution: https://github.com/prisma/prisma/issues/11830
+        if (node.response) {
+          responses.push(node.response);
+        }
+      };
+
+      for (const highlight of annotatedPdf.highlights) {
+        if (highlight.node) {
+          addNodeIdsDfs(highlight.node);
+        }
+      }
+
+      try {
+        await db.$transaction([
+          db.$runCommandRaw({
+            delete: "CurriculumNode",
+            bypassDocumentValidation: true,
+            deletes: [
+              {
+                q: { response: { $in: responses } },
+                limit: 0,
+              },
+            ],
+          }),
+          db.annotatedPdf.update({
+            where: input,
+            data: {
+              highlights: {
+                deleteMany: {},
+              },
+            },
+          }),
+        ]);
+      } catch (err) {
+        console.error("Failed to reset highlights:", err);
         return false;
       }
       return true;

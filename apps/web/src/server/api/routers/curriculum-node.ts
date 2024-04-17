@@ -4,7 +4,18 @@ import { Highlight, CurriculumNode } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
-import { ICurriculumNodeSchema } from "@src/app/pdf/ui/types";
+import { CurriculumNodeSchemaBase } from "@src/app/pdf/ui/types";
+
+type ICurriculumNodeSchemaType = z.infer<typeof CurriculumNodeSchemaBase> & {
+  id: string;
+  children: ICurriculumNodeSchemaType[];
+};
+
+export const ICurriculumNodeSchema: z.ZodType<ICurriculumNodeSchemaType> =
+  CurriculumNodeSchemaBase.extend({
+    id: z.string(),
+    children: z.lazy(() => ICurriculumNodeSchema.array()),
+  });
 
 export type CurriculumNodeWithMaybeRelations = CurriculumNode & {
   children?: CurriculumNodeWithMaybeRelations[];

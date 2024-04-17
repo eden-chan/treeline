@@ -149,6 +149,7 @@ export default function PDFViewer({
   };
 
   const resetHighlights = () => {
+    console.log("annotatedPdfId", annotatedPdfId);
     annotatedPdfMutation.mutate({
       id: annotatedPdfId,
     });
