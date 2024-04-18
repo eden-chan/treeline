@@ -216,29 +216,21 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
   zoomIn() {
     if (this.viewer) {
-      this.setState(
-        (prevState) => ({
-          scale: prevState.scale + 0.2,
-          scaleInput: Math.trunc((prevState.scale + 0.2) * 100),
-        }),
-        () => {
-          this.viewer.currentScale = this.state.scale;
-        }
-      );
+      this.viewer.currentScale = this.state.scale + 0.2;
+      this.setState((prevState) => ({
+        scale: prevState.scale + 0.2,
+        scaleInput: Math.round((prevState.scale + 0.2) * 100),
+      }));
     }
   }
 
   zoomOut() {
     if (this.viewer) {
-      this.setState(
-        (prevState) => ({
-          scale: prevState.scale - 0.2,
-          scaleInput: Math.trunc((prevState.scale - 0.2) * 100),
-        }),
-        () => {
-          this.viewer.currentScale = this.state.scale;
-        }
-      );
+      this.viewer.currentScale = this.state.scale - 0.2;
+      this.setState((prevState) => ({
+        scale: prevState.scale - 0.2,
+        scaleInput: Math.round((prevState.scale - 0.2) * 100),
+      }));
     }
   }
 
