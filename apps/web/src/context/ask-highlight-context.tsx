@@ -62,17 +62,42 @@ export const AskHighlightProvider: FC<{
     currentHighlightRef.current = highlight;
     if (forceRerender) {
       setForceRerender((prev) => !prev);
+      // Necessary for useMemo/useCallback to execute
+      currentHighlightRef.current = structuredClone(
+        currentHighlightRef.current,
+      );
     }
   };
-  const setCurrentNode = (
-    node: CurriculumNodeWithRelations | null,
-    forceRerender = true,
-  ) => {
-    currentNodeRef.current = node;
+  // Can only be set to a child of the current node to preserve the current reference to nodes in the current highlight
+  const setCurrentNode = (nodeId: string, forceRerender = true) => {
+    if (!currentNodeRef.current?.children) return;
+    for (let child of currentNodeRef.current.children) {
+      if (child.id === nodeId) {
+        currentNodeRef.current = child;
+        break;
+      }
+    }
     if (forceRerender) {
       setForceRerender((prev) => !prev);
+      currentHighlightRef.current = structuredClone(
+        currentHighlightRef.current,
+      );
     }
   };
+  const setChildrenInNode = (
+    children: CurriculumNodeWithRelations[],
+    forceRerender = true,
+  ) => {
+    if (!currentNodeRef.current) return;
+    currentNodeRef.current.children = children;
+    if (forceRerender) {
+      setForceRerender((prev) => !prev);
+      currentHighlightRef.current = structuredClone(
+        currentHighlightRef.current,
+      );
+    }
+  };
+
   const isGeneratingFollowUpsRef = useRef<Boolean>(false);
 
   const onFinish = (message: Message) => {
@@ -106,7 +131,7 @@ export const AskHighlightProvider: FC<{
         curriculumNode: newHighlight.node,
       });
 
-      setCurrentNode(newHighlight.node, false);
+      currentNodeRef.current = newHighlight.node;
 
       // Timeout is required since useChat may cause a socket connection error if opening a new connection with append as the old connection is closing
       setTimeout(() => {
@@ -140,21 +165,33 @@ export const AskHighlightProvider: FC<{
         curriculumNode: newNode,
       });
 
-      setCurrentNode(newNode, true);
+      setChildrenInNode(newChildren);
       isGeneratingFollowUpsRef.current = false;
     }
   };
 
   // #TODO: fetch paper text and field from db
   // fetch paper text and field from db
-  const concatenatedText = useMemo(() => parsedPaper?.sections.map(section => section.text).join(" "), [parsedPaper?.sections]);
-  const systemPrompt = useMemo(() => generateSystemPrompt(concatenatedText ?? '', parsedPaper?.primary_category ?? ''), [concatenatedText, parsedPaper?.primary_category]);
-  const systemPromptId = useMemo(() => uuidv4(), [])
-  const initialMessages: Message[] = [{
-    id: systemPromptId,
-    role: 'system',
-    content: systemPrompt,
-  }]
+  const concatenatedText = useMemo(
+    () => parsedPaper?.sections.map((section) => section.text).join(" "),
+    [parsedPaper?.sections],
+  );
+  const systemPrompt = useMemo(
+    () =>
+      generateSystemPrompt(
+        concatenatedText ?? "",
+        parsedPaper?.primary_category ?? "",
+      ),
+    [concatenatedText, parsedPaper?.primary_category],
+  );
+  const systemPromptId = useMemo(() => uuidv4(), []);
+  const initialMessages: Message[] = [
+    {
+      id: systemPromptId,
+      role: "system",
+      content: systemPrompt,
+    },
+  ];
   const { messages, setMessages, append, ...chat } = useChat({
     initialMessages,
     onFinish,
@@ -187,12 +224,12 @@ export const AskHighlightProvider: FC<{
             const highlightId = uuidv4();
             const newNode = newData.highlight.node
               ? {
-                ...newData.highlight.node,
-                id: uuidv4(),
-                parentId: null,
-                highlightId,
-                children: [],
-              }
+                  ...newData.highlight.node,
+                  id: uuidv4(),
+                  parentId: null,
+                  highlightId,
+                  children: [],
+                }
               : null;
             const newHighlight = {
               ...newData.highlight,
@@ -233,12 +270,13 @@ export const AskHighlightProvider: FC<{
     if (!highlight.node?.prompt) return;
 
     const promptWithContext = `<question>${highlight.node.prompt}</question>
-${highlight.content?.text
-        ? `<context>
+${
+  highlight.content?.text
+    ? `<context>
 ${highlight.content.text}
 </context>`
-        : ""
-      }`;
+    : ""
+}`;
     // Query AI for response
     append({
       role: "user",
@@ -295,12 +333,15 @@ ${highlight.content.text}
 
   const selectHighlight = (highlight: HighlightWithRelations) => {
     setCurrentHighlight(highlight);
+    if (highlight.node) {
+      currentNodeRef.current = highlight.node;
+    }
     // Todo: Construct message history
   };
 
   const clearSelectedHighlight = () => {
     setCurrentHighlight(null);
-    setCurrentNode(null, false);
+    currentNodeRef.current = null;
     isGeneratingFollowUpsRef.current = false;
   };
 

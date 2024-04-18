@@ -72,10 +72,6 @@ const generateNodesAndEdges = (
 export function Forest({ node, returnHome }: Props) {
   const { nodes, edges } = useMemo(() => generateNodesAndEdges(node), [node]);
 
-  console.log("node", node);
-  console.log("nodes", nodes);
-  console.log("edges", edges);
-
   return (
     <div style={{ width: "50vw", height: "100vh", position: "relative" }}>
       <Button

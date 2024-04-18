@@ -31,7 +31,7 @@ export const curriculumNodeRouter = createTRPCRouter({
     .input(
       z.object({
         curriculumNode: ICurriculumNodeSchema,
-      })
+      }),
     )
     .mutation<CurriculumNodeWithMaybeRelations | null>(
       async ({ ctx, input }) => {
@@ -54,7 +54,10 @@ export const curriculumNodeRouter = createTRPCRouter({
           },
         ];
 
-        if (input.curriculumNode?.children) {
+        if (
+          input.curriculumNode?.children &&
+          input.curriculumNode.children.length > 0
+        ) {
           updateNodeParams[0].data.children = {
             createMany: {
               data: input.curriculumNode.children.map((child) => ({
@@ -74,6 +77,6 @@ export const curriculumNodeRouter = createTRPCRouter({
           return null;
         }
         return res;
-      }
+      },
     ),
 });
