@@ -13,7 +13,8 @@ import { useMemo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
 import LearningActivityCalendar from "@src/components/activity-calendar";
 import ChromaForm from './ChromaForm';
-import { AnnotatedPdf } from '@src/lib/types';
+import { AnnotatedPdfWithRelations } from '@src/lib/types';
+import { BentoGridThirdDemo } from '@src/components/paper-card';
 
 export default async function Profile({
   users,
@@ -24,7 +25,7 @@ export default async function Profile({
   parsedPapers,
 }: {
   users: User[];
-  timeline: AnnotatedPdf[];
+  timeline: AnnotatedPdfWithRelations[];
   searchedUser: User;
   loggedInUser: User;
   searchedUserImageUrl: string;
@@ -98,7 +99,7 @@ export default async function Profile({
                     <span className="font-medium">{first_name}</span>
                     {recentPaper?.highlights?.slice(-1)?.[0]?.comment?.timestamp && (
                       <span className="text-sm text-gray-500">
-                        {" " + calculateTimeAgo(recentPaper.highlights.slice(-1)[0].comment.timestamp)}
+                        {` ${calculateTimeAgo(recentPaper.highlights.slice(-1)[0]?.comment?.timestamp ?? new Date())}`}
                       </span>
                     )}
                   </Link>

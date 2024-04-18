@@ -1,6 +1,6 @@
 import React from "react";
 import { Highlight } from "@prisma/client";
-import { HighlightWithRelations } from "@src/server/api/routers/highlight";
+import { HighlightWithRelations } from "@src/lib/types";
 
 interface Props {
   highlights: Array<HighlightWithRelations>;
@@ -13,8 +13,8 @@ const updateHash = (highlight: Highlight) => {
 
 export function Sidebar({ highlights, resetHighlights }: Props) {
   return (
-    <div className="sidebar" style={{ width: "50vw" }}>
-      <div className="description" style={{ padding: "1rem" }}>
+    <div className="overflow-auto text-gray-500 bg-gradient-to-b from-gray-50 to-gray-100">
+      <div className="p-4">
         <p>
           <small>
             To create area highlight hold ⌥ Option key (Alt), then click and
@@ -23,11 +23,11 @@ export function Sidebar({ highlights, resetHighlights }: Props) {
         </p>
       </div>
 
-      <ul className="sidebar__highlights">
+      <ul className="list-none p-0">
         {highlights.map((highlight) => (
           <div
             key={highlight.id}
-            className="sidebar__highlight"
+            className="p-4 cursor-pointer transition-background duration-140 ease-in border-b border-gray-500 hover:bg-gray-200"
             onClick={() => {
               updateHash(highlight);
             }}
@@ -40,30 +40,30 @@ export function Sidebar({ highlights, resetHighlights }: Props) {
               )}
               {highlight?.comment && <div>{highlight.comment.text}</div>}
               {highlight.content.text ? (
-                <blockquote style={{ marginTop: "0.5rem" }}>
+                <blockquote className="mt-2">
                   {`${highlight.content.text.slice(0, 90).trim()}…`}
                 </blockquote>
               ) : null}
               {highlight.content.image ? (
                 <div
-                  className="highlight__image"
-                  style={{ marginTop: "0.5rem" }}
+                  className="mt-2 overflow-auto max-w-xs border-dashed border"
                 >
                   <img src={highlight.content.image} alt={"Screenshot"} />
                 </div>
               ) : null}
             </div>
-            <div className="highlight__location">
+            <div className="mt-2 text-right text-xs">
               Page {highlight.position.pageNumber}
             </div>
           </div>
         ))}
       </ul>
       {highlights.length > 0 ? (
-        <div style={{ padding: "1rem" }}>
+        <div className="p-4">
           <button onClick={resetHighlights}>Reset highlights</button>
         </div>
       ) : null}
+
     </div>
   );
 }

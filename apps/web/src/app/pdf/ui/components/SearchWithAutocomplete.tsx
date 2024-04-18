@@ -1,31 +1,32 @@
 'use client'
+import { UserSearchResult } from '@src/lib/types'
 import { useRouter } from 'next/navigation'
 import { ReactSearchAutocomplete } from 'react-search-autocomplete'
 
-export default function SearchWithAutocomplete({ items }) {
+export default function SearchWithAutocomplete({ items }: { items: UserSearchResult[] }) {
     const router = useRouter()
 
-    const handleOnSearch = (string, results) => {
+    const handleOnSearch = (string: string, results: UserSearchResult[]) => {
         // onSearch will have as the first callback parameter
         // the string searched and for the second the results.
 
     }
 
-    const handleOnHover = (result) => {
+    const handleOnHover = (result: UserSearchResult) => {
         // the item hovered
 
     }
 
-    const handleOnSelect = (item) => {
+    const handleOnSelect = (item: UserSearchResult) => {
         // the item selected
-        router.push(`/${item.handle}`)
+        router.push(`/user/${item.handle}`)
     }
 
     const handleOnFocus = () => {
 
     }
 
-    const formatResult = (item) => {
+    const formatResult = (item: UserSearchResult) => {
         return (
             <>
                 <span style={{ display: 'block', textAlign: 'left' }}>{item.name}</span>

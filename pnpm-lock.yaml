@@ -65,6 +65,9 @@ importers:
       '@repo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@tabler/icons-react':
+        specifier: ^3.2.0
+        version: 3.2.0(react@18.2.0)
       '@tanstack/react-query':
         specifier: ^5.25.0
         version: 5.28.6(react@18.2.0)
@@ -107,6 +110,9 @@ importers:
       d3-format:
         specifier: ^3.1.0
         version: 3.1.0
+      framer-motion:
+        specifier: ^11.1.3
+        version: 11.1.3(react-dom@18.2.0)(react@18.2.0)
       lodash.debounce:
         specifier: ^4.0.8
         version: 4.0.8
@@ -143,6 +149,9 @@ importers:
       react-pdf:
         specifier: ^7.7.1
         version: 7.7.1(@types/react@18.2.61)(react-dom@18.2.0)(react@18.2.0)
+      react-resizable-panels:
+        specifier: ^2.0.17
+        version: 2.0.17(react-dom@18.2.0)(react@18.2.0)
       react-rnd:
         specifier: ^10.1.10
         version: 10.4.1(react-dom@18.2.0)(react@18.2.0)
@@ -2015,6 +2024,19 @@ packages:
     resolution: {integrity: sha512-E4KcWTpoLHqwPHLxidpOqQbcrZVgi0rsmmZXUle1jXmJfuIf/UWpczUJ7MZZ5tlxytgJXyp0w4PGkkeLiuIdZw==}
     dependencies:
       tslib: 2.6.2
+    dev: false
+
+  /@tabler/icons-react@3.2.0(react@18.2.0):
+    resolution: {integrity: sha512-b1mZT1XpZrzvbM+eFe1YbYbxkzgJ18tM4knZKqXh0gnHDZ6XVLIH3TzJZ3HZ7PTkUqZLZ7XcGae3qQVGburlBw==}
+    peerDependencies:
+      react: '>= 16'
+    dependencies:
+      '@tabler/icons': 3.2.0
+      react: 18.2.0
+    dev: false
+
+  /@tabler/icons@3.2.0:
+    resolution: {integrity: sha512-h8GQ2rtxgiSjltrVz4vcopAxTPSpUSUi5nBfJ09H3Bk4fJk6wZ/dVUjzhv/BHfDwGTkAxZBiYe/Q/T95cPeg5Q==}
     dev: false
 
   /@tanstack/query-core@5.28.6:
@@ -5692,6 +5714,25 @@ packages:
     resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
     dev: true
 
+  /framer-motion@11.1.3(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-/t74b1WQu+mpZtra6xFSfsRfdTymJjNYgFudVIsUmoOWjznr3x5o9HbrX7Jt9655OCA2Js0W79bMZEKE7owp9w==}
+    peerDependencies:
+      '@emotion/is-prop-valid': '*'
+      react: ^18.0.0
+      react-dom: ^18.0.0
+    peerDependenciesMeta:
+      '@emotion/is-prop-valid':
+        optional: true
+      react:
+        optional: true
+      react-dom:
+        optional: true
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      tslib: 2.6.2
+    dev: false
+
   /fs-constants@1.0.0:
     resolution: {integrity: sha512-y6OAwoSIf7FyjMIv94u+b5rdheZEjzR63GTyZJm5qh4Bi+2YgwLCcI/fPFZkL5PSixOt6ZNKm+w+Hfp/Bciwow==}
     dev: false
@@ -8439,6 +8480,16 @@ packages:
       tslib: 2.6.2
       use-callback-ref: 1.3.2(@types/react@18.2.61)(react@18.2.0)
       use-sidecar: 1.1.2(@types/react@18.2.61)(react@18.2.0)
+    dev: false
+
+  /react-resizable-panels@2.0.17(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-MhnHUjYB6NCZ7rmTXuTg/8+IKaj0PkQP8dm+r3Riljd+lGPElqbTX+mfqr0HJBDWJF0JH30cwe6CnuiNG6RIIg==}
+    peerDependencies:
+      react: ^16.14.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^16.14.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
     dev: false
 
   /react-rnd@10.4.1(react-dom@18.2.0)(react@18.2.0):

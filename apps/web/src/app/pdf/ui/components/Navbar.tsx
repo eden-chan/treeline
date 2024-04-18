@@ -9,6 +9,7 @@ import Link from "next/link";
 import SearchWithAutocomplete from "./SearchWithAutocomplete";
 import type { User } from "@prisma/client";
 import { ImportButton } from '@src/components/import-button';
+import { UserSearchResult } from '@src/lib/types';
 
 export default function Navbar({
   users,
@@ -18,7 +19,7 @@ export default function Navbar({
   loggedInUser: User; // Corrected type from 'users' to 'User'
 }) {
   // note: the id field is mandatory
-  const items = users.map((user) => ({
+  const items: UserSearchResult[] = users.map((user) => ({
     id: user.id,
     name: user.first_name + " " + user.last_name,
     handle: user.handle,
