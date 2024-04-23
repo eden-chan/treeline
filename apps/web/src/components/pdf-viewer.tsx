@@ -133,6 +133,8 @@ export default function PDFViewer({
 	const updateCommentMutation =
 		trpc.highlight.updateHighlightComment.useMutation();
 
+	const deleteHighlightMutation = trpc.highlight.deleteHighlight.useMutation();
+
 	const highlights =
 		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
 			userId: userId,
@@ -172,6 +174,19 @@ export default function PDFViewer({
 		}
 		if (oldComment.comment) {
 			oldComment.comment.text = newCommentText;
+		}
+	};
+
+	const deleteHighlight = (id: string) => {
+		// Database Update
+		deleteHighlightMutation.mutate({
+			highlightId: id,
+		});
+
+		// Optimisticall update view
+		const index = highlights.findIndex(({ id: itemId }) => itemId == id);
+		if (index != -1) {
+			highlights.splice(index, 1);
 		}
 	};
 
@@ -313,6 +328,10 @@ export default function PDFViewer({
 													updateHighlightCommentText={
 														updateHighlightCommentText
 													}
+													deleteHighlight={(id: string) => {
+														deleteHighlight(id);
+														hideTip();
+													}}
 												/>
 											}
 											onMouseOver={(popupContent) =>

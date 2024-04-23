@@ -103,4 +103,26 @@ export const highlightRouter = createTRPCRouter({
 			}
 			return updatedHighlight;
 		}),
+	deleteHighlight: publicProcedure
+		.input(
+			z.object({
+				highlightId: z.string(),
+			}),
+		)
+		.mutation<HighlightWithRelations | null>(async ({ input }) => {
+			try {
+				const deletedHighlight = await db.highlight.delete({
+					where: {
+						id: input.highlightId,
+					},
+					include: {
+						node: true,
+					},
+				});
+				return deletedHighlight;
+			} catch (error) {
+				console.error("Failed to delete highlight:", error);
+				return null;
+			}
+		}),
 });

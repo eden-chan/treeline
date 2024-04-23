@@ -2,16 +2,17 @@ import React, { useEffect, useState, useRef } from "react";
 import { Pencil1Icon, TrashIcon } from "@radix-ui/react-icons";
 import { HighlightComment } from "@prisma/client";
 import { Input } from "@/components/ui/input";
-import { trpc } from "@src/utils/api";
 
 const HighlightPopup = ({
 	highlightId,
 	comment,
 	updateHighlightCommentText,
+	deleteHighlight,
 }: {
 	highlightId: string;
 	comment: HighlightComment | null;
 	updateHighlightCommentText: Function;
+	deleteHighlight: Function;
 }) => {
 	const [inputText, setInputText] = useState(comment?.text ?? "hi");
 	const [isEditing, setIsEditing] = useState(false);
@@ -44,7 +45,10 @@ const HighlightPopup = ({
 							className="m-1 cursor-pointer"
 							onClick={() => setIsEditing(true)}
 						/>
-						<TrashIcon className="m-1 cursor-pointer" />
+						<TrashIcon
+							className="m-1 cursor-pointer"
+							onClick={() => deleteHighlight(highlightId)}
+						/>
 					</div>
 				</>
 			)}
