@@ -74,8 +74,8 @@ interface Props<T_HT> {
 		screenshot: (position: LTWH) => string,
 		isScrolledTo: boolean,
 	) => JSX.Element;
-	highlights: Array<Highlight>;
-	displayHighlights: Array<Highlight>;
+	highlights: Array<Highlight>; // Highlights made by the user
+	displayHighlights: Array<Highlight>; // Highlights made by friends
 	onScrollChange: () => void;
 	scrollRef: (scrollTo: (highlight: Highlight) => void) => void;
 	highlight: Highlight | undefined;
@@ -180,7 +180,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 		}
 		if (
 			prevProps.highlights !== this.props.highlights ||
-			prevProps.highlights !== this.props.displayHighlights
+			prevProps.displayHighlights !== this.props.displayHighlights
 		) {
 			this.renderHighlightLayers();
 		}
