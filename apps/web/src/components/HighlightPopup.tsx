@@ -6,11 +6,13 @@ import { Input } from "@/components/ui/input";
 const HighlightPopup = ({
 	highlightId,
 	comment,
+	canEditComment,
 	updateHighlightCommentText,
 	deleteHighlight,
 }: {
 	highlightId: string;
 	comment: HighlightComment | null;
+	canEditComment: boolean;
 	updateHighlightCommentText: Function;
 	deleteHighlight: Function;
 }) => {
@@ -28,7 +30,7 @@ const HighlightPopup = ({
 
 	return comment?.text ? (
 		<div className="Highlight__popup">
-			{isEditing ? (
+			{isEditing && canEditComment ? (
 				<Input
 					className="text-white bg-slate-600"
 					value={inputText}
@@ -40,16 +42,18 @@ const HighlightPopup = ({
 					<p>
 						{comment.emoji} {updatedComment}
 					</p>
-					<div className="flex justify-end">
-						<Pencil1Icon
-							className="m-1 cursor-pointer"
-							onClick={() => setIsEditing(true)}
-						/>
-						<TrashIcon
-							className="m-1 cursor-pointer"
-							onClick={() => deleteHighlight(highlightId)}
-						/>
-					</div>
+					{canEditComment && (
+						<div className="flex justify-end">
+							<Pencil1Icon
+								className="m-1 cursor-pointer"
+								onClick={() => setIsEditing(true)}
+							/>
+							<TrashIcon
+								className="m-1 cursor-pointer"
+								onClick={() => deleteHighlight(highlightId)}
+							/>
+						</div>
+					)}
 				</>
 			)}
 		</div>

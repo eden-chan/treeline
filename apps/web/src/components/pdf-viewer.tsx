@@ -325,6 +325,7 @@ export default function PDFViewer({
 												<HighlightPopup
 													highlightId={highlight.id}
 													comment={highlight.comment}
+													canEditComment={highlight.comment?.userId == userId}
 													updateHighlightCommentText={
 														updateHighlightCommentText
 													}
