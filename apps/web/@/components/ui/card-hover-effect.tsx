@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 import { AnimatePresence, motion } from "framer-motion";
-import Link from "next/link";
 import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from './card';
+import { CircleIcon, StarIcon } from 'lucide-react';
 
 export const HoverEffect = ({
     items,
