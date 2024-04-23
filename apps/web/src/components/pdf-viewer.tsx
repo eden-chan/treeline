@@ -14,7 +14,8 @@ import {
 	Spinner,
 	Sidebar,
 } from "../app/pdf/ui";
-import { Highlight, HighlightComment } from "@prisma/client";
+import { Highlight } from "@prisma/client";
+import HighlightPopup from "./HighlightPopup";
 
 import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
@@ -32,14 +33,6 @@ const parseIdFromHash = () =>
 
 const resetHash = () => {
 	document.location.hash = "";
-};
-
-const HighlightPopup = ({ comment }: { comment: HighlightComment | null }) => {
-	return comment?.text ? (
-		<div className="Highlight__popup">
-			{comment.emoji} {comment.text}
-		</div>
-	) : null;
 };
 
 export default function PDFViewer({
@@ -155,6 +148,18 @@ export default function PDFViewer({
 		annotatedPdfMutation.mutate({
 			id: annotatedPdfId,
 		});
+	};
+
+	const updateHighlightCommentText = (id: string, newCommentText: string) => {
+		// Optimistically update view for user
+		const index = highlights.findIndex(({ id: itemId }) => itemId == id);
+		const oldComment = highlights[index];
+		if (!oldComment) {
+			throw Error("Unable to find comment to optimistically rerender");
+		}
+		if (oldComment.comment) {
+			oldComment.comment.text = newCommentText;
+		}
 	};
 
 	let scrollToHighlightId = (highlight: Highlight) => {};
@@ -289,7 +294,13 @@ export default function PDFViewer({
 									return (
 										<Popup
 											popupContent={
-												<HighlightPopup comment={highlight.comment} />
+												<HighlightPopup
+													highlightId={highlight.id}
+													comment={highlight.comment}
+													updateHighlightCommentText={
+														updateHighlightCommentText
+													}
+												/>
 											}
 											onMouseOver={(popupContent) =>
 												setTip(highlight, (highlight) => popupContent)
