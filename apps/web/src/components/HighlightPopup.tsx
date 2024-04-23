@@ -16,15 +16,9 @@ const HighlightPopup = ({
 	const [inputText, setInputText] = useState(comment?.text ?? "hi");
 	const [isEditing, setIsEditing] = useState(false);
 	const [updatedComment, setUpdatedComment] = useState(comment?.text ?? "hi");
-	const updateCommentMutation =
-		trpc.highlight.updateHighlightComment.useMutation();
 
 	const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
 		if (e.key === "Enter") {
-			updateCommentMutation.mutate({
-				highlightId: highlightId,
-				text: inputText,
-			});
 			updateHighlightCommentText(highlightId, inputText);
 			setUpdatedComment(inputText);
 			setIsEditing(false);

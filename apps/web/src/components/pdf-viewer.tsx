@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { trpc } from "@src/utils/api";
 
 import { clientApi } from "@src/trpc/react";
 import {
@@ -34,6 +35,9 @@ const parseIdFromHash = () =>
 const resetHash = () => {
 	document.location.hash = "";
 };
+
+// const deleteHighlightMutation =
+// 	trpc.highlight.
 
 export default function PDFViewer({
 	annotatedPdfId,
@@ -126,6 +130,9 @@ export default function PDFViewer({
 		},
 	});
 
+	const updateCommentMutation =
+		trpc.highlight.updateHighlightComment.useMutation();
+
 	const highlights =
 		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
 			userId: userId,
@@ -151,6 +158,12 @@ export default function PDFViewer({
 	};
 
 	const updateHighlightCommentText = (id: string, newCommentText: string) => {
+		// Database Update
+		updateCommentMutation.mutate({
+			highlightId: id,
+			text: newCommentText,
+		});
+
 		// Optimistically update view for user
 		const index = highlights.findIndex(({ id: itemId }) => itemId == id);
 		const oldComment = highlights[index];
