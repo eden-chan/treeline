@@ -12,7 +12,7 @@ import FollowButton from "./FollowButton";
 import { useMemo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
 import LearningActivityCalendar from "@src/components/activity-calendar";
-import ChromaForm from './ChromaForm';
+
 import { AnnotatedPdfWithRelations } from '@src/lib/types';
 import { BentoGridThirdDemo } from '@src/components/paper-card';
 
@@ -57,7 +57,7 @@ export default async function Profile({
             </Avatar>
           </div>
           <FollowButton user1={loggedInUser} user2={searchedUser} />
-          <ChromaForm />
+
           <div className="mt-4">
             <Link
               href={`https://x.com/${searchedUser.handle}`}
