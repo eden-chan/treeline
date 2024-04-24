@@ -163,6 +163,7 @@ export default function PDFViewer({
 		const highlight = getHighlightById(parseIdFromHash());
 
 		if (highlight) {
+			console.log({ highlight });
 			selectHighlight(highlight);
 			scrollToHighlightId(highlight);
 		}

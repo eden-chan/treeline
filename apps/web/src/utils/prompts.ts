@@ -28,7 +28,7 @@ relevant to my question. The context will usually be specific sections from the 
 <context>My_CONTEXT</context>
 
 Afterwards I will ask you to write three follow up questions to the answer you will provide to my initial question. Use the context from the paper above
-to generate meaningful follow up questions.
+to generate meaningful follow up questions. Do not add the followup questions in the same message with the actual response. I will query for them after and only after.
 
 I will repeat this pattern of asking questions and prompting for follow up questions several times.
 `;
@@ -78,4 +78,3 @@ I will repeat this pattern of asking questions and prompting for follow up quest
 // Remember, your goal is to help me cultivate intuition in this field by guiding me to ask better
 // questions. Use your expertise and the information in the paper to provide valuable insights and
 // suggestions.`;
-
