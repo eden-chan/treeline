@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { trpc } from "@src/utils/api";
 
 import { clientApi } from "@src/trpc/react";
 import {
@@ -14,7 +15,8 @@ import {
 	Spinner,
 	Sidebar,
 } from "../app/pdf/ui";
-import { Highlight, HighlightComment } from "@prisma/client";
+import { Highlight } from "@prisma/client";
+import HighlightPopup from "./HighlightPopup";
 
 import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
@@ -34,13 +36,8 @@ const resetHash = () => {
 	document.location.hash = "";
 };
 
-const HighlightPopup = ({ comment }: { comment: HighlightComment | null }) => {
-	return comment?.text ? (
-		<div className="Highlight__popup">
-			{comment.emoji} {comment.text}
-		</div>
-	) : null;
-};
+// const deleteHighlightMutation =
+// 	trpc.highlight.
 
 export default function PDFViewer({
 	annotatedPdfId,
@@ -133,6 +130,11 @@ export default function PDFViewer({
 		},
 	});
 
+	const updateCommentMutation =
+		trpc.highlight.updateHighlightComment.useMutation();
+
+	const deleteHighlightMutation = trpc.highlight.deleteHighlight.useMutation();
+
 	const highlights =
 		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
 			userId: userId,
@@ -155,6 +157,37 @@ export default function PDFViewer({
 		annotatedPdfMutation.mutate({
 			id: annotatedPdfId,
 		});
+	};
+
+	const updateHighlightCommentText = (id: string, newCommentText: string) => {
+		// Database Update
+		updateCommentMutation.mutate({
+			highlightId: id,
+			text: newCommentText,
+		});
+
+		// Optimistically update view for user
+		const index = highlights.findIndex(({ id: itemId }) => itemId == id);
+		const oldComment = highlights[index];
+		if (!oldComment) {
+			throw Error("Unable to find comment to optimistically rerender");
+		}
+		if (oldComment.comment) {
+			oldComment.comment.text = newCommentText;
+		}
+	};
+
+	const deleteHighlight = (id: string) => {
+		// Database Update
+		deleteHighlightMutation.mutate({
+			highlightId: id,
+		});
+
+		// Optimisticall update view
+		const index = highlights.findIndex(({ id: itemId }) => itemId == id);
+		if (index != -1) {
+			highlights.splice(index, 1);
+		}
 	};
 
 	let scrollToHighlightId = (highlight: Highlight) => {};
@@ -290,7 +323,18 @@ export default function PDFViewer({
 									return (
 										<Popup
 											popupContent={
-												<HighlightPopup comment={highlight.comment} />
+												<HighlightPopup
+													highlightId={highlight.id}
+													comment={highlight.comment}
+													canEditComment={highlight.comment?.userId == userId}
+													updateHighlightCommentText={
+														updateHighlightCommentText
+													}
+													deleteHighlight={(id: string) => {
+														deleteHighlight(id);
+														hideTip();
+													}}
+												/>
 											}
 											onMouseOver={(popupContent) =>
 												setTip(highlight, (highlight) => popupContent)
