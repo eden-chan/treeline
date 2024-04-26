@@ -47,6 +47,7 @@ const generateNodesAndEdges = (
 				answer: node.response,
 			},
 			type: "question",
+			draggable: true,
 		},
 	];
 

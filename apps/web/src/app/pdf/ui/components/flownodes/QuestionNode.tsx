@@ -1,7 +1,7 @@
 import { NodeProps } from "reactflow";
 import { Handle, Position } from "reactflow";
 import { compiler } from 'markdown-to-jsx'
-const handleStyle = { left: 10 };
+const handleStyle = { left: '50%' };
 
 type NodeData = {
   question: string;
