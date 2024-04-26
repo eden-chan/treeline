@@ -69,6 +69,10 @@ const generateNodesAndEdges = (
 
 	return { nodes: currentNode, edges: currentEdges };
 };
+const styles = {
+	width: '100%',
+	height: '100%',
+};
 
 export function Forest({ node, returnHome }: Props) {
 	const { nodes, edges } = useMemo(() => {
@@ -77,7 +81,7 @@ export function Forest({ node, returnHome }: Props) {
 	const { generateFollowUpResponse } = useAskHighlight();
 
 	return (
-		<div style={{ width: "50vw", height: "100vh", position: "relative" }}>
+		<div className="w-full h-screen relative">
 			<Button
 				className="absolute top-4 left-4 bg-black z-10"
 				onClick={returnHome}
@@ -88,9 +92,9 @@ export function Forest({ node, returnHome }: Props) {
 				nodes={nodes}
 				edges={edges}
 				onNodeClick={(_, node) => generateFollowUpResponse(node.id)}
-				// onNodeClick={(_, node) => updateHash(node.id)}
 				nodeTypes={nodeTypes}
 				defaultViewport={defaultViewPort}
+				style={styles}
 			>
 				<Controls />
 				<MiniMap />
