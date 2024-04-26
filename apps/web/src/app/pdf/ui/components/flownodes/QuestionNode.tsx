@@ -1,6 +1,6 @@
 import { NodeProps } from "reactflow";
 import { Handle, Position } from "reactflow";
-
+import { compiler } from 'markdown-to-jsx'
 const handleStyle = { left: 10 };
 
 type NodeData = {
@@ -21,11 +21,12 @@ function QuestionNode({ data, isConnectable }: NodeProps<NodeData>) {
 
       <div>
         <p className="text-black">Question:</p>
-        <p className="text-gray-500 ml-2"> {question} </p>
+
+        <p className="text-gray-500 ml-2"> {compiler(question)} </p>
         {answer && (
           <>
             <p className="text-black">Answer:</p>
-            <p className="text-gray-500 ml-2"> {answer} </p>
+            <p className="text-gray-500 ml-2"> {compiler(answer)} </p>
           </>
         )}
       </div>

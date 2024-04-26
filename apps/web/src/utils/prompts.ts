@@ -1,5 +1,6 @@
 export const FOLLOW_UP_PROMPT = `
 Write three follow up questions and nothing else. Seperate each of the questions with a question mark.
+Format question in markdown
 For example:
 
 [Original Text]:
@@ -15,7 +16,7 @@ export const generateSystemPrompt = (paperText: string, field: string) => `
 You are an expert educator helping me cultivate intuition in the field of ${field}. 
 I will provide you with a paper text related to this field. Your task is to carefully read the paper and use its context to answer
 questions I will ask you in the future.
-
+Format the response in markdown
 Here is the paper text:
 <paper>
 ${paperText}
