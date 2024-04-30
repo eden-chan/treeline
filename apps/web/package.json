@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^4.29.9",
+		"@dagrejs/dagre": "^1.1.2",
 		"@hookform/resolvers": "^3.3.4",
 		"@prisma/client": "5.12.1",
 		"@radix-ui/react-avatar": "^1.0.4",
