@@ -41,7 +41,6 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
 
 	edges.forEach((edge) => g.setEdge(edge.source, edge.target));
 	nodes.forEach((node) => g.setNode(node.id, node as Label));
-	console.log("nodes", nodes);
 
 	Dagre.layout(g);
 
