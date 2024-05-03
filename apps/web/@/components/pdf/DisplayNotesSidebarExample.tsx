@@ -57,6 +57,7 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 
     const utils = clientApi.useUtils();
+
     const annotatedPdfMutation =
         clientApi.annotatedPdf.resetHighlights.useMutation({
             onMutate: async () => {
@@ -197,7 +198,7 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
 
                 const extendedNote: NewHighlightWithRelationsInput = {
                     ...note,
-                    annotatedPdfId: '663492fb4ac3527804fa4d36', // Placeholder or dynamic value as needed
+                    annotatedPdfId, // Placeholder or dynamic value as needed
                     id_: noteId, // Placeholder or dynamic value as needed
                     type: 'COMMENT',
                     node: {
@@ -258,7 +259,7 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
 
     const renderHighlights = (props: RenderHighlightsProps) => (
         <div>
-            {notes.map((note) => (
+            {highlights.map((note) => (
                 <React.Fragment key={note.id}>
                     {note.highlightAreas
                         .filter((area) => area.pageIndex === props.pageIndex)
@@ -289,9 +290,6 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
         renderHighlightContent,
         renderHighlights,
     });
-
-
-
 
 
     const { jumpToHighlightArea } = highlightPluginInstance;
@@ -325,10 +323,6 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
                         jumpToHighlightArea={jumpToHighlightArea}
                     />
                 )}
-
-
-
-
             </ResizablePanel>
         </ResizablePanelGroup>
     </div>
