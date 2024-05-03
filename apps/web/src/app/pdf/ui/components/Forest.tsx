@@ -1,4 +1,3 @@
-"use client";
 import Dagre, { Label } from "@dagrejs/dagre";
 import React, { useEffect } from "react";
 import QuestionNode from "./flownodes/QuestionNode";
@@ -25,6 +24,7 @@ interface Props {
 }
 
 const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+g.setGraph({ rankdir: "TB", ranksep: 100, nodesep: 100 });
 
 const nodeTypes: NodeTypes = {
 	question: QuestionNode,
@@ -37,8 +37,6 @@ const defaultViewPort = {
 };
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
-	g.setGraph({ rankdir: "LR" });
-
 	edges.forEach((edge) => g.setEdge(edge.source, edge.target));
 	nodes.forEach((node) => g.setNode(node.id, node as Label));
 
@@ -63,7 +61,7 @@ const generateNodesAndEdges = (
 		{
 			id: node.id,
 			position: { x, y },
-			type: x == 0 && y == 0 ? "input" : "question",
+			type: "question",
 			data: {
 				question: node.prompt,
 				answer: node.response,
@@ -102,8 +100,14 @@ export function Forest({ node, returnHome }: Props) {
 	const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 	const { generateFollowUpResponse } = useAskHighlight();
 
+	// keep updating nodes with new text until done and reactflow calculates the width and height of each node
 	useEffect(() => {
 		const { nodes, edges } = generateNodesAndEdges(node);
+		setNodes(nodes);
+		setEdges(edges);
+	}, [node]);
+
+	const formatNodes = () => {
 		const layouted = getLayoutedElements(nodes, edges);
 
 		setNodes([...layouted.nodes]);
@@ -112,7 +116,7 @@ export function Forest({ node, returnHome }: Props) {
 		window.requestAnimationFrame(() => {
 			fitView();
 		});
-	}, [node]);
+	};
 
 	return (
 		<div className="w-full h-screen relative">
@@ -121,6 +125,12 @@ export function Forest({ node, returnHome }: Props) {
 				onClick={returnHome}
 			>
 				Go Back
+			</Button>
+			<Button
+				className="absolute top-4 right-4 bg-black z-10"
+				onClick={formatNodes}
+			>
+				Format
 			</Button>
 			<ReactFlow
 				nodes={nodes}
