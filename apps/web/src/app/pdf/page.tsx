@@ -10,9 +10,14 @@ import { RedirectToSignIn } from "@clerk/nextjs";
 import { api } from "@src/trpc/server";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
 import { AnnotatedPdfWithProfile } from "@src/lib/types";
-const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
+const PDFViewer2 = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
+
+// './ui/components/Viewer';
+// const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
+//   ssr: false, // Disable server-side rendering for this component
+// });
 
 export default async function Page() {
   const headersList = headers();
@@ -114,13 +119,14 @@ export default async function Page() {
       loadedSource={source}
       parsedPaper={parsedPaper}
     >
-      <PDFViewer
+      {/* <PDFViewer
         annotatedPdfId={id}
         loadedSource={source}
         userId={userId}
         userHighlights={highlights}
         annotatedPdfsWithProfile={annotatedPdfsWithProfile}
-      />
+      /> */}
+      <PDFViewer2 />
     </AskHighlightProvider>
   );
 }
