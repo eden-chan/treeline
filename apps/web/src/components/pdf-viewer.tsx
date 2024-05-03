@@ -16,13 +16,13 @@ import {
 	Sidebar,
 } from "../app/pdf/ui";
 import { Highlight } from "@prisma/client";
-import HighlightPopup from "./HighlightPopup";
+import { ReactFlowProvider } from "reactflow";
 
 import FloatingProfiles from "@src/app/pdf/ui/components/FloatingProfiles";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 import { AnnotatedPdfWithProfile } from "@src/lib/types";
-
 import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
+import HighlightPopup from "./HighlightPopup";
 import {
 	ResizableHandle,
 	ResizablePanel,
@@ -303,12 +303,14 @@ export default function PDFViewer({
 									const component = isTextHighlight ? (
 										<PDFHighlight
 											isScrolledTo={isScrolledTo}
+											// @ts-ignore
 											position={highlight.position}
 											comments={highlight.comment ? [highlight.comment] : []}
 										/>
 									) : (
 										<AreaHighlight
 											isScrolledTo={isScrolledTo}
+											// @ts-ignore
 											highlight={highlight}
 											onChange={(boundingRect) => {
 												// updateHighlight(
@@ -337,6 +339,7 @@ export default function PDFViewer({
 												/>
 											}
 											onMouseOver={(popupContent) =>
+												// @ts-ignore
 												setTip(highlight, (highlight) => popupContent)
 											}
 											onMouseOut={hideTip}
@@ -354,13 +357,15 @@ export default function PDFViewer({
 				<ResizableHandle withHandle />
 				<ResizablePanel className="">
 					{currentHighlight?.node ? (
-						<Forest
-							node={currentHighlight.node}
-							returnHome={() => {
-								document.location.hash = "";
-								clearSelectedHighlight();
-							}}
-						/>
+						<ReactFlowProvider>
+							<Forest
+								node={currentHighlight.node}
+								returnHome={() => {
+									document.location.hash = "";
+									clearSelectedHighlight();
+								}}
+							/>
+						</ReactFlowProvider>
 					) : (
 						<Sidebar
 							highlights={highlights ?? []}

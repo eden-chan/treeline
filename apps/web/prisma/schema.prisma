@@ -20,8 +20,6 @@ type HighlightContent {
   text  String?
 }
 
-
-
 type HighlightScaledPosition {
   height     Float
   width      Float

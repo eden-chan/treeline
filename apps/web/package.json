@@ -10,6 +10,7 @@
 	},
 	"dependencies": {
 		"@clerk/nextjs": "^4.29.9",
+		"@dagrejs/dagre": "^1.1.2",
 		"@hookform/resolvers": "^3.3.4",
 		"@prisma/client": "5.12.1",
 		"@radix-ui/react-avatar": "^1.0.4",
@@ -50,7 +51,7 @@
 		"mongodb": "^6.5.0",
 		"next": "^14.1.1",
 		"openai": "^4.30.0",
-		"pdfjs-dist": "3.4.120",
+		"pdfjs-dist": "3.0.279",
 		"radar-chart": "^1.0.6",
 		"react": "^18.2.0",
 		"react-activity-calendar": "^2.2.8",

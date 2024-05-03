@@ -1,11 +1,11 @@
 import React from "react";
 
-import dynamic from "next/dynamic";
-import { ObjectId } from "mongodb";
 import { User, clerkClient, currentUser } from "@clerk/nextjs/server";
-import { headers } from "next/headers";
 import { AnnotatedPdf, Highlight } from "@prisma/client";
 import { RedirectToSignIn } from "@clerk/nextjs";
+import dynamic from "next/dynamic";
+import { headers } from "next/headers";
+import { ObjectId } from "mongodb";
 
 import { api } from "@src/trpc/server";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
@@ -16,7 +16,6 @@ import { AnnotatedPdfWithProfile } from "@src/lib/types";
 const PDFViewer2 = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
-
 
 export default async function Page() {
   const headersList = headers();
@@ -73,7 +72,7 @@ export default async function Page() {
 
   const users = await clerkClient.users.getUserList();
   const userEmails = users.map(
-    (user) => user.emailAddresses[0]?.emailAddress ?? ""
+    (user) => user.emailAddresses[0]?.emailAddress ?? "",
   );
   const userProfiles = users.map((user) => {
     return {
@@ -93,7 +92,7 @@ export default async function Page() {
   if (annotatedPdfs) {
     for (let annotatedPdf of annotatedPdfs) {
       const userProfile = userProfiles.find(
-        (user) => user.email === annotatedPdf.userId
+        (user) => user.email === annotatedPdf.userId,
       );
 
       if (!userProfile) continue;
@@ -107,9 +106,10 @@ export default async function Page() {
     }
   }
 
-  const parsedPaper = await api.parsedPapers.fetchParsedPdf({
-    source: pdfUrl.href,
-  }) ?? null;
+  const parsedPaper =
+    (await api.parsedPapers.fetchParsedPdf({
+      source: pdfUrl.href,
+    })) ?? null;
 
   return (
     <AskHighlightProvider
@@ -118,13 +118,6 @@ export default async function Page() {
       loadedSource={source}
       parsedPaper={parsedPaper}
     >
-      {/* <PDFViewer
-        annotatedPdfId={id}
-        loadedSource={source}
-        userId={userId}
-        userHighlights={highlights}
-        annotatedPdfsWithProfile={annotatedPdfsWithProfile}
-      /> */}
       <PDFViewer2
         annotatedPdfId={id}
         loadedSource={source}

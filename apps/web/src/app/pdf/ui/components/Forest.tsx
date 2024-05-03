@@ -1,7 +1,11 @@
-import React, { useMemo } from "react";
+import Dagre, { Label } from "@dagrejs/dagre";
+import React, { useEffect } from "react";
 import QuestionNode from "./flownodes/QuestionNode";
 import { Button } from "@/components/ui/button";
 import ReactFlow, {
+	useReactFlow,
+	useNodesState,
+	useEdgesState,
 	MiniMap,
 	Controls,
 	Background,
@@ -19,9 +23,8 @@ interface Props {
 	returnHome: () => void;
 }
 
-const updateHash = (id: string) => {
-	document.location.hash = `highlight-${id}`;
-};
+const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
+g.setGraph({ rankdir: "TB", ranksep: 100, nodesep: 100 });
 
 const nodeTypes: NodeTypes = {
 	question: QuestionNode,
@@ -33,6 +36,22 @@ const defaultViewPort = {
 	zoom: 0.85,
 };
 
+const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
+	edges.forEach((edge) => g.setEdge(edge.source, edge.target));
+	nodes.forEach((node) => g.setNode(node.id, node as Label));
+
+	Dagre.layout(g);
+
+	return {
+		nodes: nodes.map((node) => {
+			const { x, y } = g.node(node.id);
+
+			return { ...node, position: { x, y } };
+		}),
+		edges,
+	};
+};
+
 const generateNodesAndEdges = (
 	node: CurriculumNodeWithRelations,
 	x: number = 0,
@@ -42,11 +61,11 @@ const generateNodesAndEdges = (
 		{
 			id: node.id,
 			position: { x, y },
+			type: "question",
 			data: {
 				question: node.prompt,
 				answer: node.response,
 			},
-			type: "question",
 			draggable: true,
 		},
 	];
@@ -71,15 +90,33 @@ const generateNodesAndEdges = (
 	return { nodes: currentNode, edges: currentEdges };
 };
 const styles = {
-	width: '100%',
-	height: '100%',
+	width: "100%",
+	height: "100%",
 };
 
 export function Forest({ node, returnHome }: Props) {
-	const { nodes, edges } = useMemo(() => {
-		return generateNodesAndEdges(node);
-	}, [node]);
+	const { fitView } = useReactFlow();
+	const [nodes, setNodes, onNodesChange] = useNodesState([]);
+	const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 	const { generateFollowUpResponse } = useAskHighlight();
+
+	// keep updating nodes with new text until done and reactflow calculates the width and height of each node
+	useEffect(() => {
+		const { nodes, edges } = generateNodesAndEdges(node);
+		setNodes(nodes);
+		setEdges(edges);
+	}, [node]);
+
+	const formatNodes = () => {
+		const layouted = getLayoutedElements(nodes, edges);
+
+		setNodes([...layouted.nodes]);
+		setEdges([...layouted.edges]);
+
+		window.requestAnimationFrame(() => {
+			fitView();
+		});
+	};
 
 	return (
 		<div className="w-full h-screen relative">
@@ -89,9 +126,17 @@ export function Forest({ node, returnHome }: Props) {
 			>
 				Go Back
 			</Button>
+			<Button
+				className="absolute top-4 right-4 bg-black z-10"
+				onClick={formatNodes}
+			>
+				Format
+			</Button>
 			<ReactFlow
 				nodes={nodes}
 				edges={edges}
+				onNodesChange={onNodesChange}
+				onEdgesChange={onEdgesChange}
 				onNodeClick={(_, node) => generateFollowUpResponse(node.id)}
 				nodeTypes={nodeTypes}
 				defaultViewport={defaultViewPort}
