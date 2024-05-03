@@ -38,22 +38,22 @@ export function Sidebar({ highlights, resetHighlights }: Props) {
                   {highlight.node.prompt}
                 </div>
               )}
-              {highlight?.comment && <div>{highlight.comment.text}</div>}
-              {highlight.content.text ? (
+              {highlight?.quote && <div>{highlight.quote}</div>}
+              {highlight.content ? (
                 <blockquote className="mt-2">
-                  {`${highlight.content.text.slice(0, 90).trim()}…`}
+                  {`${highlight.content.slice(0, 90).trim()}…`}
                 </blockquote>
               ) : null}
-              {highlight.content.image ? (
+              {/* {highlight.content.image ? (
                 <div
                   className="mt-2 overflow-auto max-w-xs border-dashed border"
                 >
                   <img src={highlight.content.image} alt={"Screenshot"} />
                 </div>
-              ) : null}
+              ) : null} */}
             </div>
             <div className="mt-2 text-right text-xs">
-              Page {highlight.position.pageNumber}
+              {/* Page {highlight.highlightAreas.} */}
             </div>
           </div>
         ))}

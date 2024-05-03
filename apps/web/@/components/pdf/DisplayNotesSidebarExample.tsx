@@ -12,9 +12,19 @@ import { useAskHighlight } from "@src/context/ask-highlight-context";
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { NewHighlightWithRelationsInput } from '@src/server/api/routers/highlight';
-
+import { Highlight } from "@prisma/client";
+import { AnnotatedPdfWithProfile } from "@src/lib/types";
+import { Sidebar } from '@src/app/pdf/ui/components/Sidebar';
+import { trpc } from "@src/utils/api";
+import { clientApi } from "@src/trpc/react";
+import { v4 as uuidv4 } from "uuid";
 interface DisplayNotesSidebarExampleProps {
-    fileUrl: string;
+
+    annotatedPdfId: string;
+    loadedSource: string;
+    userId: string;
+    userHighlights: Highlight[];
+    annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
 }
 
 interface Note {
@@ -24,9 +34,11 @@ interface Note {
     quote: string;
 }
 
-const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({ fileUrl }) => {
+const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({ loadedSource, userHighlights, userId, annotatedPdfId, annotatedPdfsWithProfile }) => {
     const [message, setMessage] = React.useState('');
     const [notes, setNotes] = React.useState<Note[]>([]);
+    const [friendHighlights, setFriendHighlights] = React.useState<Highlight[]>([]);
+
 
     const {
         currentHighlight,
@@ -36,7 +48,107 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
     } = useAskHighlight();
     let noteId = notes.length;
 
-    console.log(notes)
+
+    const utils = clientApi.useUtils();
+    const annotatedPdfMutation =
+        clientApi.annotatedPdf.resetHighlights.useMutation({
+            onMutate: async () => {
+                // Cancel the pending request
+                await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
+                    userId: userId,
+                    source: loadedSource,
+                });
+
+                // Optimistically update the cache
+                utils.annotatedPdf.fetchAnnotatedPdf.setData(
+                    {
+                        userId: userId,
+                        source: loadedSource,
+                    },
+                    (oldData) => {
+                        if (!oldData) return oldData;
+                        return {
+                            ...oldData,
+                            highlights: [],
+                        };
+                    },
+                );
+            },
+            onSuccess: (input) => {
+                utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+                    userId: userId,
+                    source: loadedSource,
+                });
+            },
+        });
+    const highlightMutation = clientApi.highlight.createHighlight.useMutation({
+        onMutate: async (newData) => {
+            await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
+                userId: userId,
+                source: loadedSource,
+            });
+
+            utils.annotatedPdf.fetchAnnotatedPdf.setData(
+                {
+                    userId: userId,
+                    source: loadedSource,
+                },
+                (oldData) => {
+                    if (!oldData) return oldData;
+                    const highlightId = uuidv4();
+                    const newNode = newData?.highlight?.node
+                        ? {
+                            ...newData.highlight.node,
+                            id: uuidv4(),
+                            parentId: null,
+                            highlightId,
+                            children: [],
+                        }
+                        : null;
+                    const newHighlight = {
+                        ...newData.highlight,
+                        id: highlightId,
+                        node: newNode,
+                        annotatedPdfId: annotatedPdfId,
+                    };
+
+                    return {
+                        ...oldData,
+                        highlights: [...oldData.highlights, newHighlight],
+                    };
+                },
+            );
+        },
+        onSuccess: (input) => {
+            utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+                userId: userId,
+                source: loadedSource,
+            });
+        },
+    });
+
+    const updateCommentMutation =
+        trpc.highlight.updateHighlightComment.useMutation();
+
+    const deleteHighlightMutation = trpc.highlight.deleteHighlight.useMutation();
+
+    const highlights =
+        clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
+            userId: userId,
+            source: loadedSource,
+        }).data?.highlights || userHighlights;
+
+
+    const getHighlightById = (id: string) => {
+        return highlights.find((highlight) => highlight.id === id);
+    };
+
+    const resetHighlights = () => {
+        annotatedPdfMutation.mutate({
+            id: annotatedPdfId,
+        });
+    };
+
 
     const noteEles: Map<number, HTMLElement> = new Map();
 
@@ -78,7 +190,7 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
 
                 const extendedNote: NewHighlightWithRelationsInput = {
                     ...note,
-                    annotatedPdfId: '6615f9205ceb3fc41ab5379d', // Placeholder or dynamic value as needed
+                    annotatedPdfId: '663492fb4ac3527804fa4d36', // Placeholder or dynamic value as needed
                     id_: noteId, // Placeholder or dynamic value as needed
                     type: 'COMMENT',
                     node: {
@@ -170,6 +282,10 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
         renderHighlights,
     });
 
+
+
+
+
     const { jumpToHighlightArea } = highlightPluginInstance;
 
     return (
@@ -188,35 +304,12 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
                     overflow: 'auto',
                 }}
             >
-                {notes.length === 0 && <div style={{ textAlign: 'center' }}>There is no note</div>}
-                {notes.map((note) => {
-                    return (
-                        <div
-                            key={note.id}
-                            style={{
-                                borderBottom: '1px solid rgba(0, 0, 0, .3)',
-                                cursor: 'pointer',
-                                padding: '8px',
-                            }}
-                            // Jump to the associated highlight area
-                            onClick={() => jumpToHighlightArea(note.highlightAreas[0])}
-                        >
-                            <blockquote
-                                style={{
-                                    borderLeft: '2px solid rgba(0, 0, 0, 0.2)',
-                                    fontSize: '.75rem',
-                                    lineHeight: 1.5,
-                                    margin: '0 0 8px 0',
-                                    paddingLeft: '8px',
-                                    textAlign: 'justify',
-                                }}
-                            >
-                                {note.quote}
-                            </blockquote>
-                            {note.content}
-                        </div>
-                    );
-                })}
+
+                <Sidebar
+                    highlights={userHighlights}
+                    resetHighlights={resetHighlights}
+                />
+
             </div>
             <div
                 style={{
@@ -224,7 +317,7 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
                     overflow: 'auto',
                 }}
             >
-                <Viewer fileUrl={fileUrl} plugins={[highlightPluginInstance]} />
+                <Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
             </div>
         </div>
     );

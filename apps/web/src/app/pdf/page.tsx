@@ -125,7 +125,13 @@ export default async function Page() {
         userHighlights={highlights}
         annotatedPdfsWithProfile={annotatedPdfsWithProfile}
       /> */}
-      <PDFViewer2 />
+      <PDFViewer2
+        annotatedPdfId={id}
+        loadedSource={source}
+        userId={userId}
+        userHighlights={highlights}
+        annotatedPdfsWithProfile={annotatedPdfsWithProfile}
+      />
     </AskHighlightProvider>
   );
 }

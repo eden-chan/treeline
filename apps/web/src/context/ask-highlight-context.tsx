@@ -236,7 +236,7 @@ export const AskHighlightProvider: FC<{
 					(oldData) => {
 						if (!oldData) return oldData;
 
-						const highlightId = uuidv4();
+						const highlightId = uuidv4(); // TODO: get the object ID
 						const newNode = newData.highlight.node
 							? {
 								...newData.highlight.node,

@@ -138,7 +138,6 @@ export const CommentSchema = z.object({
 });
 
 export const CurriculumNodeSchemaBase = z.object({
-	comments: z.array(CommentSchema),
 	prompt: z.string().or(z.null()),
 	highlightId: z.string().or(z.null()),
 	response: z.string().or(z.null()),
