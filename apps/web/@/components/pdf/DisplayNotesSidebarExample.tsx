@@ -14,17 +14,17 @@ import '@react-pdf-viewer/default-layout/lib/styles/index.css';
 import { NewHighlightWithRelationsInput } from '@src/server/api/routers/highlight';
 import { Highlight } from "@prisma/client";
 import { AnnotatedPdfWithProfile } from "@src/lib/types";
-import { Sidebar } from '@src/app/pdf/ui/components/Sidebar';
+import { Sidebar } from '@/components/pdf/Sidebar';
 import { trpc } from "@src/utils/api";
 import { clientApi } from "@src/trpc/react";
 import { v4 as uuidv4 } from "uuid";
-import { Forest } from '@src/app/pdf/ui/components/Forest';
+import { Forest } from '@/components/pdf/Forest';
 import {
     ResizableHandle,
     ResizablePanel,
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import FloatingProfiles from '@src/app/pdf/ui/components/FloatingProfiles';
+import FloatingProfiles from '@/components/pdf/FloatingProfiles';
 import { ReactFlowProvider } from 'reactflow';
 interface DisplayNotesSidebarExampleProps {
 
@@ -301,12 +301,11 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
         />
 
         <ResizablePanelGroup className="w-full" direction="horizontal">
-            <ResizablePanel className="relative" defaultSize={70}>
+            <ResizablePanel className="relative" defaultSize={70} style={{ height: '100vh', overflow: 'auto' }}>
                 <Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
-
             </ResizablePanel>
             <ResizableHandle withHandle />
-            <ResizablePanel >
+            <ResizablePanel style={{ height: '100vh', overflow: 'auto' }}>
                 {currentHighlight?.node ? (
                     <ReactFlowProvider>
                         <Forest
@@ -318,16 +317,17 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
                         />
                     </ReactFlowProvider>
                 ) : (
-                    <Sidebar
-                        highlights={highlights ?? []}
-                        resetHighlights={resetHighlights}
-                        jumpToHighlightArea={jumpToHighlightArea}
-                    />
+                    <div style={{ height: '100%', overflow: 'auto' }}>
+                        <Sidebar
+                            highlights={highlights ?? []}
+                            resetHighlights={resetHighlights}
+                            jumpToHighlightArea={jumpToHighlightArea}
+                        />
+                    </div>
                 )}
             </ResizablePanel>
         </ResizablePanelGroup>
-    </div>
-    )
+    </div>)
 };
 
 export default DisplayNotesSidebarExample;

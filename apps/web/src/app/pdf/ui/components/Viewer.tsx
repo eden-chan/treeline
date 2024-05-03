@@ -39,7 +39,7 @@ export default function PDFViewer2(
                 userId={userId}
                 userHighlights={userHighlights}
                 annotatedPdfsWithProfile={annotatedPdfsWithProfile}
-            />;
+            />
         </Worker>)
 }
 

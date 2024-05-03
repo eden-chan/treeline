@@ -1,6 +1,6 @@
 import Dagre, { Label } from "@dagrejs/dagre";
 import React, { useEffect } from "react";
-import QuestionNode from "./flownodes/QuestionNode";
+import QuestionNode from "../../../src/app/pdf/ui/components/flownodes/QuestionNode";
 import { Button } from "@/components/ui/button";
 import ReactFlow, {
 	useReactFlow,

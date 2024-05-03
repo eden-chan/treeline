@@ -1,7 +1,7 @@
 import React from "react";
 import { Highlight } from "@prisma/client";
 import { HighlightWithRelations } from "@src/lib/types";
-import { AreaHighlight } from '..';
+import { AreaHighlight } from '../../../src/app/pdf/ui';
 import { HighlightArea } from '@react-pdf-viewer/highlight';
 
 interface Props {

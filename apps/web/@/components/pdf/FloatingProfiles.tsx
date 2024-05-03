@@ -5,7 +5,7 @@
  */
 
 import { AnnotatedPdfWithRelations } from "@src/lib/types";
-import { AnimatedTooltip } from "./AnimatedTooltip";
+import { AnimatedTooltip } from "../../../src/app/pdf/ui/components/AnimatedTooltip";
 
 interface AnnotatedPdfWithProfile extends AnnotatedPdfWithRelations {
 	userProfilePicture: string;
