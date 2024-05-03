@@ -1,3 +1,4 @@
+"use client";
 import Dagre, { Label } from "@dagrejs/dagre";
 import React, { useEffect } from "react";
 import QuestionNode from "./flownodes/QuestionNode";
@@ -40,6 +41,7 @@ const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
 
 	edges.forEach((edge) => g.setEdge(edge.source, edge.target));
 	nodes.forEach((node) => g.setNode(node.id, node as Label));
+	console.log("nodes", nodes);
 
 	Dagre.layout(g);
 
@@ -62,11 +64,11 @@ const generateNodesAndEdges = (
 		{
 			id: node.id,
 			position: { x, y },
+			type: x == 0 && y == 0 ? "input" : "question",
 			data: {
 				question: node.prompt,
 				answer: node.response,
 			},
-			type: "question",
 			draggable: true,
 		},
 	];
