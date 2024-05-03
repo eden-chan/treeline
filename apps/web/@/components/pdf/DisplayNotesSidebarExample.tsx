@@ -327,12 +327,6 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
         </ResizablePanelGroup>
     </div>
     )
-
-
-
-
-
-
 };
 
 export default DisplayNotesSidebarExample;

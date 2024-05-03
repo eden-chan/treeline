@@ -34,7 +34,6 @@ export function Sidebar({ highlights, resetHighlights, jumpToHighlightArea }: Pr
             onClick={() => {
               updateHash(highlight);
               if (highlight.highlightAreas.length > 0) {
-
                 jumpToHighlightArea(highlight.highlightAreas[0])
               }
             }}
