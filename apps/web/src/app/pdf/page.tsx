@@ -19,7 +19,8 @@ export default async function Page() {
 	const header_url = headersList.get("x-url") || "";
 
 	const urlParams = new URLSearchParams(header_url.split("?")[1]);
-	const defaultPdfURL = "https://arxiv.org/pdf/1706.03762.pdf";
+	const defaultPdfURL =
+		"https://treeline.s3.us-east-2.amazonaws.com/1706.03762v7.pdf";
 	let pdfUrl: URL;
 
 	try {

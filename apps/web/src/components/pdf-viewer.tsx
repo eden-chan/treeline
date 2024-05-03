@@ -303,12 +303,14 @@ export default function PDFViewer({
 									const component = isTextHighlight ? (
 										<PDFHighlight
 											isScrolledTo={isScrolledTo}
+											// @ts-ignore
 											position={highlight.position}
 											comments={highlight.comment ? [highlight.comment] : []}
 										/>
 									) : (
 										<AreaHighlight
 											isScrolledTo={isScrolledTo}
+											// @ts-ignore
 											highlight={highlight}
 											onChange={(boundingRect) => {
 												// updateHighlight(
@@ -337,6 +339,7 @@ export default function PDFViewer({
 												/>
 											}
 											onMouseOver={(popupContent) =>
+												// @ts-ignore
 												setTip(highlight, (highlight) => popupContent)
 											}
 											onMouseOut={hideTip}
