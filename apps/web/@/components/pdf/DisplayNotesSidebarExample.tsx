@@ -8,9 +8,10 @@ import {
     RenderHighlightTargetProps,
 } from '@react-pdf-viewer/highlight';
 import { Button, Position, PrimaryButton, Tooltip, Viewer } from '@react-pdf-viewer/core';
-
+import { useAskHighlight } from "@src/context/ask-highlight-context";
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
+import { NewHighlightWithRelationsInput } from '@src/server/api/routers/highlight';
 
 interface DisplayNotesSidebarExampleProps {
     fileUrl: string;
@@ -26,6 +27,13 @@ interface Note {
 const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({ fileUrl }) => {
     const [message, setMessage] = React.useState('');
     const [notes, setNotes] = React.useState<Note[]>([]);
+
+    const {
+        currentHighlight,
+        selectHighlight,
+        createAskHighlight,
+        clearSelectedHighlight,
+    } = useAskHighlight();
     let noteId = notes.length;
 
     console.log(notes)
@@ -67,6 +75,20 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
                     quote: props.selectedText,
                 };
                 setNotes(notes.concat([note]));
+
+                const extendedNote: NewHighlightWithRelationsInput = {
+                    ...note,
+                    annotatedPdfId: '6615f9205ceb3fc41ab5379d', // Placeholder or dynamic value as needed
+                    id_: noteId, // Placeholder or dynamic value as needed
+                    type: 'COMMENT',
+                    node: {
+                        prompt: message,
+                        response: null,
+                        timestamp: new Date(),
+                        comments: [],
+                    },
+                };
+                createAskHighlight(extendedNote);
                 props.cancel();
             }
         };
