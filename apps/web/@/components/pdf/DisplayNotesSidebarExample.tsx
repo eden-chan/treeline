@@ -18,6 +18,13 @@ import { Sidebar } from '@src/app/pdf/ui/components/Sidebar';
 import { trpc } from "@src/utils/api";
 import { clientApi } from "@src/trpc/react";
 import { v4 as uuidv4 } from "uuid";
+import { Forest } from '@src/app/pdf/ui/components/Forest';
+import {
+    ResizableHandle,
+    ResizablePanel,
+    ResizablePanelGroup,
+} from "@/components/ui/resizable";
+import FloatingProfiles from '@src/app/pdf/ui/components/FloatingProfiles';
 interface DisplayNotesSidebarExampleProps {
 
     annotatedPdfId: string;
@@ -246,6 +253,7 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
         if (noteEles.has(note.id)) {
             noteEles.get(note.id).scrollIntoView();
         }
+        console.log('jumptoNote', note)
     };
 
     const renderHighlights = (props: RenderHighlightsProps) => (
@@ -288,39 +296,49 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
 
     const { jumpToHighlightArea } = highlightPluginInstance;
 
-    return (
-        <div
-            style={{
-                border: '1px solid rgba(0, 0, 0, 0.3)',
-                display: 'flex',
-                height: '100%',
-                overflow: 'hidden',
-            }}
-        >
-            <div
-                style={{
-                    borderRight: '1px solid rgba(0, 0, 0, 0.3)',
-                    width: '25%',
-                    overflow: 'auto',
-                }}
-            >
+    return (<div style={{ display: "flex", height: "100vh" }}>
+        <FloatingProfiles
+            setDisplayHighlights={setFriendHighlights}
+            allHighlightsWithProfile={annotatedPdfsWithProfile}
+        />
 
-                <Sidebar
-                    highlights={userHighlights}
-                    resetHighlights={resetHighlights}
-                />
-
-            </div>
-            <div
-                style={{
-                    flex: '1 1 0',
-                    overflow: 'auto',
-                }}
-            >
+        <ResizablePanelGroup className="w-full" direction="horizontal">
+            <ResizablePanel className="relative" defaultSize={70}>
                 <Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
-            </div>
-        </div>
-    );
+
+            </ResizablePanel>
+            <ResizableHandle withHandle />
+            <ResizablePanel className="">
+
+                {currentHighlight?.node ? (
+                    <Forest
+                        node={currentHighlight.node}
+                        returnHome={() => {
+                            document.location.hash = "";
+                            clearSelectedHighlight();
+                        }}
+                    />
+                ) : (
+                    <Sidebar
+                        highlights={highlights ?? []}
+                        resetHighlights={resetHighlights}
+                        jumpToHighlightArea={jumpToHighlightArea}
+                    />
+                )}
+
+
+
+
+            </ResizablePanel>
+        </ResizablePanelGroup>
+    </div>
+    )
+
+
+
+
+
+
 };
 
 export default DisplayNotesSidebarExample;

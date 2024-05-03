@@ -1,17 +1,20 @@
 import React from "react";
 import { Highlight } from "@prisma/client";
 import { HighlightWithRelations } from "@src/lib/types";
+import { AreaHighlight } from '..';
+import { HighlightArea } from '@react-pdf-viewer/highlight';
 
 interface Props {
   highlights: Array<HighlightWithRelations>;
   resetHighlights: () => void;
+  jumpToHighlightArea: (area: HighlightArea) => void
 }
 
 const updateHash = (highlight: Highlight) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 
-export function Sidebar({ highlights, resetHighlights }: Props) {
+export function Sidebar({ highlights, resetHighlights, jumpToHighlightArea }: Props) {
   return (
     <div className="overflow-auto text-gray-500 bg-gradient-to-b from-gray-50 to-gray-100">
       <div className="p-4">
@@ -30,6 +33,10 @@ export function Sidebar({ highlights, resetHighlights }: Props) {
             className="p-4 cursor-pointer transition-background duration-140 ease-in border-b border-gray-500 hover:bg-gray-200"
             onClick={() => {
               updateHash(highlight);
+              if (highlight.highlightAreas.length > 0) {
+
+                jumpToHighlightArea(highlight.highlightAreas[0])
+              }
             }}
           >
             <div>
