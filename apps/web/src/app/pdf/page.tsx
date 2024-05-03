@@ -10,21 +10,20 @@ import { RedirectToSignIn } from "@clerk/nextjs";
 import { api } from "@src/trpc/server";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
 import { AnnotatedPdfWithProfile } from "@src/lib/types";
+
+
+
 const PDFViewer2 = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
 
-// './ui/components/Viewer';
-// const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
-//   ssr: false, // Disable server-side rendering for this component
-// });
 
 export default async function Page() {
   const headersList = headers();
   const header_url = headersList.get("x-url") || "";
 
   const urlParams = new URLSearchParams(header_url.split("?")[1]);
-  const defaultPdfURL = "https://arxiv.org/pdf/1706.03762.pdf";
+  const defaultPdfURL = "https://treeline.s3.us-east-2.amazonaws.com/1706.03762v7.pdf";
   let pdfUrl: URL;
 
   try {
