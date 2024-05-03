@@ -25,6 +25,7 @@ import {
     ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import FloatingProfiles from '@src/app/pdf/ui/components/FloatingProfiles';
+import { ReactFlowProvider } from 'reactflow';
 interface DisplayNotesSidebarExampleProps {
 
     annotatedPdfId: string;
@@ -291,10 +292,9 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
         renderHighlights,
     });
 
-
     const { jumpToHighlightArea } = highlightPluginInstance;
 
-    return (<div style={{ display: "flex", height: "100vh" }}>
+    return (<div>
         <FloatingProfiles
             setDisplayHighlights={setFriendHighlights}
             allHighlightsWithProfile={annotatedPdfsWithProfile}
@@ -306,16 +306,17 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
 
             </ResizablePanel>
             <ResizableHandle withHandle />
-            <ResizablePanel className="">
-
+            <ResizablePanel >
                 {currentHighlight?.node ? (
-                    <Forest
-                        node={currentHighlight.node}
-                        returnHome={() => {
-                            document.location.hash = "";
-                            clearSelectedHighlight();
-                        }}
-                    />
+                    <ReactFlowProvider>
+                        <Forest
+                            node={currentHighlight.node}
+                            returnHome={() => {
+                                document.location.hash = "";
+                                clearSelectedHighlight();
+                            }}
+                        />
+                    </ReactFlowProvider>
                 ) : (
                     <Sidebar
                         highlights={highlights ?? []}

@@ -13,6 +13,7 @@ import ReactFlow, {
 	Node,
 	Edge,
 	NodeTypes,
+	ReactFlowProvider,
 } from "reactflow";
 import "reactflow/dist/style.css";
 import { CurriculumNodeWithRelations } from "@src/lib/types";
