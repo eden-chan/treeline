@@ -136,10 +136,10 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({ loadedSource
         },
     });
 
-    const updateCommentMutation =
-        trpc.highlight.updateHighlightComment.useMutation();
+    // const updateCommentMutation =
+    //     trpc.highlight.updateHighlightComment.useMutation();
 
-    const deleteHighlightMutation = trpc.highlight.deleteHighlight.useMutation();
+    // const deleteHighlightMutation = trpc.highlight.deleteHighlight.useMutation();
 
     const highlights =
         clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
