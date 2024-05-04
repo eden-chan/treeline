@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useState, Fragment } from 'react';
 import {
     highlightPlugin,
     HighlightArea,
@@ -42,10 +42,10 @@ interface Note {
     quote: string;
 }
 
-const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({ loadedSource, userHighlights, userId, annotatedPdfId, annotatedPdfsWithProfile }) => {
-    const [message, setMessage] = React.useState('');
-    const [notes, setNotes] = React.useState<Note[]>([]);
-    const [friendHighlights, setFriendHighlights] = React.useState<Highlight[]>([]);
+const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({ loadedSource, userHighlights, userId, annotatedPdfId, annotatedPdfsWithProfile }) => {
+    const [message, setMessage] = useState('');
+    const [notes, setNotes] = useState<Note[]>([]);
+    const [friendHighlights, setFriendHighlights] = useState<Highlight[]>([]);
 
 
     const {
@@ -96,7 +96,6 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
                 userId: userId,
                 source: loadedSource,
             });
-
             utils.annotatedPdf.fetchAnnotatedPdf.setData(
                 {
                     userId: userId,
@@ -110,8 +109,9 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
                             ...newData.highlight.node,
                             id: uuidv4(),
                             parentId: null,
-                            highlightId,
+                            highlightId: highlightId,
                             children: [],
+                            comments: []  // Ensure this property is included
                         }
                         : null;
                     const newHighlight = {
@@ -253,7 +253,7 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
 
     const jumpToNote = (note: Note) => {
         if (noteEles.has(note.id)) {
-            noteEles.get(note.id).scrollIntoView();
+            // noteEles.get(note.id).scrollIntoView();
         }
         console.log('jumptoNote', note)
     };
@@ -261,7 +261,7 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
     const renderHighlights = (props: RenderHighlightsProps) => (
         <div>
             {highlights.map((note) => (
-                <React.Fragment key={note.id}>
+                <Fragment key={note.id}>
                     {note.highlightAreas
                         .filter((area) => area.pageIndex === props.pageIndex)
                         .map((area, idx) => (
@@ -275,13 +275,13 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
                                     },
                                     props.getCssProperties(area, props.rotation)
                                 )}
-                                onClick={() => jumpToNote(note)}
-                                ref={(ref): void => {
-                                    noteEles.set(note.id, ref as HTMLElement);
-                                }}
+                            // onClick={() => jumpToNote(note)}
+                            // ref={(ref): void => {
+                            //     noteEles.set(note.id, ref as HTMLElement);
+                            // }}
                             />
                         ))}
-                </React.Fragment>
+                </Fragment>
             ))}
         </div>
     );
@@ -330,4 +330,4 @@ const DisplayNotesSidebarExample: React.FC<DisplayNotesSidebarExampleProps> = ({
     </div>)
 };
 
-export default DisplayNotesSidebarExample;
+export default ReadingViewer;

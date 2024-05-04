@@ -244,6 +244,7 @@ export const AskHighlightProvider: FC<{
 								parentId: null,
 								highlightId,
 								children: [],
+								comments: [], // Add this line
 							}
 							: null;
 						const newHighlight = {

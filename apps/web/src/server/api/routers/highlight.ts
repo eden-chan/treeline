@@ -78,7 +78,6 @@ export const highlightRouter = createTRPCRouter({
 				if (!res?.comment) {
 					throw Error("Cannot find comment to be updated");
 				}
-
 				const { emoji, userId } = res.comment;
 
 				updatedHighlight = await db.highlight.update({

@@ -142,6 +142,7 @@ export const CurriculumNodeSchemaBase = z.object({
 	highlightId: z.string().or(z.null()),
 	response: z.string().or(z.null()),
 	timestamp: z.date(),
+	comments: z.array(CommentSchema),
 });
 
 export const HighlightTypeSchema = z.enum(["ASK", "COMMENT"]);

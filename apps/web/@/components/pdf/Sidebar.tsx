@@ -1,7 +1,6 @@
 import React from "react";
 import { Highlight } from "@prisma/client";
 import { HighlightWithRelations } from "@src/lib/types";
-import { AreaHighlight } from '../../../src/app/pdf/ui';
 import { HighlightArea } from '@react-pdf-viewer/highlight';
 
 interface Props {
@@ -33,7 +32,7 @@ export function Sidebar({ highlights, resetHighlights, jumpToHighlightArea }: Pr
             className="p-4 cursor-pointer transition-background duration-140 ease-in border-b border-gray-500 hover:bg-gray-200"
             onClick={() => {
               updateHash(highlight);
-              if (highlight.highlightAreas.length > 0) {
+              if (highlight.highlightAreas.length > 0 && highlight.highlightAreas[0]) {
                 jumpToHighlightArea(highlight.highlightAreas[0])
               }
             }}

@@ -2,7 +2,7 @@
 import { Worker } from '@react-pdf-viewer/core';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 
-import DisplayNotesSidebarExample from '@/components/pdf/DisplayNotesSidebarExample';
+import ReadingViewer from '@/components/pdf/ReadingViewer';
 import { useAskHighlight } from '@src/context/ask-highlight-context';
 import { Highlight } from "@prisma/client";
 import { AnnotatedPdfWithProfile } from "@src/lib/types";
@@ -33,7 +33,7 @@ export default function PDFViewer2(
 
     return (
         <Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
-            <DisplayNotesSidebarExample
+            <ReadingViewer
                 annotatedPdfId={annotatedPdfId}
                 loadedSource={loadedSource}
                 userId={userId}

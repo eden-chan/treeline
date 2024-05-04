@@ -43,7 +43,7 @@ const GalleryView = ({
         gap-4"
 		>
 			{articles.map((article, index) => {
-				const firstHighlight = article.highlights?.[0]?.content?.text || "";
+				const firstHighlight = article.highlights?.[0]?.content || "";
 				return (
 					<PaperCard
 						key={index}
@@ -74,7 +74,7 @@ const ListView = ({
 	return (
 		<div className="">
 			{articles.map((article, index) => {
-				const firstHighlight = article.highlights?.[0]?.content?.text || "";
+				const firstHighlight = article.highlights?.[0]?.content || "";
 				return (
 					<article
 						key={index}
@@ -171,7 +171,7 @@ const Timeline = memo(
 		const memoizedArticles: AnnotatedPdfWithRelationsWithTimestamp[] = useMemo(
 			() =>
 				articles.map((article) => {
-					const timestamp = article.highlights[0]?.comment?.timestamp;
+					const timestamp = article.highlights[0]?.node?.timestamp
 					const timeAgoCalculation = calculateTimeAgo(
 						timestamp ? new Date(timestamp) : new Date(),
 					);
