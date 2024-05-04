@@ -26,27 +26,26 @@ import {
 } from "@/components/ui/resizable";
 import FloatingProfiles from '@/components/pdf/FloatingProfiles';
 import { ReactFlowProvider } from 'reactflow';
-interface DisplayNotesSidebarExampleProps {
 
+type DisplayNotesSidebarExampleProps = {
     annotatedPdfId: string;
     loadedSource: string;
     userId: string;
     userHighlights: Highlight[];
     annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
-}
+};
 
-interface Note {
+type Note = {
     id: number;
     content: string;
     highlightAreas: HighlightArea[];
     quote: string;
-}
+};
 
 const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({ loadedSource, userHighlights, userId, annotatedPdfId, annotatedPdfsWithProfile }) => {
     const [message, setMessage] = useState('');
     const [notes, setNotes] = useState<Note[]>([]);
     const [friendHighlights, setFriendHighlights] = useState<Highlight[]>([]);
-
 
     const {
         currentHighlight,
@@ -56,19 +55,16 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({ loadedSource
     } = useAskHighlight();
     let noteId = notes.length;
 
-
     const utils = clientApi.useUtils();
 
     const annotatedPdfMutation =
         clientApi.annotatedPdf.resetHighlights.useMutation({
             onMutate: async () => {
-                // Cancel the pending request
                 await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
                     userId: userId,
                     source: loadedSource,
                 });
 
-                // Optimistically update the cache
                 utils.annotatedPdf.fetchAnnotatedPdf.setData(
                     {
                         userId: userId,
@@ -90,12 +86,14 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({ loadedSource
                 });
             },
         });
+
     const highlightMutation = clientApi.highlight.createHighlight.useMutation({
         onMutate: async (newData) => {
             await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
                 userId: userId,
                 source: loadedSource,
             });
+
             utils.annotatedPdf.fetchAnnotatedPdf.setData(
                 {
                     userId: userId,
@@ -136,17 +134,11 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({ loadedSource
         },
     });
 
-    // const updateCommentMutation =
-    //     trpc.highlight.updateHighlightComment.useMutation();
-
-    // const deleteHighlightMutation = trpc.highlight.deleteHighlight.useMutation();
-
     const highlights =
         clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
             userId: userId,
             source: loadedSource,
         }).data?.highlights || userHighlights;
-
 
     const getHighlightById = (id: string) => {
         return highlights.find((highlight) => highlight.id === id);
@@ -157,7 +149,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({ loadedSource
             id: annotatedPdfId,
         });
     };
-
 
     const noteEles: Map<number, HTMLElement> = new Map();
 
