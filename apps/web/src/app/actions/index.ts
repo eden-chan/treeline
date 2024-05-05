@@ -1,6 +1,6 @@
 "use server";
 
-import { ParsedPapers, ParsedPapersFacts, User } from "@prisma/client";
+import { ParsedPaper, ParsedPapersFacts, User } from "@prisma/client";
 import { EMBEDDING_TYPE } from "@src/lib/types";
 import { TitleSourcePair } from "@src/server/api/routers/parsed-pdf";
 
@@ -23,7 +23,7 @@ export const followAction = async (searchedUser: User, loggedInUser: User) => {
 
 export const getParsedPaperAction = async (
   pdfUrl: string,
-): Promise<ParsedPapers | null> => {
+): Promise<ParsedPaper | null> => {
   try {
     const parsedPaper = await api.parsedPapers.fetchParsedPdf({
       source: pdfUrl,
@@ -203,7 +203,7 @@ export const listAllCollections = async () => {
 };
 
 export const makeNewCollection = async (
-  collectionName: string = "ParsedPapers",
+  collectionName: string = "ParsedPaper",
 ) => {
   return await client.createCollection({
     name: collectionName,
@@ -375,14 +375,14 @@ export const search = async (formData: FormData) => {
 
 export const handleDeleteCollection = async (formData: FormData) => {
   const collectionName = formData.get("collection")?.toString();
-  const response = await deleteCollection(collectionName || "ParsedPapers");
+  const response = await deleteCollection(collectionName || "ParsedPaper");
   console.debug(`Deleted Collection ${collectionName}:`, { response });
 };
 
 export const handleMakeNewCollection = async (formData: FormData) => {
   try {
     const collectionName = formData.get("query")?.toString();
-    const response = await makeNewCollection(collectionName || "ParsedPapers");
+    const response = await makeNewCollection(collectionName || "ParsedPaper");
     console.debug("New Collection Created:", { response });
   } catch (error) {
     // console.error('Error creating new collection:', error);

@@ -6,7 +6,7 @@
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import Link from "next/link";
 import Timeline from "./Timeline";
-import { ParsedPapers, User } from "@prisma/client";
+import { ParsedPaper, User } from "@prisma/client";
 import FollowButton from "./FollowButton";
 
 import { useMemo } from "react";
@@ -29,7 +29,7 @@ export default async function Profile({
   searchedUser: User;
   loggedInUser: User;
   searchedUserImageUrl: string;
-  parsedPapers: ParsedPapers[]
+  parsedPapers: ParsedPaper[]
 }) {
   const userHighlights = useMemo(
     () =>

@@ -30,20 +30,20 @@ type HighlightScaledPosition {
   pageNumber Int?
 }
 
-type ParsedPapersText {
+type ParsedPaperText {
   outline  String[]
-  sections ParsedPapersTextSections[]
+  sections ParsedPaperTextSections[]
   title    String
 }
 
-type ParsedPapersTextSections {
-  facts ParsedPapersTextSectionsFacts[]
+type ParsedPaperTextSections {
+  facts ParsedPaperTextSectionsFacts[]
   name  String
   page  Int
   text  String
 }
 
-type ParsedPapersTextSectionsFacts {
+type ParsedPaperTextSectionsFacts {
   expectedInfo String
   fact         String
   nextSource   String
@@ -62,7 +62,6 @@ model CurriculumNode {
   highlightId String?            @unique @db.ObjectId
   highlight   Highlight?         @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
-
 
 enum HighlightType {
   ASK
@@ -87,19 +86,19 @@ model User {
   last_name  String
 }
 
-type ParsedPapersFacts {
+type ParsedPaperFacts {
   expectedInfo String
   fact         String
   nextSource   String
   relevance    String
 }
 
-type ParsedPapersSections {
-  metadata ParsedPapersSectionsMetadata
+type ParsedPaperSections {
+  metadata ParsedPaperSectionsMetadata
   text     String
 }
 
-type ParsedPapersSectionsMetadata {
+type ParsedPaperSectionsMetadata {
   Header_1 String?
   Header_2 String?
   Header_3 String?
@@ -107,16 +106,16 @@ type ParsedPapersSectionsMetadata {
   Header_5 String?
 }
 
-model ParsedPapers {
-  id               String                 @id @default(auto()) @map("_id") @db.ObjectId
+model ParsedPaper {
+  id               String                @id @default(auto()) @map("_id") @db.ObjectId
   abstract         String
-  facts            ParsedPapersFacts[]
+  facts            ParsedPaperFacts[]
   primary_category String
-  published        DateTime               @db.Date
-  sections         ParsedPapersSections[]
+  published        DateTime              @db.Date
+  sections         ParsedPaperSections[]
   source           String
   title            String
-  updated          DateTime               @db.Date
+  updated          DateTime              @db.Date
 }
 
 type HighlightPosition {
@@ -126,24 +125,22 @@ type HighlightPosition {
   usePdfCoordinates Boolean?
 }
 
-
 type HighlightV2HighlightAreas {
   height    Float
-  left      Float 
+  left      Float
   pageIndex Int
   top       Float
   width     Float
 }
 
 model Highlight {
-  id             String            @id @default(auto()) @map("_id") @db.ObjectId
+  id             String                      @id @default(auto()) @map("_id") @db.ObjectId
   content        String
   highlightAreas HighlightV2HighlightAreas[]
   id_            Int                         @map("id")
   quote          String
-  type           HighlightType     @default(COMMENT)
+  type           HighlightType               @default(COMMENT)
   node           CurriculumNode?
-  annotatedPdf   AnnotatedPdf      @relation(fields: [annotatedPdfId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  annotatedPdfId String            @db.ObjectId
+  annotatedPdf   AnnotatedPdf                @relation(fields: [annotatedPdfId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  annotatedPdfId String                      @db.ObjectId
 }
-

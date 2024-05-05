@@ -1,5 +1,3 @@
-"use client";
-
 import { CircleIcon, StarIcon } from "@radix-ui/react-icons";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

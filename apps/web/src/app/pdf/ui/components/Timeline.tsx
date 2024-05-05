@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { AlignJustify, LayoutGrid } from "lucide-react";
-import { ParsedPapers } from "@prisma/client";
+import { AnnotatedPdf, ParsedPaper } from "@prisma/client";
 
 export type AnnotatedPdfWithRelationsWithTimestamp =
 	AnnotatedPdfWithRelations & {
@@ -100,38 +100,43 @@ const ListView = ({
 	);
 };
 
-const ExploreGalleryView = ({ articles }: { articles: ParsedPapers[] }) => {
+const ExploreGalleryView = ({ articles }: { articles: ParsedPaper[] }) => {
 	const router = useRouter();
 	const [highlightedCardId, setHighlightedCardId] = useState("");
 
-	const handleClick = (cardId: string) => {
-		setHighlightedCardId(cardId);
+	const handleClick = (article: ParsedPaper) => {
+		setHighlightedCardId(article.title);
+		router.push(`/pdf?url=${article.source}`);
 	};
 
 	return (
-		<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-			{articles.map((article, index) => {
-				return (
-					<PaperCard
-						key={index}
-						description={article.abstract}
-						timeAgoCalculation={calculateTimeAgo(article.updated)} // set time
-						title={article.title}
-						highlightCount={1}
-						category={article.primary_category}
-						isHighlighted={highlightedCardId === article.title}
-						onClick={() => handleClick(article.title)}
-						onDoubleClick={() => {
-							router.push(`/pdf?url=${article.source}`);
-						}}
-					/>
-				);
-			})}
+		<div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+			{articles.length > 0 ? (
+				articles.map((article, index) => {
+					return (
+						<PaperCard
+							key={index}
+							description={article.abstract}
+							timeAgoCalculation={calculateTimeAgo(article.updated)} // set time
+							title={article.title}
+							highlightCount={1}
+							category={article.primary_category}
+							isHighlighted={highlightedCardId === article.title}
+							onClick={() => handleClick(article)}
+							onDoubleClick={() => {
+								router.push(`/pdf?url=${article.source}`);
+							}}
+						/>
+					);
+				})
+			) : (
+				<div className="w-full" />
+			)}
 		</div>
 	);
 };
 
-const ExploreListView = ({ articles }: { articles: ParsedPapers[] }) => {
+const ExploreListView = ({ articles }: { articles: ParsedPaper[] }) => {
 	const router = useRouter();
 	const [highlightedCardId, setHighlightedCardId] = useState("");
 
@@ -165,27 +170,27 @@ const Timeline = memo(
 		articles,
 		parsedPapers,
 	}: {
-		articles: AnnotatedPdfWithRelations[];
-		parsedPapers: ParsedPapers[];
+		articles: AnnotatedPdf[];
+		parsedPapers: ParsedPaper[];
 	}) => {
-		const memoizedArticles: AnnotatedPdfWithRelationsWithTimestamp[] = useMemo(
-			() =>
-				articles.map((article) => {
-					const timestamp = article.highlights[0]?.node?.timestamp;
-					const timeAgoCalculation = calculateTimeAgo(
-						timestamp ? new Date(timestamp) : new Date(),
-					);
-					return { ...article, timeAgoCalculation };
-				}),
-			[articles],
-		);
+		// const memoizedArticles: AnnotatedPdfWithRelationsWithTimestamp[] = useMemo(
+		// 	() =>
+		// 		articles.map((article) => {
+		// 			const timestamp = article.highlights[0]?.node?.timestamp;
+		// 			const timeAgoCalculation = calculateTimeAgo(
+		// 				timestamp ? new Date(timestamp) : new Date(),
+		// 			);
+		// 			return { ...article, timeAgoCalculation };
+		// 		}),
+		// 	[articles],
+		// );
 
 		const [view, setView] = useState("galleryView");
 
 		return (
 			<Tabs
 				defaultValue="explore"
-				className="lg:max-w-7xl mx-auto mb-4 lg:mb-10"
+				className="lg:max-w-7xl w-full px-4 lg:px-8 mx-auto mb-4 lg:mb-10"
 			>
 				<TabsList className="w-full flex items-center justify-between bg-white">
 					<div className="flex items-center space-x-4">
@@ -245,9 +250,9 @@ const Timeline = memo(
 				<TabsContent value="favorites">
 					<Suspense fallback={<h1>🌀 Loading...</h1>}>
 						{view === "galleryView" ? (
-							<ExploreGalleryView articles={parsedPapers} />
+							<ExploreGalleryView articles={[]} />
 						) : (
-							<ExploreListView articles={parsedPapers} />
+							<ExploreListView articles={[]} />
 						)}
 					</Suspense>
 				</TabsContent>

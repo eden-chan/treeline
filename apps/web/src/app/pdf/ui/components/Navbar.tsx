@@ -4,7 +4,7 @@
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
 
-import { UserButton } from "@clerk/nextjs";
+import { SignUpButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import SearchWithAutocomplete from "./SearchWithAutocomplete";
 import type { User } from "@prisma/client";
@@ -16,7 +16,7 @@ export default function Navbar({
 	loggedInUser,
 }: {
 	users: User[];
-	loggedInUser: User; // Corrected type from 'users' to 'User'
+	loggedInUser: User | undefined; // Corrected type from 'users' to 'User'
 }) {
 	// note: the id field is mandatory
 	const items: UserSearchResult[] = users.map((user) => ({
@@ -28,17 +28,23 @@ export default function Navbar({
 		<header className="flex p-4 justify-between items-center sticky top-0 bg-white z-50">
 			<h1 className="text-3xl font-bold self-center">My/Space</h1>
 			<div className="flex space-x-4 items-center">
-				<div className="w-[200px] self-center">
-					<SearchWithAutocomplete items={items} />
-				</div>
-				<Link
-					className="text-gray-600 hover:text-gray-900 self-center"
-					href={`/user/${loggedInUser?.handle}`}
-				>
-					My bookshelf
-				</Link>
-				<UserButton />
-				<ImportButton />
+				{loggedInUser ? (
+					<>
+						<div className="w-[200px] self-center">
+							<SearchWithAutocomplete items={items} />
+						</div>
+						<Link
+							className="text-gray-600 hover:text-gray-900 self-center"
+							href={`/user/${loggedInUser?.handle}`}
+						>
+							My bookshelf
+						</Link>
+						<UserButton />
+						<ImportButton />
+					</>
+				) : (
+					<SignUpButton />
+				)}
 			</div>
 		</header>
 	);

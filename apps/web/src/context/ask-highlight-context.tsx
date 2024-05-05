@@ -12,7 +12,7 @@ import { useChat, Message } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
 
-import { Highlight, ParsedPapers } from "@prisma/client";
+import { Highlight, ParsedPaper } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
 import { FOLLOW_UP_PROMPT, generateSystemPrompt } from "@src/utils/prompts";
 import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
@@ -52,7 +52,7 @@ export const AskHighlightProvider: FC<{
 	userId: string;
 	loadedSource: string;
 	children: ReactNode;
-	parsedPaper: ParsedPapers | null;
+	parsedPaper: ParsedPaper | null;
 }> = ({ annotatedPdfId, userId, loadedSource, children, parsedPaper }) => {
 	const [_, setForceRerender] = useState<Boolean>(false);
 	// Refs are required so that their values are not cached in callback functions
