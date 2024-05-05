@@ -97,11 +97,6 @@ export default async function Profile({
                 <li key={clerk_id}>
                   <Link className="block" href={`/${handle}`}>
                     <span className="font-medium">{first_name}</span>
-                    {recentPaper?.highlights?.slice(-1)?.[0]?.comment?.timestamp && (
-                      <span className="text-sm text-gray-500">
-                        {` ${calculateTimeAgo(recentPaper.highlights.slice(-1)[0]?.comment?.timestamp ?? new Date())}`}
-                      </span>
-                    )}
                   </Link>
                 </li>
               ))}
