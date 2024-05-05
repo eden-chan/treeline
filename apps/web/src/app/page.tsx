@@ -6,6 +6,9 @@ import Navbar from "./pdf/ui/components/Navbar";
 import { BentoGridThirdDemo } from '@src/components/paper-card';
 
 
+
+
+
 export default async function Page() {
   const clerkUser = await currentUser();
 
@@ -36,6 +39,7 @@ export default async function Page() {
     })) ?? [];
 
   const parsedPapers = await api.parsedPapers.fetchAllParsedPapers() ?? []
+
 
 
   return (

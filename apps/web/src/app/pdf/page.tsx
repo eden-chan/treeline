@@ -12,21 +12,26 @@ import { AskHighlightProvider } from "@src/context/ask-highlight-context";
 import { AnnotatedPdfWithProfile } from "@src/lib/types";
 
 
-
 const PDFViewer2 = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
+
+const S3_BASE_URL = "https://treeline.s3.us-east-2.amazonaws.com"
 
 export default async function Page() {
   const headersList = headers();
   const header_url = headersList.get("x-url") || "";
 
   const urlParams = new URLSearchParams(header_url.split("?")[1]);
-  const defaultPdfURL = "https://treeline.s3.us-east-2.amazonaws.com/1706.03762v7.pdf";
+  const defaultPdfURL = `${S3_BASE_URL}/1706.03762v7.pdf`
   let pdfUrl: URL;
 
   try {
+    // get the uploaded PDF id
     pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
+    const key = pdfUrl.href.substring(pdfUrl.href.lastIndexOf("/") + 1); // Extract the PDF ID from the URL
+    pdfUrl = new URL(`${S3_BASE_URL}/${key}`)
+
   } catch (error) {
     console.error(error);
     return <div>Not a valid URL</div>;
@@ -105,6 +110,9 @@ export default async function Page() {
       });
     }
   }
+
+
+
 
   const parsedPaper =
     (await api.parsedPapers.fetchParsedPdf({
