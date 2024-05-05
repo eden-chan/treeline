@@ -1,51 +1,10 @@
 'use client';
 
-import { toast } from '@/components/ui/use-toast';
-import { useRouter } from 'next/navigation';
+import { startParsingPaperAction } from '@src/app/actions';
 
-const arxivLinkPattern = /^https?:\/\/(?:www\.)?arxiv\.org\/pdf\/[0-9]+\.[0-9]+(?:v[0-9]+)?\.pdf$/;
 const DEFAULT_PDF_URL = 'https://arxiv.org/pdf/1706.03762.pdf';
 
 export default function SearchCta() {
-	const router = useRouter();
-
-	async function handleSubmit(formData: FormData) {
-		const link = formData.get('research-topic') as string;
-
-		if (!arxivLinkPattern.test(link)) {
-			// Handle invalid input, e.g., show an error message
-			toast({
-				title: "Error",
-				description: `Please add a valid arXiv link. For example: ${DEFAULT_PDF_URL}`,
-				variant: 'destructive'
-			})
-			return;
-		}
-
-		try {
-			const response = await fetch('/api/preprocess', {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/json',
-				},
-				body: JSON.stringify({ pdf_url: link }),
-			});
-
-			if (response.ok) {
-				router.push(`/pdf?url=${link}`);
-			} else {
-				// Handle error response
-				toast({
-					title: "Error",
-					description: `Oops! Please try again`,
-					variant: 'destructive'
-				})
-
-			}
-		} catch (error) {
-			console.error('Failed to fetch: ', error);
-		}
-	}
 
 
 	return (
@@ -61,7 +20,7 @@ export default function SearchCta() {
 				</div>
 				<form
 					className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800"
-					action={handleSubmit}
+					action={startParsingPaperAction}
 				>
 					<div className="space-y-6">
 						<div>

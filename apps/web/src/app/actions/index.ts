@@ -36,9 +36,22 @@ export const getParsedPaperAction = async (
 export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
 	try {
 		const parsedPapers = await api.parsedPapers.fetchAllParsedSources();
+		console.log("parsedPapers!", parsedPapers);
 		return parsedPapers;
 	} catch (error) {
 		throw new Error(`Failed to get parsed papers: ${error}`);
+	}
+};
+
+export const startParsingPaperAction = async (formData: FormData) => {
+	const pdfUrl = formData.get("research-topic") as string;
+	try {
+		const parsedPaper = await api.parsedPapers.startParsingPDF({
+			source: pdfUrl,
+		});
+		return parsedPaper;
+	} catch (error) {
+		throw new Error(`Failed to get parsed paper by url: ${pdfUrl} ${error}`);
 	}
 };
 
