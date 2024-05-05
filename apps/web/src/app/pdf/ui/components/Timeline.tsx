@@ -183,7 +183,10 @@ const Timeline = memo(
 		const [view, setView] = useState("galleryView");
 
 		return (
-			<Tabs defaultValue="explore" className="lg:max-w-7xl mx-auto">
+			<Tabs
+				defaultValue="explore"
+				className="lg:max-w-7xl mx-auto mb-4 lg:mb-10"
+			>
 				<TabsList className="w-full flex items-center justify-between bg-white">
 					<div className="flex items-center space-x-4">
 						<TabsTrigger value="explore"> Explore </TabsTrigger>
