@@ -10,7 +10,8 @@ import { ObjectId } from "mongodb";
 import { api } from "@src/trpc/server";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
 import { AnnotatedPdfWithProfile } from "@src/lib/types";
-const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
+
+const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
 	ssr: false, // Disable server-side rendering for this component
 });
 
