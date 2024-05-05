@@ -153,7 +153,7 @@ const Timeline = memo(
 		const memoizedArticles: AnnotatedPdfWithRelationsWithTimestamp[] = useMemo(
 			() =>
 				articles.map((article) => {
-					const timestamp = article.highlights[0]?.node?.timestamp
+					const timestamp = article.highlights[0]?.node?.timestamp;
 					const timeAgoCalculation = calculateTimeAgo(
 						timestamp ? new Date(timestamp) : new Date(),
 					);
@@ -165,34 +165,37 @@ const Timeline = memo(
 		const [view, setView] = useState("galleryView");
 
 		return (
-			<Tabs defaultValue="explore" className="lg:max-w-7xl mx-auto">
+			<Tabs
+				defaultValue="explore"
+				className="lg:max-w-7xl mx-auto mb-4 lg:mb-10"
+			>
 				<TabsList className="w-full flex items-center justify-between bg-white">
 					<div className="flex items-center space-x-4">
 						<TabsTrigger value="explore"> Explore </TabsTrigger>
 						<TabsTrigger value="favorites"> Favorites </TabsTrigger>
-						<TabsTrigger value="recentlyViewed"> Recently viewed </TabsTrigger>
-
-						<div className="flex items-center space-x-2">
-							<Select>
-								<SelectTrigger id="organization" className="min-w-[200px]">
-									<SelectValue placeholder="All organizations" />
-								</SelectTrigger>
-								<SelectContent position="popper">
-									<SelectItem value="org1">Organization 1</SelectItem>
-									<SelectItem value="org2">Organization 2</SelectItem>
-								</SelectContent>
-							</Select>
-
-							<Select>
-								<SelectTrigger id="viewed">
-									<SelectValue placeholder="Last viewed" />
-								</SelectTrigger>
-								<SelectContent position="popper">
-									<SelectItem value="today">Today</SelectItem>
-									<SelectItem value="yesterday">Yesterday</SelectItem>
-								</SelectContent>
-							</Select>
-						</div>
+						{/* <TabsTrigger value="recentlyViewed"> Recently viewed </TabsTrigger> */}
+						{/**/}
+						{/* <div className="flex items-center space-x-2"> */}
+						{/* 	<Select> */}
+						{/* 		<SelectTrigger id="organization" className="min-w-[200px]"> */}
+						{/* 			<SelectValue placeholder="All organizations" /> */}
+						{/* 		</SelectTrigger> */}
+						{/* 		<SelectContent position="popper"> */}
+						{/* 			<SelectItem value="org1">Organization 1</SelectItem> */}
+						{/* 			<SelectItem value="org2">Organization 2</SelectItem> */}
+						{/* 		</SelectContent> */}
+						{/* 	</Select> */}
+						{/**/}
+						{/* 	<Select> */}
+						{/* 		<SelectTrigger id="viewed"> */}
+						{/* 			<SelectValue placeholder="Last viewed" /> */}
+						{/* 		</SelectTrigger> */}
+						{/* 		<SelectContent position="popper"> */}
+						{/* 			<SelectItem value="today">Today</SelectItem> */}
+						{/* 			<SelectItem value="yesterday">Yesterday</SelectItem> */}
+						{/* 		</SelectContent> */}
+						{/* 	</Select> */}
+						{/* </div> */}
 					</div>
 
 					<div className="flex space-x-2">
@@ -212,15 +215,15 @@ const Timeline = memo(
 						</Button>
 					</div>
 				</TabsList>
-				<TabsContent value="recentlyViewed">
-					<Suspense fallback={<h1>🌀 Loading...</h1>}>
-						{view === "galleryView" ? (
-							<GalleryView articles={memoizedArticles} />
-						) : (
-							<ListView articles={memoizedArticles} />
-						)}
-					</Suspense>
-				</TabsContent>
+				{/* <TabsContent value="recentlyViewed"> */}
+				{/* 	<Suspense fallback={<h1>🌀 Loading...</h1>}> */}
+				{/* 		{view === "galleryView" ? ( */}
+				{/* 			<GalleryView articles={memoizedArticles} /> */}
+				{/* 		) : ( */}
+				{/* 			<ListView articles={memoizedArticles} /> */}
+				{/* 		)} */}
+				{/* 	</Suspense> */}
+				{/* </TabsContent> */}
 				<TabsContent value="favorites">
 					<Suspense fallback={<h1>🌀 Loading...</h1>}>
 						{view === "galleryView" ? (

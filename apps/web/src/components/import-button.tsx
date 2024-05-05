@@ -17,7 +17,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { toast } from '@/components/ui/use-toast'
-import useSWR from 'swr'
 
 const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762.pdf"
 const arxivLinkPattern = /^https?:\/\/(?:www\.)?arxiv\.org\/pdf\/[0-9]+\.[0-9]+(?:v[0-9]+)?\.pdf$/
@@ -38,7 +37,6 @@ export function ImportButton() {
         }
         try {
 
-            console.log('preprocessing')
             const response = await fetch('/api/preprocess', {
                 method: 'POST',
                 headers: {

@@ -11,8 +11,7 @@ import { api } from "@src/trpc/server";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
 import { AnnotatedPdfWithProfile } from "@src/lib/types";
 
-
-const PDFViewer2 = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
+const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
   ssr: false, // Disable server-side rendering for this component
 });
 
@@ -111,9 +110,6 @@ export default async function Page() {
     }
   }
 
-
-
-
   const parsedPaper =
     (await api.parsedPapers.fetchParsedPdf({
       source: pdfUrl.href,
@@ -126,7 +122,7 @@ export default async function Page() {
       loadedSource={source}
       parsedPaper={parsedPaper}
     >
-      <PDFViewer2
+      <PDFViewer
         annotatedPdfId={id}
         loadedSource={source}
         userId={userId}
