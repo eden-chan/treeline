@@ -24,7 +24,6 @@ import {
 	HighlightWithRelations,
 } from "@src/lib/types";
 import { Sidebar } from "@/components/pdf/Sidebar";
-import { trpc } from "@src/utils/api";
 import { clientApi } from "@src/trpc/react";
 import { v4 as uuidv4 } from "uuid";
 import { Forest } from "@/components/pdf/Forest";
@@ -119,13 +118,13 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					const highlightId = uuidv4();
 					const newNode = newData?.highlight?.node
 						? {
-								...newData.highlight.node,
-								id: uuidv4(),
-								parentId: null,
-								highlightId: highlightId,
-								children: [],
-								comments: [], // Ensure this property is included
-							}
+							...newData.highlight.node,
+							id: uuidv4(),
+							parentId: null,
+							highlightId: highlightId,
+							children: [],
+							comments: [], // Ensure this property is included
+						}
 						: null;
 					const newHighlight = {
 						...newData.highlight,
@@ -155,17 +154,12 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			source: loadedSource,
 		}).data?.highlights || userHighlights;
 
-	const getHighlightById = (id: string) => {
-		return highlights.find((highlight) => highlight.id === id);
-	};
 
 	const resetHighlights = () => {
 		annotatedPdfMutation.mutate({
 			id: annotatedPdfId,
 		});
 	};
-
-	const noteEles: Map<number, HTMLElement> = new Map();
 
 	const renderHighlightTarget = (props: RenderHighlightTargetProps) => (
 		<div
@@ -257,12 +251,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		);
 	};
 
-	const jumpToNote = (note: Note) => {
-		if (noteEles.has(note.id)) {
-			// noteEles.get(note.id).scrollIntoView();
-		}
-	};
-
 	const renderHighlights = (props: RenderHighlightsProps) => (
 		<div>
 			{highlights.map((note) => (
@@ -280,10 +268,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 									},
 									props.getCssProperties(area, props.rotation),
 								)}
-								// onClick={() => jumpToNote(note)}
-								// ref={(ref): void => {
-								//     noteEles.set(note.id, ref as HTMLElement);
-								// }}
 							/>
 						))}
 				</Fragment>
@@ -321,6 +305,9 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					style={{ height: "100vh", overflow: "auto" }}
 				>
 					<Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
+					{/* removes the trailing bottom whitespace */}
+					<div />
+
 				</ResizablePanel>
 				<ResizableHandle withHandle />
 				<ResizablePanel style={{ height: "100vh", overflow: "auto" }}>

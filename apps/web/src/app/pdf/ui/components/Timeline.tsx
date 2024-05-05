@@ -30,11 +30,6 @@ const GalleryView = ({
 	articles: AnnotatedPdfWithRelationsWithTimestamp[];
 }) => {
 	const router = useRouter();
-	const [highlightedCardId, setHighlightedCardId] = useState("");
-
-	const handleClick = (cardId: string) => {
-		setHighlightedCardId(cardId);
-	};
 
 	return (
 		<div
@@ -51,9 +46,7 @@ const GalleryView = ({
 						timeAgoCalculation={article.timeAgoCalculation} // Fixed typo from timeAgoCalculation to timeAgoCalculations
 						title={firstHighlight.slice(0, 50)}
 						highlightCount={article.highlights?.length || 0}
-						isHighlighted={highlightedCardId === firstHighlight}
-						onClick={() => handleClick(firstHighlight)}
-						onDoubleClick={() => {
+						onClick={() => {
 							router.push(`/pdf?url=${article.source}`);
 						}}
 					/>
@@ -69,7 +62,6 @@ const ListView = ({
 	articles: AnnotatedPdfWithRelationsWithTimestamp[];
 }) => {
 	const router = useRouter();
-	const [highlightedCardId, setHighlightedCardId] = useState("");
 
 	return (
 		<div className="">
@@ -78,9 +70,8 @@ const ListView = ({
 				return (
 					<article
 						key={index}
-						className={`mb-6 hover:cursor-pointer ${highlightedCardId === article.id ? "outline outline-2 outline-primary" : ""}`}
-						onClick={() => setHighlightedCardId(article.id)}
-						onDoubleClick={() => {
+						className={`mb-6 hover:cursor-pointer`}
+						onClick={() => {
 							router.push(`/pdf?url=${article.source}`);
 						}}
 					>
@@ -102,11 +93,6 @@ const ListView = ({
 
 const ExploreGalleryView = ({ articles }: { articles: ParsedPapers[] }) => {
 	const router = useRouter();
-	const [highlightedCardId, setHighlightedCardId] = useState("");
-
-	const handleClick = (cardId: string) => {
-		setHighlightedCardId(cardId);
-	};
 
 	return (
 		<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -119,9 +105,7 @@ const ExploreGalleryView = ({ articles }: { articles: ParsedPapers[] }) => {
 						title={article.title}
 						highlightCount={1}
 						category={article.primary_category}
-						isHighlighted={highlightedCardId === article.title}
-						onClick={() => handleClick(article.title)}
-						onDoubleClick={() => {
+						onClick={() => {
 							router.push(`/pdf?url=${article.source}`);
 						}}
 					/>
@@ -133,17 +117,15 @@ const ExploreGalleryView = ({ articles }: { articles: ParsedPapers[] }) => {
 
 const ExploreListView = ({ articles }: { articles: ParsedPapers[] }) => {
 	const router = useRouter();
-	const [highlightedCardId, setHighlightedCardId] = useState("");
 
 	return (
-		<div className="">
+		<div>
 			{articles.map((article, index) => {
 				return (
 					<article
 						key={index}
-						className={`mb-6 hover:cursor-pointer ${highlightedCardId === article.title ? "outline outline-2 outline-primary" : ""}`}
-						onClick={() => setHighlightedCardId(article.title)}
-						onDoubleClick={() => {
+						className={`mb-6 hover:cursor-pointer`}
+						onClick={() => {
 							router.push(`/pdf?url=${article.source}`);
 						}}
 					>

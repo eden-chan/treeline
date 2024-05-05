@@ -41,7 +41,6 @@ export default async function Page() {
   return (
     <main className="h-screen w-screen gap-0 p-4 text-black">
       <Navbar users={followedUsers} loggedInUser={user} />
-      <BentoGridThirdDemo />
       <Timeline articles={timeline} parsedPapers={parsedPapers} />
     </main>
   );

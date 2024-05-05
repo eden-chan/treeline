@@ -9,10 +9,9 @@ type PaperCardProps = {
 	title: string;
 	timeAgoCalculation: string;
 	highlightCount: number;
-	isHighlighted: boolean;
 	category?: string;
 	onClick: () => void;
-	onDoubleClick: () => void;
+
 };
 
 export function PaperCard({
@@ -20,18 +19,13 @@ export function PaperCard({
 	title,
 	timeAgoCalculation,
 	highlightCount,
-	isHighlighted,
 	category,
 	onClick,
-	onDoubleClick,
 }: PaperCardProps) {
 	return (
 		<Card
-			className={`flex flex-col min-h-[300px] ${
-				isHighlighted ? "outline outline-2 outline-primary" : ""
-			} group group-hover:cursor-pointer group/bento hover:shadow-xl transition duration-200`}
+			className={`flex flex-col min-h-[300px] group group-hover:cursor-pointer group/bento hover:shadow-xl transition duration-200`}
 			onClick={onClick}
-			onDoubleClick={onDoubleClick}
 		>
 			<CardHeader className="grid grid-cols-[1fr_auto] items-start gap-4 space-y-0 relative flex-shrink-0 group-hover:cursor-pointer">
 				<div className="space-y-1">
