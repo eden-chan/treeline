@@ -1,6 +1,6 @@
 "use server";
 
-import { ParsedPaper, ParsedPapersFacts, User } from "@prisma/client";
+import { ParsedPaper, ParsedPaperFacts, User } from "@prisma/client";
 import { EMBEDDING_TYPE } from "@src/lib/types";
 import { TitleSourcePair } from "@src/server/api/routers/parsed-pdf";
 
@@ -233,14 +233,14 @@ export const loadEmbeddings = async (formData: FormData) => {
     const { abstract, title, facts, sections } = paper;
     // TODO: pass in relevant sections per each fact
     // idea: in metadata specify which section the fact was retrieved. this would be done in python
-    const metadata = facts.map(({ fact, relevance }: ParsedPapersFacts) => ({
+    const metadata = facts.map(({ fact, relevance }: ParsedPaperFacts) => ({
       fact,
       relevance,
       source: pdfUrl,
       type: EMBEDDING_TYPE.FactDescriptor,
     }));
     const documents = facts.map(
-      ({ expectedInfo, nextSource }: ParsedPapersFacts) =>
+      ({ expectedInfo, nextSource }: ParsedPaperFacts) =>
         `${expectedInfo} ${nextSource}`,
     );
     // We can embed the descriptors, and use them to search the document for new chunks of information that were missed by the previous round of retrieval.
