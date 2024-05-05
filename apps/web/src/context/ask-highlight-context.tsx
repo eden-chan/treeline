@@ -345,7 +345,6 @@ ${highlight.content}
 	};
 
 	const generateFollowUpResponse = (nodeId: string) => {
-		console.log("nodeId:", nodeId);
 		const root = currentHighlightRef.current?.node;
 		if (!root) return;
 

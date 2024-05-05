@@ -70,7 +70,6 @@ const RenderHighlightContentExample: React.FC<
 					highlightAreas: props.highlightAreas,
 					quote: props.selectedText,
 				};
-				console.log(note);
 				setNotes(notes.concat([note]));
 				props.cancel();
 			}

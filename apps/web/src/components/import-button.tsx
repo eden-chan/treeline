@@ -44,7 +44,6 @@ export function ImportButton() {
                 },
                 body: JSON.stringify({ pdf_url: link }),
             });
-            console.log('response', response)
             router.push(`/pdf?url=${link}`)
         } catch (error) {
             console.error("Failed to fetch: ", error);
