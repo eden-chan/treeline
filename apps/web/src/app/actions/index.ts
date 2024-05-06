@@ -51,7 +51,6 @@ const s3 = new S3Client({
 });
 
 export const uploadToS3 = async (pdf_url: string) => {
-	console.log("uploadinsg to s3", pdf_url);
 	const response = await axios.get(pdf_url, {
 		responseType: "arraybuffer",
 	});
@@ -114,15 +113,14 @@ export const preprocessPaperAction = async (formData: FormData) => {
 	const { didFileExist, shouldPreprocess } = await uploadToS3(pdfUrl);
 
 	if (didFileExist) {
-		console.log(pdfUrl, "file existed");
 		redirect(`/pdf?url=${pdfUrl}`);
 	}
 
 	if (shouldPreprocess) {
 		try {
 			// done in the background
-			console.log(pdfUrl, "python server parsing pdf url");
-			const parsedPaper = api.parsedPaper.startParsingPDF({
+      console.log('upload s3 url', pdfUrl)
+			const parsedPaper = await api.parsedPaper.startParsingPDF({
 				source: pdfUrl,
 			});
 

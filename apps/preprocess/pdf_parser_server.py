@@ -106,9 +106,9 @@ def chat(text_chunk, metadata, abstract, response_model):
 async def parse_pdf(pdf_url):
     # Use httpx.AsyncClient for asynchronous HTTP requests
     try: 
-        async with httpx.AsyncClient() as client:
-            response = await client.get(pdf_url)
-            
+        print('attempt to parse', pdf_url)
+
+        response =  requests.get(pdf_url)
         if not response.headers["Content-Type"] == "application/pdf":
             raise HTTPException(status_code=400, detail="The provided URL does not point to a PDF document.")
         
@@ -123,58 +123,24 @@ async def parse_pdf(pdf_url):
         # Correctly await the asynchronous call to LlamaParse.aload_data
         documents = await LlamaParse(result_type="markdown").aload_data(file_path=temp_pdf_path)
         print(documents[0].text[:1000] + '...')
-        
         parser = MarkdownNodeParser()
-
         nodes = parser.get_nodes_from_documents(documents)
-        
         paper_metadata:PaperMetadata =extract_paper_metadata(pdf_url)
         title=paper_metadata.title 
         abstract=paper_metadata.summary
         published=paper_metadata.published
         updated=paper_metadata.updated
         primary_category=paper_metadata.primary_category
-                
-                
-
-        with ThreadPoolExecutor(max_workers=6) as executor:
-            try:
-                facts = []
-                facts_serialized = [] 
-                
-                sections = [{'text': node.text, 'metadata': node.metadata} for node in nodes]
-                
-                with mongo_client(db_name='paper', collection_name='ParsedPaper') as db: 
-                    filter_query = {"source": pdf_url}
-                    update_data = {"$set": {"title": title, "abstract": abstract, "facts": facts_serialized, 'sections': sections, 'primary_category': primary_category, 'published': published, 'updated': updated}}
-                    result = db.update_one(filter_query, update_data, upsert=True)
-
-            except Exception as e:
-                print(f"An error occurred during parsing or database update: {e}")
-                # Optionally, handle the error, e.g., by setting response_id to None or re-raising the exception
-                response_id = None
-                
-        # Check if the document was inserted
-        if result.upserted_id is not None:
-            mongo_id = str(result.upserted_id)
-            print(f"Document inserted with id {mongo_id}.")
-        else:
-            # The document was updated, find it to get the ID
-            with mongo_client(db_name='paper', collection_name='ParsedPaper') as db: 
-                updated_document = db.find_one(filter_query)
-            if updated_document:
-                mongo_id = str(updated_document['_id'])
-                print(f"Document updated. ID: {mongo_id}")
-            else:
-                print("Document not found after update.")
-                mongo_id = None
-
-        response = {"source": pdf_url, 'sections': sections, 'facts': facts_serialized, 'title': title, "abstract": abstract, "mongo_id": mongo_id }
-        return response
+        with mongo_client(db_name='paper', collection_name='ParsedPaper') as db: 
+            filter_query = {"source": pdf_url}
+            update_data = {"$set": {"title": title, "abstract": abstract, 'primary_category': primary_category, 'published': published, 'updated': updated}}
+            result = db.update_one(filter_query, update_data, upsert=True)
+        
+        
+        return title
     except Exception as e:
         print('exception', e)
     
-
 
 class PDFRequest(BaseModel):
     pdf_url: str
@@ -184,7 +150,7 @@ async def process_pdf(request: PDFRequest):
     try:
         # Assuming preprocess_pdf is a function that processes the PDF and returns a result                
         start_time = time.time()
-        result = await parse_pdf(request.pdf_url)
+        result = parse_pdf(request.pdf_url)
         end_time = time.time()
 
         print(f"PDF parsing took {end_time - start_time} seconds.")
@@ -203,11 +169,6 @@ async def fetch_paper(request: PDFRequest):
 
     
 if __name__ == "__main__":
-    # chroma_client = chromadb.HttpClient(host=os.environ.get('CHROMA_URL'))
-    # collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
-    # results = collection.get(where={ "$and": [{"source": {         "$eq":"https://arxiv.org/pdf/1706.03762.pdf"}}, {"type": {"$eq": "FactDescriptor"}} ]     })   
-    # print(len(results['ids']))
-    # import pdb; pdb.set_trace()
     import uvicorn
     uvicorn.run("pdf_parser_server:app", host="0.0.0.0", port=3001, reload=True)
     

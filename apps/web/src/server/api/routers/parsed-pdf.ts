@@ -18,7 +18,10 @@ export const parsedPaperRouter = createTRPCRouter({
 		)
 		.mutation<any>(async ({ input }) => {
 			try {
-				console.log(`${process.env.PREPROCESSOR_URL}/process_pdf`);
+				console.log(
+					`${process.env.PREPROCESSOR_URL}/process_pdf`,
+					input.source,
+				);
 				const response = await fetch(
 					`${process.env.PREPROCESSOR_URL}/process_pdf`,
 					{
