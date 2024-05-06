@@ -58,7 +58,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     return null;
   }
 
-  const parsedPapers = (await api.parsedPapers.fetchAllParsedPapers()) ?? [];
+  const parsedPapers = (await api.parsedPaper.fetchAllParsedPapers()) ?? [];
 
   return (
     <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">

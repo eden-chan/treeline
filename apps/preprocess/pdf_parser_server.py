@@ -105,102 +105,74 @@ def chat(text_chunk, metadata, abstract, response_model):
 
 async def parse_pdf(pdf_url):
     # Use httpx.AsyncClient for asynchronous HTTP requests
-    async with httpx.AsyncClient() as client:
-        response = await client.get(pdf_url)
+    try: 
+        async with httpx.AsyncClient() as client:
+            response = await client.get(pdf_url)
+            
+        if not response.headers["Content-Type"] == "application/pdf":
+            raise HTTPException(status_code=400, detail="The provided URL does not point to a PDF document.")
         
-    if not response.headers["Content-Type"] == "application/pdf":
-        raise HTTPException(status_code=400, detail="The provided URL does not point to a PDF document.")
-    
-    try:
-        # Assuming you have a temporary file setup as before
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
-            temp_file.write(response.content)
-            temp_pdf_path = temp_file.name
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to create a temporary PDF file: {str(e)}")
-
-    # Correctly await the asynchronous call to LlamaParse.aload_data
-    documents = await LlamaParse(result_type="markdown").aload_data(file_path=temp_pdf_path)
-    print(documents[0].text[:1000] + '...')
-    
-    parser = MarkdownNodeParser()
-
-    nodes = parser.get_nodes_from_documents(documents)
-
-    with ThreadPoolExecutor(max_workers=6) as executor:
         try:
-            
-            paper_metadata:PaperMetadata =extract_paper_metadata(pdf_url)
-            title=paper_metadata.title 
-            abstract=paper_metadata.summary
-            published=paper_metadata.published
-            updated=paper_metadata.updated
-            primary_category=paper_metadata.primary_category
-            
-        
-            futures = [executor.submit(chat, node.text, node.metadata, abstract, ExtractFactDescriptor) for node in nodes]
-            parsing = [future.result() for future in as_completed(futures)]
-
-            facts = []
-            facts_serialized = [] 
-            # facts = [parsing_item.fact_descriptors for parsing_item in parsing]
-            # facts_serialized = [fact_descriptor.dict() for fact in facts for fact_descriptor in fact]
-            
-            sections = [{'text': node.text, 'metadata': node.metadata} for node in nodes]
-            
-            with mongo_client(db_name='paper', collection_name='ParsedPaper') as db: 
-                filter_query = {"source": pdf_url}
-                update_data = {"$set": {"title": title, "abstract": abstract, "facts": facts_serialized, 'sections': sections, 'primary_category': primary_category, 'published': published, 'updated': updated}}
-                result = db.update_one(filter_query, update_data, upsert=True)
-                
-            # collection = chroma_client.get_collection(name="ParsedPapers", embedding_function=embedding_function)
-
-            metadata = [{"fact": fact_descriptor["fact"], "nextSource":fact_descriptor['nextSource'], "relevance": fact_descriptor["relevance"], "source": pdf_url, 'type': EMBEDDING_TYPE.FactDescriptor.value} for fact_descriptor in facts_serialized]
-            # We can embed the descriptors, and use them to search the document for new chunks of information that were missed by the previous round of retrieval.
-            documents = [f"{fact_descriptor['expectedInfo']}" for fact_descriptor in facts_serialized]
-            ids = [str(uuid.uuid4()) for _ in metadata]
-
-            # Delete all documents where metadata source equals pdf_url to for upsert
-            delete_filter = {"source": pdf_url}
-            
-            # collection.delete(where=delete_filter)
-            
-            # collection.upsert(
-            #     documents=documents,
-            #     metadatas=metadata,
-            #     ids=ids
-            # )
-            # insert source text
-            sectionText = [section['text'] for section in sections]
-            sectionMetadata = [{'source': pdf_url, 'type': EMBEDDING_TYPE.SourceText.value} for section in sections]
-            sectionIds = [str(uuid.uuid4()) for _ in sectionText]
-            # collection.upsert(
-            #     documents=sectionText,
-            #     metadatas=sectionMetadata,
-            #     ids=sectionIds
-            # )
+            # Assuming you have a temporary file setup as before
+            with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+                temp_file.write(response.content)
+                temp_pdf_path = temp_file.name
         except Exception as e:
-            print(f"An error occurred during parsing or database update: {e}")
-            # Optionally, handle the error, e.g., by setting response_id to None or re-raising the exception
-            response_id = None
-            
-    # Check if the document was inserted
-    if result.upserted_id is not None:
-        mongo_id = str(result.upserted_id)
-        print(f"Document inserted with id {mongo_id}.")
-    else:
-        # The document was updated, find it to get the ID
-        with mongo_client(db_name='paper', collection_name='ParsedPapers') as db: 
-            updated_document = db.find_one(filter_query)
-        if updated_document:
-            mongo_id = str(updated_document['_id'])
-            print(f"Document updated. ID: {mongo_id}")
-        else:
-            print("Document not found after update.")
-            mongo_id = None
+            raise HTTPException(status_code=500, detail=f"Failed to create a temporary PDF file: {str(e)}")
 
-    response = {"source": pdf_url, 'sections': sections, 'facts': facts_serialized, 'title': title, "abstract": abstract, "mongo_id": mongo_id }
-    return response
+        # Correctly await the asynchronous call to LlamaParse.aload_data
+        documents = await LlamaParse(result_type="markdown").aload_data(file_path=temp_pdf_path)
+        print(documents[0].text[:1000] + '...')
+        
+        parser = MarkdownNodeParser()
+
+        nodes = parser.get_nodes_from_documents(documents)
+        
+        paper_metadata:PaperMetadata =extract_paper_metadata(pdf_url)
+        title=paper_metadata.title 
+        abstract=paper_metadata.summary
+        published=paper_metadata.published
+        updated=paper_metadata.updated
+        primary_category=paper_metadata.primary_category
+                
+                
+
+        with ThreadPoolExecutor(max_workers=6) as executor:
+            try:
+                facts = []
+                facts_serialized = [] 
+                
+                sections = [{'text': node.text, 'metadata': node.metadata} for node in nodes]
+                
+                with mongo_client(db_name='paper', collection_name='ParsedPaper') as db: 
+                    filter_query = {"source": pdf_url}
+                    update_data = {"$set": {"title": title, "abstract": abstract, "facts": facts_serialized, 'sections': sections, 'primary_category': primary_category, 'published': published, 'updated': updated}}
+                    result = db.update_one(filter_query, update_data, upsert=True)
+
+            except Exception as e:
+                print(f"An error occurred during parsing or database update: {e}")
+                # Optionally, handle the error, e.g., by setting response_id to None or re-raising the exception
+                response_id = None
+                
+        # Check if the document was inserted
+        if result.upserted_id is not None:
+            mongo_id = str(result.upserted_id)
+            print(f"Document inserted with id {mongo_id}.")
+        else:
+            # The document was updated, find it to get the ID
+            with mongo_client(db_name='paper', collection_name='ParsedPaper') as db: 
+                updated_document = db.find_one(filter_query)
+            if updated_document:
+                mongo_id = str(updated_document['_id'])
+                print(f"Document updated. ID: {mongo_id}")
+            else:
+                print("Document not found after update.")
+                mongo_id = None
+
+        response = {"source": pdf_url, 'sections': sections, 'facts': facts_serialized, 'title': title, "abstract": abstract, "mongo_id": mongo_id }
+        return response
+    except Exception as e:
+        print('exception', e)
     
 
 

@@ -111,7 +111,7 @@ export default async function Page() {
   }
 
   const parsedPaper =
-    (await api.parsedPapers.fetchParsedPdf({
+    (await api.parsedPaper.fetchParsedPdf({
       source: pdfUrl.href,
     })) ?? null;
 

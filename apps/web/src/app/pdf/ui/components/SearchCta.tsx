@@ -1,12 +1,11 @@
 'use client';
 
-import { startParsingPaperAction } from '@src/app/actions';
+import { preprocessPaperAction } from '@src/app/actions';
 
 const DEFAULT_PDF_URL = 'https://arxiv.org/pdf/1706.03762.pdf';
 
 export default function SearchCta() {
-
-
+	// TODO: add form validation and error
 	return (
 		<section className="flex grow flex-col items-center justify-center bg-gradient-to-br from-[#6366F1] to-[#8B5CF6]">
 			<div className="mx-auto w-full max-w-md space-y-6">
@@ -20,7 +19,7 @@ export default function SearchCta() {
 				</div>
 				<form
 					className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800"
-					action={startParsingPaperAction}
+					action={preprocessPaperAction}
 				>
 					<div className="space-y-6">
 						<div>

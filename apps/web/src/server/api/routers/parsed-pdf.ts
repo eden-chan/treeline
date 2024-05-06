@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ParsedPapers } from "@prisma/client";
+import { ParsedPaper } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
@@ -9,7 +9,7 @@ export interface TitleSourcePair {
 	source: string;
 }
 
-export const parsedPapersRouter = createTRPCRouter({
+export const parsedPaperRouter = createTRPCRouter({
 	startParsingPDF: publicProcedure
 		.input(
 			z.object({
@@ -18,6 +18,7 @@ export const parsedPapersRouter = createTRPCRouter({
 		)
 		.mutation<any>(async ({ input }) => {
 			try {
+				console.log(`${process.env.PREPROCESSOR_URL}/process_pdf`);
 				const response = await fetch(
 					`${process.env.PREPROCESSOR_URL}/process_pdf`,
 					{
@@ -45,12 +46,12 @@ export const parsedPapersRouter = createTRPCRouter({
 				source: z.string(),
 			}),
 		)
-		.query<ParsedPapers | null>(async ({ input }) => {
+		.query<ParsedPaper | null>(async ({ input }) => {
 			const whereClause: Record<string, string> = {};
 			whereClause["source"] = input.source;
-			let result: ParsedPapers | null;
+			let result: ParsedPaper | null;
 			try {
-				result = await db.parsedPapers.findFirst({
+				result = await db.parsedPaper.findFirst({
 					where: whereClause,
 				});
 			} catch (error) {
@@ -60,10 +61,10 @@ export const parsedPapersRouter = createTRPCRouter({
 
 			return result;
 		}),
-	fetchAllParsedPapers: publicProcedure.query<ParsedPapers[]>(async () => {
-		let result: ParsedPapers[];
+	fetchAllParsedPapers: publicProcedure.query<ParsedPaper[]>(async () => {
+		let result: ParsedPaper[];
 		try {
-			result = await db.parsedPapers.findMany();
+			result = await db.parsedPaper.findMany();
 		} catch (error) {
 			console.error("Failed to fetch parsed paper:", error);
 			return [];
@@ -73,7 +74,7 @@ export const parsedPapersRouter = createTRPCRouter({
 	fetchAllParsedSources: publicProcedure.query<TitleSourcePair[]>(async () => {
 		let result: TitleSourcePair[];
 		try {
-			let resp = await db.parsedPapers.findMany({
+			let resp = await db.parsedPaper.findMany({
 				select: { source: true, title: true },
 			});
 			result = resp

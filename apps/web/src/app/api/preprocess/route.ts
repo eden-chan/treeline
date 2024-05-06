@@ -39,6 +39,7 @@ export async function POST(req: NextRequest) {
 			// Attempt to retrieve metadata for the object to check its existence
 			await s3.send(new HeadObjectCommand(headParams));
 			// If the file exists, this line will execute without error
+			return NextResponse.json({ message: "PDF exists", fileExisted: true });
 		} catch (error) {
 			// Handle errors during the head object command
 			if ((error as { name: string }).name === "NotFound") {
@@ -57,7 +58,10 @@ export async function POST(req: NextRequest) {
 			}
 		}
 
-		return NextResponse.json({ message: "PDF uploaded successfully" });
+		return NextResponse.json({
+			message: "PDF uploaded successfully",
+			fileExisted: false,
+		});
 	} catch (error) {
 		console.error(error);
 		return NextResponse.json(
