@@ -12,7 +12,7 @@ function QuestionNode({ data, isConnectable }: NodeProps<NodeData>) {
 	const { question, answer } = data;
 
 	return (
-		<div className="border-2 bg-white px-5 py-3 max-w-[800px]">
+		<div className="border-2 bg-white px-5 py-3 max-w-[800px] hover:cursor-pointer hover:shadow-xl transition">
 			<Handle
 				type="target"
 				position={Position.Top}
