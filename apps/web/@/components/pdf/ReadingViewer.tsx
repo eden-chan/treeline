@@ -118,13 +118,13 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					const highlightId = uuidv4();
 					const newNode = newData?.highlight?.node
 						? {
-							...newData.highlight.node,
-							id: uuidv4(),
-							parentId: null,
-							highlightId: highlightId,
-							children: [],
-							comments: [], // Ensure this property is included
-						}
+								...newData.highlight.node,
+								id: uuidv4(),
+								parentId: null,
+								highlightId: highlightId,
+								children: [],
+								comments: [], // Ensure this property is included
+							}
 						: null;
 					const newHighlight = {
 						...newData.highlight,
@@ -153,7 +153,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			userId: userId,
 			source: loadedSource,
 		}).data?.highlights || userHighlights;
-
 
 	const resetHighlights = () => {
 		annotatedPdfMutation.mutate({
@@ -307,7 +306,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					<Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
 					{/* removes the trailing bottom whitespace */}
 					<div />
-
 				</ResizablePanel>
 				<ResizableHandle withHandle />
 				<ResizablePanel style={{ height: "100vh", overflow: "auto" }}>

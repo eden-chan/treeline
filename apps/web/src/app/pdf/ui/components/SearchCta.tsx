@@ -1,8 +1,6 @@
-'use client';
+import { preprocessPaperAction } from "@src/app/actions";
 
-import { preprocessPaperAction } from '@src/app/actions';
-
-const DEFAULT_PDF_URL = 'https://arxiv.org/pdf/1706.03762.pdf';
+const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762.pdf";
 
 export default function SearchCta() {
 	// TODO: add form validation and error
@@ -14,7 +12,8 @@ export default function SearchCta() {
 						Accelerate Your Learning
 					</h1>
 					<p className="mt-3 text-gray-200 sm:text-lg">
-						Discover what you're curious about and uncover the gaps in your knowledge.
+						Discover what you're curious about and uncover the gaps in your
+						knowledge.
 					</p>
 				</div>
 				<form
@@ -54,3 +53,4 @@ export default function SearchCta() {
 		</section>
 	);
 }
+
