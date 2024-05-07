@@ -23,13 +23,16 @@ export default async function Page() {
 
 	const urlParams = new URLSearchParams(header_url.split("?")[1]);
 	const defaultPdfURL = `${S3_BASE_URL}/1706.03762.pdf`;
-	let pdfUrl: URL;
+	let arxivPdfUrl: URL;
+	let s3PdfUrl: URL;
 
 	try {
 		// get the uploaded PDF id
-		pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
-		const key = pdfUrl.href.substring(pdfUrl.href.lastIndexOf("/") + 1); // Extract the PDF ID from the URL
-		pdfUrl = new URL(`${S3_BASE_URL}/${key}`);
+		arxivPdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
+		const key = arxivPdfUrl.href.substring(
+			arxivPdfUrl.href.lastIndexOf("/") + 1,
+		); // Extract the PDF ID from the URL
+		s3PdfUrl = new URL(`${S3_BASE_URL}/${key}`);
 	} catch (error) {
 		console.error(error);
 		return <div>Not a valid URL</div>;
@@ -39,13 +42,13 @@ export default async function Page() {
 	const userEmail: string | undefined = user?.emailAddresses[0]?.emailAddress;
 
 	if (!user || !userEmail) {
-		return <RedirectToSignIn redirectUrl={`/pdf?url=${pdfUrl.href}`} />;
+		return <RedirectToSignIn redirectUrl={`/pdf?url=${arxivPdfUrl.href}`} />;
 	}
 
 	let newUserData: AnnotatedPdf & { highlights: Highlight[] } = {
 		id: new ObjectId().toString(),
 		highlights: [],
-		source: pdfUrl.href,
+		source: s3PdfUrl.href,
 		userId: userEmail,
 	};
 
@@ -53,7 +56,7 @@ export default async function Page() {
 	try {
 		const data = await api.annotatedPdf.fetchAnnotatedPdf({
 			userId: userEmail,
-			source: pdfUrl.href,
+			source: s3PdfUrl.href,
 		});
 
 		if (data) {
@@ -87,7 +90,7 @@ export default async function Page() {
 	});
 
 	const annotatedPdfs = await api.annotatedPdf.fetchAllAnnotatedPdfs({
-		source: pdfUrl.href,
+		source: s3PdfUrl.href,
 		userList: userEmails,
 	});
 
@@ -111,7 +114,7 @@ export default async function Page() {
 
 	const parsedPaper =
 		(await api.parsedPaper.fetchParsedPdf({
-			source: pdfUrl.href,
+			source: arxivPdfUrl.href,
 		})) ?? null;
 
 	return (
