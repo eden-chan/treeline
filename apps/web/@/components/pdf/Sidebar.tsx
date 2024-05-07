@@ -21,10 +21,7 @@ export function Sidebar({
 		<div className="overflow-auto text-gray-500 bg-gradient-to-b from-gray-50 to-gray-100">
 			<div className="p-4">
 				<p>
-					<small>
-						To create area highlight hold ⌥ Option key (Alt), then click and
-						drag.
-					</small>
+					<small>Highlight text and ask a question to start learning</small>
 				</p>
 			</div>
 

@@ -33,7 +33,11 @@ export const getParsedPaperAction = async (
 	pdfUrl: string,
 ): Promise<ParsedPaper | null> => {
 	try {
+<<<<<<< HEAD
 		const parsedPaper = await api.parsedPaper.fetchParsedPdf({
+=======
+		const parsedPaper = await api.parsedPapers.fetchParsedPdf({
+>>>>>>> main
 			source: pdfUrl,
 		});
 		return parsedPaper;
@@ -96,13 +100,18 @@ export const uploadToS3 = async (pdf_url: string) => {
 
 export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
 	try {
+<<<<<<< HEAD
 		const parsedPapers = await api.parsedPaper.fetchAllParsedSources();
 
 		// TODO
+=======
+		const parsedPapers = await api.parsedPapers.fetchAllParsedSources();
+>>>>>>> main
 		return parsedPapers;
 	} catch (error) {
 		throw new Error(`Failed to get parsed papers: ${error}`);
 	}
+<<<<<<< HEAD
 };
 
 //  preprocess the PDF if it is not uploaded to S3. If the PDF already exists in S3, no preprocessing will occur.
@@ -129,6 +138,8 @@ export const preprocessPaperAction = async (formData: FormData) => {
 			throw new Error(`Failed to get parsed paper by url: ${pdfUrl} ${error}`);
 		}
 	}
+=======
+>>>>>>> main
 };
 
 // ESM
@@ -179,7 +190,10 @@ export const getItemsFromCollection = async (
 	});
 
 	const response = await collection.get({
+<<<<<<< HEAD
 		// ids: ["id1", "id2"],
+=======
+>>>>>>> main
 		where: { source },
 		limit: 10,
 		offset: 0,
@@ -188,7 +202,10 @@ export const getItemsFromCollection = async (
 			IncludeEnum.Metadatas,
 			IncludeEnum.Documents,
 		],
+<<<<<<< HEAD
 		// whereDocument: { $contains: "value" },
+=======
+>>>>>>> main
 	});
 
 	return response;
@@ -292,7 +309,11 @@ export const listAllCollections = async () => {
 };
 
 export const makeNewCollection = async (
+<<<<<<< HEAD
 	collectionName: string = "ParsedPapers",
+=======
+	collectionName: string = "ParsedPaper",
+>>>>>>> main
 ) => {
 	return await client.createCollection({
 		name: collectionName,
@@ -464,14 +485,14 @@ export const search = async (formData: FormData) => {
 
 export const handleDeleteCollection = async (formData: FormData) => {
 	const collectionName = formData.get("collection")?.toString();
-	const response = await deleteCollection(collectionName || "ParsedPapers");
+	const response = await deleteCollection(collectionName || "ParsedPaper");
 	console.debug(`Deleted Collection ${collectionName}:`, { response });
 };
 
 export const handleMakeNewCollection = async (formData: FormData) => {
 	try {
 		const collectionName = formData.get("query")?.toString();
-		const response = await makeNewCollection(collectionName || "ParsedPapers");
+		const response = await makeNewCollection(collectionName || "ParsedPaper");
 		console.debug("New Collection Created:", { response });
 	} catch (error) {
 		// console.error('Error creating new collection:', error);

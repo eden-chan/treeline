@@ -2,7 +2,6 @@ import { Providers } from "@src/context/providers";
 import "./globals.css";
 import type { Metadata } from "next";
 import { Libre_Franklin } from "next/font/google";
-import { Inter } from "next/font/google";
 import { Toaster } from "@/components/ui/toaster";
 
 const libre_franklin = Libre_Franklin({
