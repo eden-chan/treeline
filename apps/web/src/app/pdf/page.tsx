@@ -22,7 +22,7 @@ export default async function Page() {
 	const header_url = headersList.get("x-url") || "";
 
 	const urlParams = new URLSearchParams(header_url.split("?")[1]);
-	const defaultPdfURL = `${S3_BASE_URL}/1706.03762v7.pdf`;
+	const defaultPdfURL = `${S3_BASE_URL}/1706.03762.pdf`;
 	let pdfUrl: URL;
 
 	try {
