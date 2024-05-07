@@ -33,11 +33,7 @@ export const getParsedPaperAction = async (
 	pdfUrl: string,
 ): Promise<ParsedPaper | null> => {
 	try {
-<<<<<<< HEAD
 		const parsedPaper = await api.parsedPaper.fetchParsedPdf({
-=======
-		const parsedPaper = await api.parsedPapers.fetchParsedPdf({
->>>>>>> main
 			source: pdfUrl,
 		});
 		return parsedPaper;
@@ -100,18 +96,11 @@ export const uploadToS3 = async (pdf_url: string) => {
 
 export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
 	try {
-<<<<<<< HEAD
 		const parsedPapers = await api.parsedPaper.fetchAllParsedSources();
-
-		// TODO
-=======
-		const parsedPapers = await api.parsedPapers.fetchAllParsedSources();
->>>>>>> main
 		return parsedPapers;
 	} catch (error) {
 		throw new Error(`Failed to get parsed papers: ${error}`);
 	}
-<<<<<<< HEAD
 };
 
 //  preprocess the PDF if it is not uploaded to S3. If the PDF already exists in S3, no preprocessing will occur.
@@ -128,7 +117,7 @@ export const preprocessPaperAction = async (formData: FormData) => {
 	if (shouldPreprocess) {
 		try {
 			// done in the background
-      console.log('upload s3 url', pdfUrl)
+			console.log("upload s3 url", pdfUrl);
 			const parsedPaper = await api.parsedPaper.startParsingPDF({
 				source: pdfUrl,
 			});
@@ -138,8 +127,6 @@ export const preprocessPaperAction = async (formData: FormData) => {
 			throw new Error(`Failed to get parsed paper by url: ${pdfUrl} ${error}`);
 		}
 	}
-=======
->>>>>>> main
 };
 
 // ESM
@@ -190,10 +177,6 @@ export const getItemsFromCollection = async (
 	});
 
 	const response = await collection.get({
-<<<<<<< HEAD
-		// ids: ["id1", "id2"],
-=======
->>>>>>> main
 		where: { source },
 		limit: 10,
 		offset: 0,
@@ -202,10 +185,6 @@ export const getItemsFromCollection = async (
 			IncludeEnum.Metadatas,
 			IncludeEnum.Documents,
 		],
-<<<<<<< HEAD
-		// whereDocument: { $contains: "value" },
-=======
->>>>>>> main
 	});
 
 	return response;
@@ -309,11 +288,7 @@ export const listAllCollections = async () => {
 };
 
 export const makeNewCollection = async (
-<<<<<<< HEAD
-	collectionName: string = "ParsedPapers",
-=======
 	collectionName: string = "ParsedPaper",
->>>>>>> main
 ) => {
 	return await client.createCollection({
 		name: collectionName,
