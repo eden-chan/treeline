@@ -25,7 +25,7 @@ interface Props {
 }
 
 const g = new Dagre.graphlib.Graph().setDefaultEdgeLabel(() => ({}));
-g.setGraph({ rankdir: "TB", ranksep: 100, nodesep: 100 });
+g.setGraph({ rankdir: "LR", ranksep: 100, nodesep: 100 });
 
 const nodeTypes: NodeTypes = {
 	question: QuestionNode,
@@ -72,8 +72,8 @@ const generateNodesAndEdges = (
 	];
 
 	const currentEdges: Edge[] = [];
-	let new_x = x - 500;
-	let new_y = y + 500;
+	let new_x = x + 600;
+	let new_y = y - 300;
 	if (node.children) {
 		for (let child of node.children) {
 			const { nodes, edges } = generateNodesAndEdges(child, new_x, new_y);
@@ -82,9 +82,11 @@ const generateNodesAndEdges = (
 			currentEdges.push({
 				id: `${node.id}-${child.id}`,
 				source: node.id,
+				sourceHandle: "b",
 				target: child.id,
+				targetHandle: "a",
 			});
-			new_x += 500;
+			new_y += 300;
 		}
 	}
 
