@@ -15,17 +15,24 @@ const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
 	ssr: false, // Disable server-side rendering for this component
 });
 
+const S3_BASE_URL = "https://treeline.s3.us-east-2.amazonaws.com";
+
 export default async function Page() {
 	const headersList = headers();
 	const header_url = headersList.get("x-url") || "";
 
 	const urlParams = new URLSearchParams(header_url.split("?")[1]);
-	const defaultPdfURL =
-		"https://treeline.s3.us-east-2.amazonaws.com/1706.03762v7.pdf";
-	let pdfUrl: URL;
+	const defaultPdfURL = `${S3_BASE_URL}/1706.03762.pdf`;
+	let arxivPdfUrl: URL;
+	let s3PdfUrl: URL;
 
 	try {
-		pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
+		// get the uploaded PDF id
+		arxivPdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
+		const key = arxivPdfUrl.href.substring(
+			arxivPdfUrl.href.lastIndexOf("/") + 1,
+		); // Extract the PDF ID from the URL
+		s3PdfUrl = new URL(`${S3_BASE_URL}/${key}`);
 	} catch (error) {
 		console.error(error);
 		return <div>Not a valid URL</div>;
@@ -35,13 +42,13 @@ export default async function Page() {
 	const userEmail: string | undefined = user?.emailAddresses[0]?.emailAddress;
 
 	if (!user || !userEmail) {
-		return <RedirectToSignIn redirectUrl={`/pdf?url=${pdfUrl.href}`} />;
+		return <RedirectToSignIn redirectUrl={`/pdf?url=${arxivPdfUrl.href}`} />;
 	}
 
 	let newUserData: AnnotatedPdf & { highlights: Highlight[] } = {
 		id: new ObjectId().toString(),
 		highlights: [],
-		source: pdfUrl.href,
+		source: s3PdfUrl.href,
 		userId: userEmail,
 	};
 
@@ -49,7 +56,7 @@ export default async function Page() {
 	try {
 		const data = await api.annotatedPdf.fetchAnnotatedPdf({
 			userId: userEmail,
-			source: pdfUrl.href,
+			source: s3PdfUrl.href,
 		});
 
 		if (data) {
@@ -83,7 +90,7 @@ export default async function Page() {
 	});
 
 	const annotatedPdfs = await api.annotatedPdf.fetchAllAnnotatedPdfs({
-		source: pdfUrl.href,
+		source: s3PdfUrl.href,
 		userList: userEmails,
 	});
 
@@ -106,8 +113,8 @@ export default async function Page() {
 	}
 
 	const parsedPaper =
-		(await api.parsedPapers.fetchParsedPdf({
-			source: pdfUrl.href,
+		(await api.parsedPaper.fetchParsedPdf({
+			source: arxivPdfUrl.href,
 		})) ?? null;
 
 	return (

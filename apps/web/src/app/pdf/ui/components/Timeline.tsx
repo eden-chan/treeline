@@ -30,11 +30,6 @@ const GalleryView = ({
 	articles: AnnotatedPdfWithRelationsWithTimestamp[];
 }) => {
 	const router = useRouter();
-	const [highlightedCardId, setHighlightedCardId] = useState("");
-
-	const handleClick = (cardId: string) => {
-		setHighlightedCardId(cardId);
-	};
 
 	return (
 		<div
@@ -51,10 +46,9 @@ const GalleryView = ({
 						timeAgoCalculation={article.timeAgoCalculation} // Fixed typo from timeAgoCalculation to timeAgoCalculations
 						title={firstHighlight.slice(0, 50)}
 						highlightCount={article.highlights?.length || 0}
-						isHighlighted={highlightedCardId === firstHighlight}
-						onClick={() => handleClick(firstHighlight)}
-						onDoubleClick={() => {
-							router.push(`/pdf?url=${article.source}`);
+						onClick={() => {
+							const pdfUrl = article.source.endsWith('.pdf') ? article.source : `${article.source}.pdf`;
+							router.push(`/pdf?url=${pdfUrl}`);
 						}}
 					/>
 				);
@@ -69,7 +63,6 @@ const ListView = ({
 	articles: AnnotatedPdfWithRelationsWithTimestamp[];
 }) => {
 	const router = useRouter();
-	const [highlightedCardId, setHighlightedCardId] = useState("");
 
 	return (
 		<div className="">
@@ -78,10 +71,10 @@ const ListView = ({
 				return (
 					<article
 						key={index}
-						className={`mb-6 hover:cursor-pointer ${highlightedCardId === article.id ? "outline outline-2 outline-primary" : ""}`}
-						onClick={() => setHighlightedCardId(article.id)}
-						onDoubleClick={() => {
-							router.push(`/pdf?url=${article.source}`);
+						className={`mb-6 hover:cursor-pointer`}
+						onClick={() => {
+							const pdfUrl = article.source.endsWith('.pdf') ? article.source : `${article.source}.pdf`;
+							router.push(`/pdf?url=${pdfUrl}`);
 						}}
 					>
 						<h2 className="text-xl font-semibold mb-1">
@@ -102,12 +95,6 @@ const ListView = ({
 
 const ExploreGalleryView = ({ articles }: { articles: ParsedPaper[] }) => {
 	const router = useRouter();
-	const [highlightedCardId, setHighlightedCardId] = useState("");
-
-	const handleClick = (article: ParsedPaper) => {
-		setHighlightedCardId(article.title);
-		router.push(`/pdf?url=${article.source}`);
-	};
 
 	return (
 		<div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -121,10 +108,9 @@ const ExploreGalleryView = ({ articles }: { articles: ParsedPaper[] }) => {
 							title={article.title}
 							highlightCount={1}
 							category={article.primary_category}
-							isHighlighted={highlightedCardId === article.title}
-							onClick={() => handleClick(article)}
-							onDoubleClick={() => {
-								router.push(`/pdf?url=${article.source}`);
+							onClick={() => {
+								const pdfUrl = article.source.endsWith('.pdf') ? article.source : `${article.source}.pdf`;
+								router.push(`/pdf?url=${pdfUrl}`);
 							}}
 						/>
 					);
@@ -138,18 +124,17 @@ const ExploreGalleryView = ({ articles }: { articles: ParsedPaper[] }) => {
 
 const ExploreListView = ({ articles }: { articles: ParsedPaper[] }) => {
 	const router = useRouter();
-	const [highlightedCardId, setHighlightedCardId] = useState("");
 
 	return (
-		<div className="">
+		<div>
 			{articles.map((article, index) => {
 				return (
 					<article
 						key={index}
-						className={`mb-6 hover:cursor-pointer ${highlightedCardId === article.title ? "outline outline-2 outline-primary" : ""}`}
-						onClick={() => setHighlightedCardId(article.title)}
-						onDoubleClick={() => {
-							router.push(`/pdf?url=${article.source}`);
+						className={`mb-6 hover:cursor-pointer`}
+						onClick={() => {
+							const pdfUrl = article.source.endsWith('.pdf') ? article.source : `${article.source}.pdf`;
+							router.push(`/pdf?url=${pdfUrl}`);
 						}}
 					>
 						<h2 className="text-xl font-semibold mb-1">{article.title}</h2>

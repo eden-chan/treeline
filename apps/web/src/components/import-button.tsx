@@ -36,14 +36,14 @@ export function ImportButton() {
             return;
         }
         try {
-            fetch('/api/preprocess', {
+
+            const response = await fetch('/api/preprocess', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ pdf_url: link }),
             });
-
             router.push(`/pdf?url=${link}`)
         } catch (error) {
             console.error("Failed to fetch: ", error);

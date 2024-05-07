@@ -1,4 +1,9 @@
-const SearchCta = () => {
+import { preprocessPaperAction } from "@src/app/actions";
+
+const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762.pdf";
+
+export default function SearchCta() {
+	// TODO: add form validation and error
 	return (
 		<section className="flex grow flex-col items-center justify-center bg-gradient-to-br from-[#6366F1] to-[#8B5CF6]">
 			<div className="mx-auto w-full max-w-md space-y-6">
@@ -12,9 +17,8 @@ const SearchCta = () => {
 					</p>
 				</div>
 				<form
-					action="/generate"
 					className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800"
-					method="POST"
+					action={preprocessPaperAction}
 				>
 					<div className="space-y-6">
 						<div>
@@ -29,7 +33,7 @@ const SearchCta = () => {
 									className="block w-full rounded-md border-gray-300 shadow-sm focus:border-[#6366F1] focus:ring-[#6366F1] focus:ring-2 sm:text-sm dark:border-gray-600 dark:bg-gray-700 dark:text-gray-300 dark:focus:border-[#6366F1] dark:focus:ring-[#6366F1] px-4 py-3"
 									id="research-topic"
 									name="research-topic"
-									placeholder="https://arxiv.org/pdf/1706.03762"
+									placeholder={DEFAULT_PDF_URL}
 									required
 									type="text"
 								/>
@@ -48,6 +52,5 @@ const SearchCta = () => {
 			</div>
 		</section>
 	);
-};
+}
 
-export default SearchCta;

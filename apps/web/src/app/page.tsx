@@ -4,8 +4,8 @@ import SearchCta from "./pdf/ui/components/SearchCta";
 import Timeline from "./pdf/ui/components/Timeline";
 import { currentUser } from "@clerk/nextjs";
 import Navbar from "./pdf/ui/components/Navbar";
-import { BentoGridThirdDemo } from "@src/components/paper-card";
 import { AnnotatedPdf } from "@prisma/client";
+
 
 export default async function Page() {
 	const clerkUser = await currentUser();
@@ -30,9 +30,8 @@ export default async function Page() {
 	} else {
 		timeline = (await api.annotatedPdf.fetchDefaultAnnotatedPdfs()) ?? [];
 	}
-
 	// Populate parsed papers
-	const parsedPapers = (await api.parsedPapers.fetchAllParsedPapers()) ?? [];
+	const parsedPapers = (await api.parsedPaper.fetchAllParsedPapers()) ?? [];
 
 	return (
 		<main className="text-black flex flex-col gap-10">

@@ -9,7 +9,40 @@ export interface TitleSourcePair {
 	source: string;
 }
 
-export const parsedPapersRouter = createTRPCRouter({
+export const parsedPaperRouter = createTRPCRouter({
+	startParsingPDF: publicProcedure
+		.input(
+			z.object({
+				source: z.string(),
+			}),
+		)
+		.mutation<any>(async ({ input }) => {
+			try {
+				console.log(
+					`${process.env.PREPROCESSOR_URL}/process_pdf`,
+					input.source,
+				);
+				const response = await fetch(
+					`${process.env.PREPROCESSOR_URL}/process_pdf`,
+					{
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: JSON.stringify({ pdf_url: input.source }),
+					},
+				);
+				if (!response.ok) {
+					console.error("Failed to process PDF:", response.statusText);
+					return null;
+				}
+				const result = await response.json();
+				return result;
+			} catch (error) {
+				console.error("Failed to fetch: ", error);
+				return null;
+			}
+		}),
 	fetchParsedPdf: publicProcedure
 		.input(
 			z.object({

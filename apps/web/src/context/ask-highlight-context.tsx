@@ -239,13 +239,13 @@ export const AskHighlightProvider: FC<{
 						const highlightId = uuidv4(); // TODO: get the object ID
 						const newNode = newData.highlight.node
 							? {
-								...newData.highlight.node,
-								id: uuidv4(),
-								parentId: null,
-								highlightId,
-								children: [],
-								comments: [], // Add this line
-							}
+									...newData.highlight.node,
+									id: uuidv4(),
+									parentId: null,
+									highlightId,
+									children: [],
+									comments: [], // Add this line
+								}
 							: null;
 						const newHighlight = {
 							...newData.highlight,
@@ -308,12 +308,13 @@ export const AskHighlightProvider: FC<{
 		if (!highlight.node?.prompt) return;
 
 		const promptWithContext = `<question>${highlight.node.prompt}</question>
-${highlight.content
-				? `<context>
+${
+	highlight.content
+		? `<context>
 ${highlight.content}
 </context>`
-				: ""
-			}`;
+		: ""
+}`;
 		// Query AI for response
 		append({
 			role: "user",
@@ -345,7 +346,6 @@ ${highlight.content}
 	};
 
 	const generateFollowUpResponse = (nodeId: string) => {
-		console.log("nodeId:", nodeId);
 		const root = currentHighlightRef.current?.node;
 		if (!root) return;
 
