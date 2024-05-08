@@ -26,7 +26,7 @@ export default function Navbar({
 	}));
 	return (
 		<header className="flex p-4 justify-between items-center sticky top-0 bg-white z-50">
-			<h1 className="text-3xl font-bold self-center">My/Space</h1>
+			<h1 className="text-3xl font-bold self-center">Treeline</h1>
 			<div className="flex space-x-4 items-center">
 				{loggedInUser ? (
 					<>
