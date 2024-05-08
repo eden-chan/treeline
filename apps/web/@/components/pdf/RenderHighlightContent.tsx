@@ -7,13 +7,8 @@ import {
 	RenderHighlightTargetProps,
 	RenderHighlightsProps,
 } from "@react-pdf-viewer/highlight";
-import {
-	Button,
-	Position,
-	PrimaryButton,
-	Tooltip,
-	Viewer,
-} from "@react-pdf-viewer/core";
+import { Button, Position, Tooltip, Viewer } from "@react-pdf-viewer/core";
+import QuestionPopup from "./QuestionPopup";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
@@ -76,39 +71,13 @@ const RenderHighlightContentExample: React.FC<
 		};
 
 		return (
-			<div
-				style={{
-					background: "#fff",
-					border: "1px solid rgba(0, 0, 0, .3)",
-					borderRadius: "2px",
-					padding: "8px",
-					position: "absolute",
-					left: `${props.selectionRegion.left}%`,
-					top: `${props.selectionRegion.top + props.selectionRegion.height}%`,
-					zIndex: 1,
-				}}
-			>
-				<div>
-					<textarea
-						rows={3}
-						style={{
-							border: "1px solid rgba(0, 0, 0, .3)",
-						}}
-						onChange={(e) => setMessage(e.target.value)}
-					></textarea>
-				</div>
-				<div
-					style={{
-						display: "flex",
-						marginTop: "8px",
-					}}
-				>
-					<div style={{ marginRight: "8px" }}>
-						<PrimaryButton onClick={addNote}>Add</PrimaryButton>
-					</div>
-					<Button onClick={props.cancel}>Cancel</Button>
-				</div>
-			</div>
+			<QuestionPopup
+				left={`${props.selectionRegion.left}%`}
+				top={`${props.selectionRegion.top + props.selectionRegion.height}%`}
+				onChange={(e) => setMessage(e.target.value)}
+				onSubmit={addNote}
+				onCancel={props.cancel}
+			/>
 		);
 	};
 

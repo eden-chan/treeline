@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/resizable";
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
 import { ReactFlowProvider } from "reactflow";
+import QuestionPopup from "./QuestionPopup";
 
 type DisplayNotesSidebarExampleProps = {
 	annotatedPdfId: string;
@@ -214,39 +215,13 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		};
 
 		return (
-			<div
-				style={{
-					background: "#fff",
-					border: "1px solid rgba(0, 0, 0, .3)",
-					borderRadius: "2px",
-					padding: "8px",
-					position: "absolute",
-					left: `${props.selectionRegion.left}%`,
-					top: `${props.selectionRegion.top + props.selectionRegion.height}%`,
-					zIndex: 1,
-				}}
-			>
-				<div>
-					<textarea
-						rows={3}
-						style={{
-							border: "1px solid rgba(0, 0, 0, .3)",
-						}}
-						onChange={(e) => setMessage(e.target.value)}
-					></textarea>
-				</div>
-				<div
-					style={{
-						display: "flex",
-						marginTop: "8px",
-					}}
-				>
-					<div style={{ marginRight: "8px" }}>
-						<PrimaryButton onClick={addNote}>Add</PrimaryButton>
-					</div>
-					<Button onClick={props.cancel}>Cancel</Button>
-				</div>
-			</div>
+			<QuestionPopup
+				left={`${props.selectionRegion.left}%`}
+				top={`${props.selectionRegion.top + props.selectionRegion.height}%`}
+				onChange={(e) => setMessage(e.target.value)}
+				onSubmit={addNote}
+				onCancel={props.cancel}
+			/>
 		);
 	};
 
