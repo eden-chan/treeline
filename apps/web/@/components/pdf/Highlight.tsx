@@ -41,7 +41,7 @@ export function Highlight({
 			<Button
 				size="icon"
 				variant="ghost"
-				className="absolute top-1 right-1 hover:bg-gray-200"
+				className="absolute top-0 right-0 hover:bg-gray-200"
 				onMouseEnter={() => setHovering(true)}
 				onMouseLeave={() => setHovering(false)}
 				onClick={(e) => {
