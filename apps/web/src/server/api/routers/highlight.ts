@@ -4,7 +4,10 @@ import { Highlight, CurriculumNode } from "@prisma/client";
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { HighlightWithCurriculumNodeSchema } from "@src/app/pdf/ui/types";
-import { HighlightWithRelations } from "@src/lib/types";
+import {
+	CurriculumNodeWithRelations,
+	HighlightWithRelations,
+} from "@src/lib/types";
 
 export type NewHighlightWithRelationsInput = Omit<
 	Highlight & {
@@ -108,17 +111,58 @@ export const highlightRouter = createTRPCRouter({
 				highlightId: z.string(),
 			}),
 		)
-		.mutation<HighlightWithRelations | null>(async ({ input }) => {
+		.mutation<boolean>(async ({ input }) => {
+			const nodeIds: Record<string, string>[] = [];
+
 			try {
-				const deletedHighlight = await db.highlight.delete({
+				const addNodeIdsDfs = (node: CurriculumNodeWithRelations) => {
+					if (node.children) {
+						for (const child of node.children) {
+							addNodeIdsDfs(child);
+						}
+					}
+					nodeIds.push({ $oid: node.id });
+				};
+
+				const highlight = await db.highlight.findFirst({
 					where: {
 						id: input.highlightId,
 					},
-					include: {
-						node: true,
+					select: {
+						node: {
+							include: {
+								children: true,
+							},
+						},
 					},
 				});
-				return deletedHighlight;
+
+				if (!highlight) {
+					return false;
+				}
+
+				if (highlight.node) {
+					addNodeIdsDfs(highlight.node);
+				}
+
+				await db.$transaction([
+					db.$runCommandRaw({
+						delete: "CurriculumNode",
+						bypassDocumentValidation: true,
+						// References: https://github.com/prisma/prisma/issues/11830
+						deletes: [
+							{
+								q: { _id: { $in: nodeIds } },
+								limit: 0,
+							},
+						],
+					}),
+					db.highlight.delete({
+						where: { id: input.highlightId },
+					}),
+				]);
+
+				return true;
 			} catch (error) {
 				console.error("Failed to delete highlight:", error);
 				return null;

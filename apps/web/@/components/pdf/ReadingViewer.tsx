@@ -102,58 +102,47 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			},
 		});
 
-	const highlightMutation = clientApi.highlight.createHighlight.useMutation({
-		onMutate: async (newData) => {
-			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
-				userId: userId,
-				source: loadedSource,
-			});
-
-			utils.annotatedPdf.fetchAnnotatedPdf.setData(
-				{
+	const deleteHighlightMutation =
+		clientApi.highlight.deleteHighlight.useMutation({
+			onMutate: async (newData) => {
+				await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
 					userId: userId,
 					source: loadedSource,
-				},
-				(oldData) => {
-					if (!oldData) return oldData;
-					const highlightId = uuidv4();
-					const newNode = newData?.highlight?.node
-						? {
-								...newData.highlight.node,
-								id: uuidv4(),
-								parentId: null,
-								highlightId: highlightId,
-								children: [],
-								comments: [], // Ensure this property is included
-							}
-						: null;
-					const newHighlight = {
-						...newData.highlight,
-						id: highlightId,
-						node: newNode,
-						annotatedPdfId: annotatedPdfId,
-					};
+				});
 
-					return {
-						...oldData,
-						highlights: [...oldData.highlights, newHighlight],
-					};
-				},
-			);
-		},
-		onSuccess: (input) => {
-			utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
-				userId: userId,
-				source: loadedSource,
-			});
-		},
-	});
+				utils.annotatedPdf.fetchAnnotatedPdf.setData(
+					{
+						userId: userId,
+						source: loadedSource,
+					},
+					(oldData) => {
+						if (!oldData) return oldData;
+						return {
+							...oldData,
+							highlights: highlights.filter(
+								(highlight) => highlight.id != newData.highlightId,
+							),
+						};
+					},
+				);
+			},
+			onSuccess: (input) => {
+				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+					userId: userId,
+					source: loadedSource,
+				});
+			},
+		});
 
 	const highlights =
 		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
 			userId: userId,
 			source: loadedSource,
 		}).data?.highlights || userHighlights;
+
+	const deleteHighlight = (highlightId: string) => {
+		deleteHighlightMutation.mutate({ highlightId });
+	};
 
 	const resetHighlights = () => {
 		annotatedPdfMutation.mutate({
@@ -298,6 +287,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 						<div style={{ height: "100%", overflow: "auto" }}>
 							<Sidebar
 								highlights={highlights ?? []}
+								deleteHighlight={deleteHighlight}
 								resetHighlights={resetHighlights}
 								onHighlightClick={onHighlightClick}
 							/>
