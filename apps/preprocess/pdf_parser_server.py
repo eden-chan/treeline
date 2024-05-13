@@ -105,9 +105,9 @@ def chat(text_chunk, metadata, abstract, response_model):
 
 async def parse_pdf(pdf_url):
     # Use httpx.AsyncClient for asynchronous HTTP requests
+    print(f'parse pdf {pdf_url}')
     try: 
         print('attempt to parse', pdf_url)
-
         response =  requests.get(pdf_url)
         if not response.headers["Content-Type"] == "application/pdf":
             raise HTTPException(status_code=400, detail="The provided URL does not point to a PDF document.")
@@ -135,7 +135,7 @@ async def parse_pdf(pdf_url):
             filter_query = {"source": pdf_url}
             update_data = {"$set": {"title": title, "abstract": abstract, 'primary_category': primary_category, 'published': published, 'updated': updated}}
             result = db.update_one(filter_query, update_data, upsert=True)
-        
+        print('uploaded parsed paper: ', title)
         
         return title
     except Exception as e:
@@ -150,11 +150,11 @@ async def process_pdf(request: PDFRequest):
     try:
         # Assuming preprocess_pdf is a function that processes the PDF and returns a result                
         start_time = time.time()
-        result = parse_pdf(request.pdf_url)
+        await parse_pdf(request.pdf_url)
         end_time = time.time()
 
-        print(f"PDF parsing took {end_time - start_time} seconds.")
-        return {"message": "PDF processed successfully", "data": result}
+        print(f"PDF parsing for {request.pdf_url} took {end_time - start_time} seconds.")
+        return {"message": "PDF processed successfully"}
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred while processing the PDF. {e}")
 

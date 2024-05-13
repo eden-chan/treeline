@@ -27,9 +27,7 @@ export async function POST(req: NextRequest) {
 
 		// Upload the PDF to S3
 		const key = pdf_url.substring(pdf_url.lastIndexOf("/") + 1); // Extract the PDF ID from the URL
-		if (!key.endsWith(".pdf")) {
-			throw new Error("URL does not point to a valid PDF file");
-		}
+
 		// Define parameters for the S3 head object request
 		const headParams = {
 			Bucket: "treeline",

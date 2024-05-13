@@ -1,20 +1,13 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useMemo, memo } from "react";
+import { memo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
 import { PaperCard } from "@src/components/paper-card";
 import { useRouter } from "next/navigation";
 import { AnnotatedPdfWithRelations } from "@src/lib/types";
 
 import { TabsTrigger, TabsList, Tabs, TabsContent } from "@/components/ui/tabs";
-import {
-	SelectValue,
-	SelectTrigger,
-	SelectItem,
-	SelectContent,
-	Select,
-} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { AlignJustify, LayoutGrid } from "lucide-react";
 import { AnnotatedPdf, ParsedPaper } from "@prisma/client";
@@ -23,75 +16,6 @@ export type AnnotatedPdfWithRelationsWithTimestamp =
 	AnnotatedPdfWithRelations & {
 		timeAgoCalculation: string;
 	};
-
-const GalleryView = ({
-	articles,
-}: {
-	articles: AnnotatedPdfWithRelationsWithTimestamp[];
-}) => {
-	const router = useRouter();
-
-	return (
-		<div
-			className="grid grid-cols-1 
-        sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 
-        gap-4"
-		>
-			{articles.map((article, index) => {
-				const firstHighlight = article.highlights?.[0]?.content || "";
-				return (
-					<PaperCard
-						key={index}
-						description={firstHighlight}
-						timeAgoCalculation={article.timeAgoCalculation} // Fixed typo from timeAgoCalculation to timeAgoCalculations
-						title={firstHighlight.slice(0, 50)}
-						highlightCount={article.highlights?.length || 0}
-						onClick={() => {
-							const pdfUrl = article.source.endsWith('.pdf') ? article.source : `${article.source}.pdf`;
-							router.push(`/pdf?url=${pdfUrl}`);
-						}}
-					/>
-				);
-			})}
-		</div>
-	);
-};
-
-const ListView = ({
-	articles,
-}: {
-	articles: AnnotatedPdfWithRelationsWithTimestamp[];
-}) => {
-	const router = useRouter();
-
-	return (
-		<div className="">
-			{articles.map((article, index) => {
-				const firstHighlight = article.highlights?.[0]?.content || "";
-				return (
-					<article
-						key={index}
-						className={`mb-6 hover:cursor-pointer`}
-						onClick={() => {
-							const pdfUrl = article.source.endsWith('.pdf') ? article.source : `${article.source}.pdf`;
-							router.push(`/pdf?url=${pdfUrl}`);
-						}}
-					>
-						<h2 className="text-xl font-semibold mb-1">
-							{firstHighlight.slice(0, 50)}{" "}
-						</h2>
-						<p className="text-gray-600 mb-2">
-							{article.timeAgoCalculation} {article.highlights?.length || 0}{" "}
-							highlights
-						</p>
-						<p className="text-gray-500">{firstHighlight}</p>
-						<p className="text-gray-400 text-sm mt-2">{article.userId}</p>
-					</article>
-				);
-			})}
-		</div>
-	);
-};
 
 const ExploreGalleryView = ({ articles }: { articles: ParsedPaper[] }) => {
 	const router = useRouter();
@@ -109,7 +33,7 @@ const ExploreGalleryView = ({ articles }: { articles: ParsedPaper[] }) => {
 							highlightCount={1}
 							category={article.primary_category}
 							onClick={() => {
-								const pdfUrl = article.source.endsWith('.pdf') ? article.source : `${article.source}.pdf`;
+								const pdfUrl = article.source;
 								router.push(`/pdf?url=${pdfUrl}`);
 							}}
 						/>
@@ -133,7 +57,7 @@ const ExploreListView = ({ articles }: { articles: ParsedPaper[] }) => {
 						key={index}
 						className={`mb-6 hover:cursor-pointer`}
 						onClick={() => {
-							const pdfUrl = article.source.endsWith('.pdf') ? article.source : `${article.source}.pdf`;
+							const pdfUrl = article.source;
 							router.push(`/pdf?url=${pdfUrl}`);
 						}}
 					>

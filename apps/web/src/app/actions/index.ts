@@ -58,9 +58,7 @@ export const uploadToS3 = async (pdf_url: string) => {
 
 	// Upload the PDF to S3
 	const key = pdf_url.substring(pdf_url.lastIndexOf("/") + 1); // Extract the PDF ID from the URL
-	if (!key.endsWith(".pdf")) {
-		throw new Error("URL does not point to a valid PDF file");
-	}
+
 	// Define parameters for the S3 head object request
 	const headParams = {
 		Bucket: "treeline",
@@ -105,30 +103,31 @@ export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
 
 //  preprocess the PDF if it is not uploaded to S3. If the PDF already exists in S3, no preprocessing will occur.
 export const preprocessPaperAction = async (formData: FormData) => {
-	const pdfUrl = formData.get("research-topic") as string;
+	let pdfUrl = formData.get("research-topic") as string;
+
+	// Add .pdf extension if the URL does not end with .pdf
+	if (!pdfUrl.endsWith(".pdf")) {
+		pdfUrl += ".pdf";
+	}
 
 	// upload to s3 if it doesn't exist already
-	const { didFileExist, shouldPreprocess } = await uploadToS3(pdfUrl);
+	const { didFileExist } = await uploadToS3(pdfUrl);
+
+	const doesPaperExist = await api.parsedPaper.fetchParsedPdf({
+		source: pdfUrl,
+	});
+
+	if (!doesPaperExist) {
+		api.parsedPaper.startParsingPDF({
+			source: pdfUrl,
+		});
+		redirect(`/pdf?url=${pdfUrl}`);
+	}
 
 	if (didFileExist) {
 		redirect(`/pdf?url=${pdfUrl}`);
 	}
-
-	if (shouldPreprocess) {
-		try {
-			// done in the background
-			console.log("upload s3 url", pdfUrl);
-			const parsedPaper = await api.parsedPaper.startParsingPDF({
-				source: pdfUrl,
-			});
-
-			redirect(`/pdf?url=${pdfUrl}`);
-		} catch (error) {
-			throw new Error(`Failed to get parsed paper by url: ${pdfUrl} ${error}`);
-		}
-	}
 };
-
 // ESM
 const client = new ChromaClient({ path: process.env.CHROMA_URL });
 

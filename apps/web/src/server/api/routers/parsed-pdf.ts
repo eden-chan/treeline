@@ -18,10 +18,6 @@ export const parsedPaperRouter = createTRPCRouter({
 		)
 		.mutation<any>(async ({ input }) => {
 			try {
-				console.log(
-					`${process.env.PREPROCESSOR_URL}/process_pdf`,
-					input.source,
-				);
 				const response = await fetch(
 					`${process.env.PREPROCESSOR_URL}/process_pdf`,
 					{
@@ -33,7 +29,12 @@ export const parsedPaperRouter = createTRPCRouter({
 					},
 				);
 				if (!response.ok) {
-					console.error("Failed to process PDF:", response.statusText);
+					console.error(
+						"Failed to process PDF:",
+						response.statusText,
+						"input:",
+						input,
+					);
 					return null;
 				}
 				const result = await response.json();
