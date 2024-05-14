@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
 	highlightPlugin,
 	MessageIcon,
@@ -35,6 +35,10 @@ import { ReactFlowProvider } from "reactflow";
 import QuestionPopup from "./QuestionPopup";
 import { NoteIndicator } from './NoteIndicator';
 import { HighlightedArea } from './HighlightedArea';
+import {
+	ImperativePanelGroupHandle,
+	PanelGroup,
+} from "react-resizable-panels";
 
 type DisplayNotesSidebarExampleProps = {
 	annotatedPdfId: string;
@@ -258,7 +262,15 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	};
 
 
+	const ref = useRef<ImperativePanelGroupHandle>(null);
 
+	const resetLayout = () => {
+		const panelGroup = ref.current;
+		if (panelGroup) {
+			// Reset each Panel to 50% of the group's width
+			panelGroup.setLayout([50, 50]);
+		}
+	};
 
 
 	const renderHighlights = (props: RenderHighlightsProps) => {
@@ -275,6 +287,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 					const openForest = () => {
 						setCurrentHighlight(highlight)
+						resetLayout()
 					}
 
 					return (
@@ -322,7 +335,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 				allHighlightsWithProfile={annotatedPdfsWithProfile}
 			/>
 
-			<ResizablePanelGroup className="w-full" direction="horizontal">
+			<PanelGroup className="w-full" direction="horizontal" ref={ref}>
 				<ResizablePanel
 					className="relative"
 					defaultSize={70}
@@ -355,7 +368,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 						</div>
 					)}
 				</ResizablePanel>
-			</ResizablePanelGroup>
+			</PanelGroup>
 		</div>
 	);
 };
