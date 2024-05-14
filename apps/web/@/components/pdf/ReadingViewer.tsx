@@ -218,10 +218,10 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			/>
 		);
 	};
-	const HighlightArea = ({ area, props, idx }) => (
+	const HighlightArea = ({ area, props, idx, cls }) => (
 		<div
 			key={idx}
-			className='highlight-area z-10 bg-yellow-400 bg-opacity-40 hover:bg-yellow-600 hover:bg-opacity-40'
+			className={`highlight-area z-10 bg-yellow-400 bg-opacity-40 ${cls}`}
 			style={Object.assign(
 				{},
 				props.getCssProperties(area, props.rotation),
@@ -230,48 +230,23 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	);
 
 	const renderHighlights = (props: RenderHighlightsProps) => {
-		// // Group highlight areas based on proximity
-		// const groupedHighlights = highlights.reduce((acc, note) => {
-		// 	// Filter highlight areas for the current page
-		// 	const highlightAreas = note.highlightAreas.filter(
-		// 		(area) => area.pageIndex === props.pageIndex && area.width > 0.5
-		// 	);
 
-		// 	highlightAreas.forEach((area) => {
-		// 		// Check if the area belongs to an existing group
-		// 		const existingGroup = acc.find((group) =>
-		// 			group.some(
-		// 				(existingArea) =>
-		// 					Math.abs(existingArea.left - area.left) <= 10 &&
-		// 					Math.abs(existingArea.top - area.top) <= 10
-		// 			)
-		// 		);
-
-		// 		// If a group is found, add the area to it; otherwise, create a new group
-		// 		existingGroup ? existingGroup.push(area) : acc.push([area]);
-		// 	});
-
-		// 	return acc;
-		// }, []);
-
-		// Print grouped highlights
-		// console.log("Grouped Highlights:", groupedHighlights);
-
-		// Render highlight areas
-		console.log(highlights)
 		return (
 			<div>
-				{highlights.map((note) => (
-					<Fragment key={note.id}>
-						{note.highlightAreas
-							.filter((area) => area.pageIndex === props.pageIndex && area.width > 0)
-							.map((area, idx) => {
-								return (
-									<HighlightArea area={area} props={props} key={idx} idx={idx} />
-								);
-							})}
-					</Fragment>
-				))}
+				{highlights.map((note) => {
+					const groupClassName = `item_${note.id_}`;
+					return (
+						<div key={note.id} className={`group/${groupClassName}`}>
+							{note.highlightAreas
+								.filter((area) => area.pageIndex === props.pageIndex && area.width > 0)
+								.map((area, idx) => {
+									return (
+										<HighlightArea cls={`group-hover/${groupClassName}:bg-yellow-600 group-hover/${groupClassName}:bg-opacity-40`} area={area} props={props} key={idx} idx={idx} />
+									);
+								})}
+						</div>
+					);
+				})}
 			</div>
 		);
 	};
