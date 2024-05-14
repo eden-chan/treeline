@@ -269,7 +269,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 							)}
 							{rightmostArea && (
 								<span
-									className="hidden group-hover:block bg-white text-black p-2 rounded shadow-lg absolute text-sm"
+									className="z-20 hidden group-hover:block bg-white text-black p-2 rounded shadow-lg absolute text-sm"
 									style={{
 										left: `${rightmostArea.left + rightmostArea.width}%`,
 										top: `${rightmostArea.top}%`,
