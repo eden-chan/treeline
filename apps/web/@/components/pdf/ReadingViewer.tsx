@@ -33,6 +33,7 @@ import {
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
 import { ReactFlowProvider } from "reactflow";
 import QuestionPopup from "./QuestionPopup";
+import { cn } from '@/lib/utils';
 
 type DisplayNotesSidebarExampleProps = {
 	annotatedPdfId: string;
@@ -218,10 +219,10 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			/>
 		);
 	};
-	const HighlightArea = ({ area, props, idx, cls }) => (
+	const HighlightArea = ({ area, props, idx, className }) => (
 		<div
 			key={idx}
-			className={`highlight-area z-10 bg-yellow-400 bg-opacity-40 ${cls}`}
+			className={cn(`highlight-area z-10 bg-yellow-400 bg-opacity-40`, className)}
 			style={Object.assign(
 				{},
 				props.getCssProperties(area, props.rotation),
@@ -234,14 +235,13 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		return (
 			<div>
 				{highlights.map((note) => {
-					const groupClassName = `item_${note.id_}`;
 					return (
-						<div key={note.id} className={`group/${groupClassName}`}>
+						<div key={note.id} className={`group z-10`}>
 							{note.highlightAreas
 								.filter((area) => area.pageIndex === props.pageIndex && area.width > 0)
 								.map((area, idx) => {
 									return (
-										<HighlightArea cls={`group-hover/${groupClassName}:bg-yellow-600 group-hover/${groupClassName}:bg-opacity-40`} area={area} props={props} key={idx} idx={idx} />
+										<HighlightArea className={`group-hover:bg-yellow-600 group-hover:bg-opacity-40`} area={area} props={props} key={idx} idx={idx} />
 									);
 								})}
 						</div>
