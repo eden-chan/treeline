@@ -264,14 +264,12 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 	const ref = useRef<ImperativePanelGroupHandle>(null);
 
-	const resetLayout = () => {
+	const setPDFViewerWidthPercentage = (pdfViewerWidth: number = 50) => {
 		const panelGroup = ref.current;
 		if (panelGroup) {
-			// Reset each Panel to 50% of the group's width
-			panelGroup.setLayout([90, 10]);
+			panelGroup.setLayout([pdfViewerWidth, 100 - pdfViewerWidth]);
 		}
 	};
-
 
 	const renderHighlights = (props: RenderHighlightsProps) => {
 		return (
@@ -290,7 +288,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 						const panelGroup = ref.current;
 						if (panelGroup) {
 							// Reset each Panel to 50% of the group's width
-							panelGroup.setLayout([50, 50]);
+							setPDFViewerWidthPercentage(50)
 						}
 					}
 
@@ -341,9 +339,11 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 			<PanelGroup className="w-full" direction="horizontal" ref={ref}>
 				<ResizablePanel
-					onClick={resetLayout}
+					onClick={() => {
+						setPDFViewerWidthPercentage(100)
+					}}
 					className="relative"
-					defaultSize={70}
+					defaultSize={80}
 					style={{ height: "100vh", overflow: "auto" }}
 				>
 					<Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
