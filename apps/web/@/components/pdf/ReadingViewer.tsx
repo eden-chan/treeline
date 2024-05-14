@@ -10,7 +10,6 @@ import {
 import {
 	Button,
 	Position,
-	PrimaryButton,
 	Tooltip,
 	Viewer,
 } from "@react-pdf-viewer/core";
@@ -25,7 +24,6 @@ import {
 } from "@src/lib/types";
 import { Sidebar } from "@/components/pdf/Sidebar";
 import { clientApi } from "@src/trpc/react";
-import { v4 as uuidv4 } from "uuid";
 import { Forest } from "@/components/pdf/Forest";
 import {
 	ResizableHandle,
@@ -150,30 +148,37 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		});
 	};
 
-	const renderHighlightTarget = (props: RenderHighlightTargetProps) => (
-		<div
-			style={{
-				background: "#eee",
-				display: "flex",
-				position: "absolute",
-				left: `${props.selectionRegion.left}%`,
-				top: `${props.selectionRegion.top + props.selectionRegion.height}%`,
-				transform: "translate(0, 8px)",
-				zIndex: 1,
-			}}
-		>
-			<Tooltip
-				position={Position.TopCenter}
-				target={
-					<Button onClick={props.toggle}>
-						<MessageIcon />
-					</Button>
-				}
-				content={() => <div style={{ width: "100px" }}>Ask a question</div>}
-				offset={{ left: 0, top: -8 }}
-			/>
-		</div>
-	);
+	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
+
+		return (
+
+			<div
+				// onClick={() => { console.log('props:', props) }}
+				style={{
+					background: "#eee",
+					display: "flex",
+					position: "absolute",
+					left: `${props.selectionRegion.left + props.selectionRegion.width}%`,
+					top: `${props.selectionRegion.top}%`,
+					// left: `${props.selectionRegion.left}%`,
+					// top: `${props.selectionRegion.top + props.selectionRegion.height}%`,
+					transform: "translate(0, 8px)",
+					zIndex: 1,
+				}}
+			>
+				<Tooltip
+					position={Position.RightCenter}
+					target={
+						<Button onClick={props.toggle}>
+							<MessageIcon />
+						</Button>
+					}
+					content={() => <div style={{ width: "100px" }}>Ask a question</div>}
+					offset={{ left: 0, top: -8 }}
+				/>
+			</div>
+		);
+	}
 
 	const renderHighlightContent = (props: RenderHighlightContentProps) => {
 		const addNote = () => {
@@ -213,6 +218,20 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			/>
 		);
 	};
+	const HighlightArea = ({ area, props, idx }) => (
+		<div
+			onDoubleClick={() => { console.log('double clicking') }}
+			key={idx}
+			style={Object.assign(
+				{},
+				{
+					background: "yellow",
+					opacity: 0.4,
+				},
+				props.getCssProperties(area, props.rotation),
+			)}
+		/>
+	);
 
 	const renderHighlights = (props: RenderHighlightsProps) => (
 		<div>
@@ -221,17 +240,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					{note.highlightAreas
 						.filter((area) => area.pageIndex === props.pageIndex)
 						.map((area, idx) => (
-							<div
-								key={idx}
-								style={Object.assign(
-									{},
-									{
-										background: "yellow",
-										opacity: 0.4,
-									},
-									props.getCssProperties(area, props.rotation),
-								)}
-							/>
+							<HighlightArea area={area} props={props} key={idx} idx={idx} />
 						))}
 				</Fragment>
 			))}
