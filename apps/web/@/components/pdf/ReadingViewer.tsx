@@ -257,7 +257,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 							})}
 							{rightmostArea && (
 								<span
-									className="absolute text-blue-500 text-xl font-bold"
+									className="absolute text-blue-500 text-xl font-bold group-hover:hidden"
 									style={{
 										left: `${rightmostArea.left + rightmostArea.width}%`,
 										top: `${rightmostArea.top}%`,
@@ -265,6 +265,20 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 									}}
 								>
 									*
+								</span>
+							)}
+							{rightmostArea && (
+								<span
+									className="hidden group-hover:block bg-white text-black p-2 rounded shadow-lg absolute text-sm"
+									style={{
+										left: `${rightmostArea.left + rightmostArea.width}%`,
+										top: `${rightmostArea.top}%`,
+										transform: 'translate(8px, -50%)',
+										maxWidth: '200px',
+										wordBreak: 'break-word',
+									}}
+								>
+									{note.quote}
 								</span>
 							)}
 						</div>
