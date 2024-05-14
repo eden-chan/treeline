@@ -155,17 +155,13 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
 
 		return (
-
 			<div
-				// onClick={() => { console.log('props:', props) }}
 				style={{
 					background: "#eee",
 					display: "flex",
 					position: "absolute",
 					left: `${props.selectionRegion.left + props.selectionRegion.width}%`,
 					top: `${props.selectionRegion.top}%`,
-					// left: `${props.selectionRegion.left}%`,
-					// top: `${props.selectionRegion.top + props.selectionRegion.height}%`,
 					transform: "translate(0, 8px)",
 					zIndex: 1,
 				}}
@@ -228,8 +224,8 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	const renderHighlights = (props: RenderHighlightsProps) => {
 		return (
 			<div>
-				{highlights.map((note) => {
-					const filteredAreas = note.highlightAreas.filter(
+				{highlights.map((highlight) => {
+					const filteredAreas = highlight.highlightAreas.filter(
 						(area) => area.pageIndex === props.pageIndex && area.width > 0
 					);
 
@@ -238,7 +234,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					}, filteredAreas[0]);
 
 					return (
-						<div key={note.id} className="group z-10">
+						<div key={highlight.id} className="group z-10">
 							{filteredAreas.map((area, idx) => {
 								return (
 									<HighlightedArea
@@ -250,7 +246,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 									/>
 								);
 							})}
-							<NoteIndicator note={note} rightmostArea={rightmostArea} />
+							<NoteIndicator highlight={highlight} rightmostArea={rightmostArea} deleteHighlight={deleteHighlight} />
 						</div>
 					);
 				})}

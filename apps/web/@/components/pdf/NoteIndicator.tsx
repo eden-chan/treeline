@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from 'react-dom';
 import { MessageCircle, Pencil, Trash2 } from 'lucide-react';
 
-export const NoteIndicator = ({ note, rightmostArea }) => {
+export const NoteIndicator = ({ highlight, rightmostArea, deleteHighlight }) => {
     const [isAsteriskHovered, setIsAsteriskHovered] = useState(false);
     const [isQuoteHovered, setIsQuoteHovered] = useState(false);
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
@@ -39,10 +39,8 @@ export const NoteIndicator = ({ note, rightmostArea }) => {
 
     const handleTrash = () => {
         // Dummy function for handling trash
-    };
+        deleteHighlight(highlight.id)
 
-    const handleComment = () => {
-        // Dummy function for handling comment
     };
 
     const handleReply = () => {
@@ -95,7 +93,7 @@ export const NoteIndicator = ({ note, rightmostArea }) => {
                                     </div>
                                 </div>
                             </div>
-                            <span className="overflow-auto h-full">{note.quote}</span>
+                            <span className="overflow-auto h-full">{highlight.quote}</span>
                             <div className="sticky bottom-0 left-0 bg-white z-10">
                                 <div className="flex justify-end">
                                     <button
