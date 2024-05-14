@@ -2,13 +2,14 @@ import { useState, useEffect } from "react";
 import { createPortal } from 'react-dom';
 import { Pencil, Trash2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
+import { useAskHighlight } from '@src/context/ask-highlight-context';
 
 export const NoteIndicator = ({ highlight, rightmostArea, editHighlight, deleteHighlight }) => {
     const [isAsteriskHovered, setIsAsteriskHovered] = useState(false);
     const [isQuoteHovered, setIsQuoteHovered] = useState(false);
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
     const [initialPosition, setInitialPosition] = useState({ x: 0, y: 0 });
-
+    const { currentHighlight, setCurrentHighlight } = useAskHighlight()
     useEffect(() => {
         const handleMouseMove = (e) => {
             setCursorPosition({ x: e.clientX, y: e.clientY });

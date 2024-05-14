@@ -69,6 +69,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		selectHighlight,
 		createAskHighlight,
 		clearSelectedHighlight,
+		setCurrentHighlight
 	} = useAskHighlight();
 	let noteId = notes.length;
 
@@ -258,6 +259,8 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 
 
+
+
 	const renderHighlights = (props: RenderHighlightsProps) => {
 		return (
 			<div>
@@ -270,11 +273,16 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 						return area.left > (maxArea?.left ?? 0) ? area : maxArea;
 					}, filteredAreas[0]);
 
+					const openForest = () => {
+						setCurrentHighlight(highlight)
+					}
+
 					return (
 						<div key={highlight.id} className="group z-10">
 							{filteredAreas.map((area, idx) => {
 								return (
 									<HighlightedArea
+										openForest={openForest}
 										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40"
 										area={area}
 										props={props}
