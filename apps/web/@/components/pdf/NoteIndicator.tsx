@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { createPortal } from 'react-dom';
-import { MessageCircle, Pencil, Trash2 } from 'lucide-react';
+import { Pencil, Trash2 } from 'lucide-react';
+import { Input } from "@/components/ui/input";
 
-export const NoteIndicator = ({ highlight, rightmostArea, deleteHighlight }) => {
+export const NoteIndicator = ({ highlight, rightmostArea, editHighlight, deleteHighlight }) => {
     const [isAsteriskHovered, setIsAsteriskHovered] = useState(false);
     const [isQuoteHovered, setIsQuoteHovered] = useState(false);
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
@@ -21,6 +22,10 @@ export const NoteIndicator = ({ highlight, rightmostArea, deleteHighlight }) => 
     }, []);
 
     const isHovered = isAsteriskHovered || isQuoteHovered;
+    const [inputText, setInputText] = useState(highlight.content);
+    const [isEditing, setIsEditing] = useState(false);
+
+
 
     const handleAsteriskHover = () => {
         setIsAsteriskHovered(true);
@@ -34,6 +39,7 @@ export const NoteIndicator = ({ highlight, rightmostArea, deleteHighlight }) => 
     if (!rightmostArea) return null;
 
     const handleEdit = () => {
+        editHighlight(highlight.id, inputText)
         // Dummy function for handling edit
     };
 
@@ -46,6 +52,15 @@ export const NoteIndicator = ({ highlight, rightmostArea, deleteHighlight }) => 
     const handleReply = () => {
         // Dummy function for handling comment
     };
+
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === "Enter") {
+            handleEdit();
+            setIsEditing(false);
+        }
+    };
+
+
 
     return (
         <>
@@ -82,7 +97,8 @@ export const NoteIndicator = ({ highlight, rightmostArea, deleteHighlight }) => 
                                             className="text-blue-500 hover:text-blue-700 p-1"
                                             onClick={handleEdit}
                                         >
-                                            <Pencil size={16} />
+                                            <Pencil className="m-1 cursor-pointer" size={16} onClick={() => setIsEditing(true)}
+                                            />
                                         </button>
                                         <button
                                             className="text-blue-500 hover:text-blue-700 p-1"
@@ -93,6 +109,13 @@ export const NoteIndicator = ({ highlight, rightmostArea, deleteHighlight }) => 
                                     </div>
                                 </div>
                             </div>
+
+                            <Input
+                                className="text-white bg-slate-600"
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            ></Input>
                             <span className="overflow-auto h-full">{highlight.quote}</span>
                             <div className="sticky bottom-0 left-0 bg-white z-10">
                                 <div className="flex justify-end">

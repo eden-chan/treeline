@@ -61,50 +61,44 @@ export const highlightRouter = createTRPCRouter({
 			}
 			return res;
 		}),
-	// updateHighlightComment: publicProcedure
-	// 	.input(
-	// 		z.object({
-	// 			highlightId: z.string(),
-	// 			text: z.string(),
-	// 		}),
-	// 	)
-	// 	.mutation<HighlightWithRelations | null>(async ({ input }) => {
-	// 		let updatedHighlight: HighlightWithRelations;
+	updateHighlightContent: publicProcedure
+		.input(
+			z.object({
+				highlightId: z.string(),
+				text: z.string(),
+			}),
+		)
+		.mutation<HighlightWithRelations | null>(async ({ input }) => {
+			let updatedHighlight: HighlightWithRelations;
 
-	// 		try {
-	// 			const res = await db.highlight.findFirst({
-	// 				where: {
-	// 					id: input.highlightId,
-	// 				},
-	// 			});
+			try {
+				const res = await db.highlight.findFirst({
+					where: {
+						id: input.highlightId,
+					},
+				});
 
-	// 			// if (!res?.comment) {
-	// 			// 	throw Error("Cannot find comment to be updated");
-	// 			// }
-	// 			// const { emoji, userId } = res.comment;
+				if (!res?.content) {
+					throw Error("Cannot find comment to be updated");
+				}
 
-	// 			// updatedHighlight = await db.highlight.update({
-	// 			// 	where: {
-	// 			// 		id: input.highlightId,
-	// 			// 	},
-	// 			// 	data: {
-	// 			// 		comment: {
-	// 			// 			text: input.text,
-	// 			// 			emoji: emoji,
-	// 			// 			timestamp: new Date(),
-	// 			// 			userId: userId,
-	// 			// 		},
-	// 			// 	},
-	// 			// 	include: {
-	// 			// 		node: true,
-	// 			// 	},
-	// 			// });
-	// 		} catch (error) {
-	// 			console.error("Failed to update highlight comment:", error);
-	// 			return null;
-	// 		}
-	// 		return updatedHighlight;
-	// 	}),
+				updatedHighlight = await db.highlight.update({
+					where: {
+						id: input.highlightId,
+					},
+					data: {
+						content: input.text,
+					},
+					include: {
+						node: true,
+					},
+				});
+			} catch (error) {
+				console.error("Failed to update highlight comment:", error);
+				return null;
+			}
+			return updatedHighlight;
+		}),
 	deleteHighlight: publicProcedure
 		.input(
 			z.object({

@@ -136,6 +136,39 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			},
 		});
 
+	const editHighlightMutation =
+		clientApi.highlight.updateHighlightContent.useMutation({
+			onMutate: async (newData) => {
+				await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
+					userId: userId,
+					source: loadedSource,
+				});
+
+				utils.annotatedPdf.fetchAnnotatedPdf.setData(
+					{
+						userId: userId,
+						source: loadedSource,
+					},
+					(oldData) => {
+						if (!oldData) return oldData;
+						return {
+							...oldData,
+							highlights: highlights.filter(
+								(highlight) => highlight.id != newData.highlightId,
+							),
+						};
+					},
+				);
+			},
+			onSuccess: (input) => {
+				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+					userId: userId,
+					source: loadedSource,
+				});
+			},
+		});
+
+
 	const highlights =
 		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
 			userId: userId,
@@ -144,6 +177,10 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 	const deleteHighlight = (highlightId: string) => {
 		deleteHighlightMutation.mutate({ highlightId });
+	};
+
+	const editHighlight = (highlightId: string, text: string) => {
+		editHighlightMutation.mutate({ highlightId, text });
 	};
 
 	const resetHighlights = () => {
@@ -246,7 +283,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 									/>
 								);
 							})}
-							<NoteIndicator highlight={highlight} rightmostArea={rightmostArea} deleteHighlight={deleteHighlight} />
+							<NoteIndicator highlight={highlight} rightmostArea={rightmostArea} editHighlight={editHighlight} deleteHighlight={deleteHighlight} />
 						</div>
 					);
 				})}
