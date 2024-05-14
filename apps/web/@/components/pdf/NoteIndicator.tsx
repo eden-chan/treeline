@@ -81,7 +81,7 @@ export const NoteIndicator = ({ highlight, rightmostArea, editHighlight, deleteH
                 ¶
                 {createPortal(
                     <span
-                        className={`z-40 ${isHovered ? 'block' : 'hidden'} absolute bg-white text-black p-2 rounded shadow-lg text-sm break-all max-w-xs transition-opacity duration-200 overflow-visible flex flex-col`}
+                        className={`z-40 ${isHovered ? 'block' : 'hidden'} absolute bg-white text-black p-2 rounded shadow-lg text-sm break-all max-w-xs transition-opacity duration-200 overflow-visible flex flex-col `}
                         style={{
                             left: `${initialPosition.x - 20}px`,
                             top: `${initialPosition.y + 40}px`,

@@ -297,7 +297,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 								return (
 									<HighlightedArea
 										openForest={openForest}
-										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40"
+										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 cursor-pointer"
 										area={area}
 										props={props}
 										key={idx}
