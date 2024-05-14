@@ -39,14 +39,14 @@ export const NoteIndicator = ({ note, rightmostArea }) => {
                     <span
                         className={`z-40 ${isHovered ? 'block' : 'hidden'} absolute bg-white text-black p-4 rounded shadow-lg text-sm break-all max-w-xs transition-opacity duration-200 overflow-visible`}
                         style={{
-                            left: `${cursorPosition.x}px`,
+                            left: `${cursorPosition.x - 10}px `,
                             top: `${cursorPosition.y}px`,
                             transform: 'translateY(-50%)',
                             width: '100%',
-                            height: '100%'
+
                         }}
                         onMouseEnter={() => setIsQuoteHovered(true)}
-                        onMouseLeave={() => setIsQuoteHovered(false)}
+                        onMouseLeave={() => setTimeout(() => setIsQuoteHovered(false), 2000)}
                     >
                         {note.quote}
                     </span>,
