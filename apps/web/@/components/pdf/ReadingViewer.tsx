@@ -1,19 +1,13 @@
-import { useState, Fragment } from "react";
+import { useRef, useState } from "react";
 import {
 	highlightPlugin,
-	HighlightArea,
 	MessageIcon,
+	HighlightArea,
 	RenderHighlightContentProps,
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
-import {
-	Button,
-	Position,
-	PrimaryButton,
-	Tooltip,
-	Viewer,
-} from "@react-pdf-viewer/core";
+import { Button, Position, Tooltip, Viewer } from "@react-pdf-viewer/core";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
@@ -25,16 +19,14 @@ import {
 } from "@src/lib/types";
 import { Sidebar } from "@/components/pdf/Sidebar";
 import { clientApi } from "@src/trpc/react";
-import { v4 as uuidv4 } from "uuid";
 import { Forest } from "@/components/pdf/Forest";
-import {
-	ResizableHandle,
-	ResizablePanel,
-	ResizablePanelGroup,
-} from "@/components/ui/resizable";
+import { ResizableHandle, ResizablePanel } from "@/components/ui/resizable";
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
 import { ReactFlowProvider } from "reactflow";
 import QuestionPopup from "./QuestionPopup";
+import { NoteIndicator } from "./NoteIndicator";
+import { HighlightedArea } from "./HighlightedArea";
+import { ImperativePanelGroupHandle, PanelGroup } from "react-resizable-panels";
 
 type DisplayNotesSidebarExampleProps = {
 	annotatedPdfId: string;
@@ -67,6 +59,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		selectHighlight,
 		createAskHighlight,
 		clearSelectedHighlight,
+		setCurrentHighlight,
 	} = useAskHighlight();
 	let noteId = notes.length;
 
@@ -134,6 +127,38 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			},
 		});
 
+	const editHighlightMutation =
+		clientApi.highlight.updateHighlightContent.useMutation({
+			onMutate: async (newData) => {
+				await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
+					userId: userId,
+					source: loadedSource,
+				});
+
+				utils.annotatedPdf.fetchAnnotatedPdf.setData(
+					{
+						userId: userId,
+						source: loadedSource,
+					},
+					(oldData) => {
+						if (!oldData) return oldData;
+						return {
+							...oldData,
+							highlights: highlights.filter(
+								(highlight) => highlight.id != newData.highlightId,
+							),
+						};
+					},
+				);
+			},
+			onSuccess: (input) => {
+				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+					userId: userId,
+					source: loadedSource,
+				});
+			},
+		});
+
 	const highlights =
 		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
 			userId: userId,
@@ -144,36 +169,42 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		deleteHighlightMutation.mutate({ highlightId });
 	};
 
+	const editHighlight = (highlightId: string, text: string) => {
+		editHighlightMutation.mutate({ highlightId, text });
+	};
+
 	const resetHighlights = () => {
 		annotatedPdfMutation.mutate({
 			id: annotatedPdfId,
 		});
 	};
 
-	const renderHighlightTarget = (props: RenderHighlightTargetProps) => (
-		<div
-			style={{
-				background: "#eee",
-				display: "flex",
-				position: "absolute",
-				left: `${props.selectionRegion.left}%`,
-				top: `${props.selectionRegion.top + props.selectionRegion.height}%`,
-				transform: "translate(0, 8px)",
-				zIndex: 1,
-			}}
-		>
-			<Tooltip
-				position={Position.TopCenter}
-				target={
-					<Button onClick={props.toggle}>
-						<MessageIcon />
-					</Button>
-				}
-				content={() => <div style={{ width: "100px" }}>Ask a question</div>}
-				offset={{ left: 0, top: -8 }}
-			/>
-		</div>
-	);
+	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
+		return (
+			<div
+				style={{
+					background: "#eee",
+					display: "flex",
+					position: "absolute",
+					left: `${props.selectionRegion.left + props.selectionRegion.width}%`,
+					top: `${props.selectionRegion.top}%`,
+					transform: "translate(0, 8px)",
+					zIndex: 1,
+				}}
+			>
+				<Tooltip
+					position={Position.RightCenter}
+					target={
+						<Button onClick={props.toggle}>
+							<MessageIcon />
+						</Button>
+					}
+					content={() => <div style={{ width: "100px" }}>Ask a question</div>}
+					offset={{ left: 0, top: -8 }}
+				/>
+			</div>
+		);
+	};
 
 	const renderHighlightContent = (props: RenderHighlightContentProps) => {
 		const addNote = () => {
@@ -214,29 +245,62 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		);
 	};
 
-	const renderHighlights = (props: RenderHighlightsProps) => (
-		<div>
-			{highlights.map((note) => (
-				<Fragment key={note.id}>
-					{note.highlightAreas
-						.filter((area) => area.pageIndex === props.pageIndex)
-						.map((area, idx) => (
-							<div
-								key={idx}
-								style={Object.assign(
-									{},
-									{
-										background: "yellow",
-										opacity: 0.4,
-									},
-									props.getCssProperties(area, props.rotation),
-								)}
+	const ref = useRef<ImperativePanelGroupHandle>(null);
+
+	const setPDFViewerWidthPercentage = (pdfViewerWidth: number = 50) => {
+		const panelGroup = ref.current;
+		if (panelGroup) {
+			panelGroup.setLayout([pdfViewerWidth, 100 - pdfViewerWidth]);
+		}
+	};
+
+	const renderHighlights = (props: RenderHighlightsProps) => {
+		return (
+			<div>
+				{highlights.map((highlight) => {
+					const filteredAreas = highlight.highlightAreas.filter(
+						(area) => area.pageIndex === props.pageIndex && area.width > 0,
+					);
+
+					const rightmostArea = filteredAreas.reduce((maxArea, area) => {
+						return area.left > (maxArea?.left ?? 0) ? area : maxArea;
+					}, filteredAreas[0]);
+
+					const openForest = () => {
+						setCurrentHighlight(highlight);
+						const panelGroup = ref.current;
+						if (panelGroup) {
+							// Reset each Panel to 50% of the group's width
+							setPDFViewerWidthPercentage(50);
+						}
+					};
+
+					return (
+						<div key={highlight.id} className="group z-10">
+							{filteredAreas.map((area, idx) => {
+								return (
+									<HighlightedArea
+										openForest={openForest}
+										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 cursor-pointer"
+										area={area}
+										props={props}
+										key={idx}
+										idx={idx}
+									/>
+								);
+							})}
+							<NoteIndicator
+								highlight={highlight}
+								rightmostArea={rightmostArea}
+								editHighlight={editHighlight}
+								deleteHighlight={deleteHighlight}
 							/>
-						))}
-				</Fragment>
-			))}
-		</div>
-	);
+						</div>
+					);
+				})}
+			</div>
+		);
+	};
 
 	const highlightPluginInstance = highlightPlugin({
 		renderHighlightTarget,
@@ -261,10 +325,13 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 				allHighlightsWithProfile={annotatedPdfsWithProfile}
 			/>
 
-			<ResizablePanelGroup className="w-full" direction="horizontal">
+			<PanelGroup className="w-full" direction="horizontal" ref={ref}>
 				<ResizablePanel
+					onClick={() => {
+						setPDFViewerWidthPercentage(100);
+					}}
 					className="relative"
-					defaultSize={70}
+					defaultSize={80}
 					style={{ height: "100vh", overflow: "auto" }}
 				>
 					<Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
@@ -294,7 +361,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 						</div>
 					)}
 				</ResizablePanel>
-			</ResizablePanelGroup>
+			</PanelGroup>
 		</div>
 	);
 };

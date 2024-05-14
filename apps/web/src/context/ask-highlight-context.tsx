@@ -16,7 +16,7 @@ import { Highlight, ParsedPaper } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
 import { FOLLOW_UP_PROMPT, generateSystemPrompt } from "@src/utils/prompts";
 import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
-import { getParsedPaperAction } from "@src/app/actions";
+
 import {
 	CurriculumNodeWithRelations,
 	HighlightWithRelations,
