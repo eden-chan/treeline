@@ -25,9 +25,9 @@ export function Sidebar({
 			</div>
 
 			<ul className="list-none p-0">
-				{highlights.map((highlight, idx) => (
+				{highlights.map((highlight) => (
 					<Highlight
-						key={idx}
+						key={highlight.id}
 						highlight={highlight}
 						deleteHighlight={deleteHighlight}
 						onHighlightClick={onHighlightClick}

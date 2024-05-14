@@ -7,12 +7,7 @@ import {
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
-import {
-	Button,
-	Position,
-	Tooltip,
-	Viewer,
-} from "@react-pdf-viewer/core";
+import { Button, Position, Tooltip, Viewer } from "@react-pdf-viewer/core";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
@@ -25,19 +20,13 @@ import {
 import { Sidebar } from "@/components/pdf/Sidebar";
 import { clientApi } from "@src/trpc/react";
 import { Forest } from "@/components/pdf/Forest";
-import {
-	ResizableHandle,
-	ResizablePanel,
-} from "@/components/ui/resizable";
+import { ResizableHandle, ResizablePanel } from "@/components/ui/resizable";
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
 import { ReactFlowProvider } from "reactflow";
 import QuestionPopup from "./QuestionPopup";
-import { NoteIndicator } from './NoteIndicator';
-import { HighlightedArea } from './HighlightedArea';
-import {
-	ImperativePanelGroupHandle,
-	PanelGroup,
-} from "react-resizable-panels";
+import { NoteIndicator } from "./NoteIndicator";
+import { HighlightedArea } from "./HighlightedArea";
+import { ImperativePanelGroupHandle, PanelGroup } from "react-resizable-panels";
 
 type DisplayNotesSidebarExampleProps = {
 	annotatedPdfId: string;
@@ -53,8 +42,6 @@ type Note = {
 	highlightAreas: HighlightArea[];
 	quote: string;
 };
-
-
 
 const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	loadedSource,
@@ -72,7 +59,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		selectHighlight,
 		createAskHighlight,
 		clearSelectedHighlight,
-		setCurrentHighlight
+		setCurrentHighlight,
 	} = useAskHighlight();
 	let noteId = notes.length;
 
@@ -172,7 +159,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			},
 		});
 
-
 	const highlights =
 		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
 			userId: userId,
@@ -194,7 +180,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	};
 
 	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
-
 		return (
 			<div
 				style={{
@@ -219,7 +204,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 				/>
 			</div>
 		);
-	}
+	};
 
 	const renderHighlightContent = (props: RenderHighlightContentProps) => {
 		const addNote = () => {
@@ -260,7 +245,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		);
 	};
 
-
 	const ref = useRef<ImperativePanelGroupHandle>(null);
 
 	const setPDFViewerWidthPercentage = (pdfViewerWidth: number = 50) => {
@@ -275,7 +259,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			<div>
 				{highlights.map((highlight) => {
 					const filteredAreas = highlight.highlightAreas.filter(
-						(area) => area.pageIndex === props.pageIndex && area.width > 0
+						(area) => area.pageIndex === props.pageIndex && area.width > 0,
 					);
 
 					const rightmostArea = filteredAreas.reduce((maxArea, area) => {
@@ -283,13 +267,13 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					}, filteredAreas[0]);
 
 					const openForest = () => {
-						setCurrentHighlight(highlight)
+						setCurrentHighlight(highlight);
 						const panelGroup = ref.current;
 						if (panelGroup) {
 							// Reset each Panel to 50% of the group's width
-							setPDFViewerWidthPercentage(50)
+							setPDFViewerWidthPercentage(50);
 						}
-					}
+					};
 
 					return (
 						<div key={highlight.id} className="group z-10">
@@ -305,7 +289,12 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 									/>
 								);
 							})}
-							<NoteIndicator highlight={highlight} rightmostArea={rightmostArea} editHighlight={editHighlight} deleteHighlight={deleteHighlight} />
+							<NoteIndicator
+								highlight={highlight}
+								rightmostArea={rightmostArea}
+								editHighlight={editHighlight}
+								deleteHighlight={deleteHighlight}
+							/>
 						</div>
 					);
 				})}
@@ -339,7 +328,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			<PanelGroup className="w-full" direction="horizontal" ref={ref}>
 				<ResizablePanel
 					onClick={() => {
-						setPDFViewerWidthPercentage(100)
+						setPDFViewerWidthPercentage(100);
 					}}
 					className="relative"
 					defaultSize={80}
