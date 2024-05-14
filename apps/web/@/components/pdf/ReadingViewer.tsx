@@ -268,7 +268,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		const panelGroup = ref.current;
 		if (panelGroup) {
 			// Reset each Panel to 50% of the group's width
-			panelGroup.setLayout([50, 50]);
+			panelGroup.setLayout([90, 10]);
 		}
 	};
 
@@ -287,7 +287,11 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 					const openForest = () => {
 						setCurrentHighlight(highlight)
-						resetLayout()
+						const panelGroup = ref.current;
+						if (panelGroup) {
+							// Reset each Panel to 50% of the group's width
+							panelGroup.setLayout([50, 50]);
+						}
 					}
 
 					return (
@@ -337,6 +341,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 			<PanelGroup className="w-full" direction="horizontal" ref={ref}>
 				<ResizablePanel
+					onClick={resetLayout}
 					className="relative"
 					defaultSize={70}
 					style={{ height: "100vh", overflow: "auto" }}
