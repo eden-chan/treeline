@@ -222,7 +222,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	const HighlightArea = ({ area, props, idx, className }) => (
 		<div
 			key={idx}
-			className={cn(`highlight-area z-10 bg-yellow-400 bg-opacity-40`, className)}
+			className={cn("highlight-area z-10 bg-yellow-400 bg-opacity-40", className)}
 			style={Object.assign(
 				{},
 				props.getCssProperties(area, props.rotation),
@@ -231,19 +231,42 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	);
 
 	const renderHighlights = (props: RenderHighlightsProps) => {
-
 		return (
 			<div>
 				{highlights.map((note) => {
+					const filteredAreas = note.highlightAreas.filter(
+						(area) => area.pageIndex === props.pageIndex && area.width > 0
+					);
+
+					const rightmostArea = filteredAreas.reduce((maxArea, area) => {
+						return area.left > maxArea.left ? area : maxArea;
+					}, filteredAreas[0]);
+
 					return (
-						<div key={note.id} className={`group z-10`}>
-							{note.highlightAreas
-								.filter((area) => area.pageIndex === props.pageIndex && area.width > 0)
-								.map((area, idx) => {
-									return (
-										<HighlightArea className={`group-hover:bg-yellow-600 group-hover:bg-opacity-40`} area={area} props={props} key={idx} idx={idx} />
-									);
-								})}
+						<div key={note.id} className="group z-10">
+							{filteredAreas.map((area, idx) => {
+								return (
+									<HighlightArea
+										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40"
+										area={area}
+										props={props}
+										key={idx}
+										idx={idx}
+									/>
+								);
+							})}
+							{rightmostArea && (
+								<span
+									className="absolute text-blue-500 text-xl font-bold"
+									style={{
+										left: `${rightmostArea.left + rightmostArea.width}%`,
+										top: `${rightmostArea.top}%`,
+										transform: 'translate(8px, -50%)',
+									}}
+								>
+									*
+								</span>
+							)}
 						</div>
 					);
 				})}
