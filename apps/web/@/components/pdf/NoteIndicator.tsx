@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { createPortal } from 'react-dom';
+import { MessageCircle, Pencil, Trash2 } from 'lucide-react';
 
 export const NoteIndicator = ({ note, rightmostArea }) => {
     const [isAsteriskHovered, setIsAsteriskHovered] = useState(false);
@@ -32,6 +33,22 @@ export const NoteIndicator = ({ note, rightmostArea }) => {
 
     if (!rightmostArea) return null;
 
+    const handleEdit = () => {
+        // Dummy function for handling edit
+    };
+
+    const handleTrash = () => {
+        // Dummy function for handling trash
+    };
+
+    const handleComment = () => {
+        // Dummy function for handling comment
+    };
+
+    const handleReply = () => {
+        // Dummy function for handling comment
+    };
+
     return (
         <>
             <span
@@ -44,20 +61,52 @@ export const NoteIndicator = ({ note, rightmostArea }) => {
                 onMouseEnter={handleAsteriskHover}
                 onMouseLeave={handleAsteriskLeave}
             >
-                ¶
-                {createPortal(
+                ¶ {createPortal(
                     <span
-                        className={`z-40 ${isHovered ? 'block' : 'hidden'} absolute bg-white text-black p-4 rounded shadow-lg text-sm break-all max-w-xs transition-opacity duration-200 overflow-visible`}
+                        className={`z-40 ${isHovered ? 'block' : 'hidden'} absolute bg-white text-black p-2 rounded shadow-lg text-sm break-all max-w-xs transition-opacity duration-200 overflow-visible flex flex-col`}
                         style={{
-                            left: `${initialPosition.x - 10}px`,
-                            top: `${initialPosition.y}px`,
-                            transform: 'translateY(-50%)',
-                            width: '100%',
+                            left: `${initialPosition.x - 20}px`,
+                            top: `${initialPosition.y + 40}px`,
+                            transform: 'translate(16px, -50%)',
+                            width: '200px',
                         }}
                         onMouseEnter={() => setIsQuoteHovered(true)}
                         onMouseLeave={() => setIsQuoteHovered(false)}
                     >
-                        {note.quote}
+                        <div className="flex flex-col relative">
+
+                            <div className="flex justify-start items-center">
+                                <div className="flex items-center space-x-1">
+                                    <button
+                                        className="text-blue-500 hover:text-blue-700 p-1"
+                                        onClick={handleEdit}
+                                    >
+                                        <Pencil size={16} />
+                                    </button>
+                                    <button
+                                        className="text-blue-500 hover:text-blue-700 p-1"
+                                        onClick={handleTrash}
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                    <button
+                                        className="text-blue-500 hover:text-blue-700 p-1"
+                                        onClick={handleComment}
+                                    >
+                                        <MessageCircle size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                            <span className="ml-6">{note.quote}</span>
+                            <div className="flex justify-end mt-2">
+                                <button
+                                    className="text-blue-500 hover:text-blue-700 font-semibold"
+                                    onClick={handleReply}
+                                >
+                                    Reply
+                                </button>
+                            </div>
+                        </div>
                     </span>,
                     document.body
                 )}
