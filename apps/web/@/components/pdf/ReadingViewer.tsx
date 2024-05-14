@@ -1,8 +1,8 @@
-import { useState, Fragment } from "react";
+import { useState } from "react";
 import {
 	highlightPlugin,
-	HighlightArea,
 	MessageIcon,
+	HighlightArea,
 	RenderHighlightContentProps,
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
@@ -33,7 +33,8 @@ import {
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
 import { ReactFlowProvider } from "reactflow";
 import QuestionPopup from "./QuestionPopup";
-import { cn } from '@/lib/utils';
+import { NoteIndicator } from './NoteIndicator';
+import { HighlightedArea } from './HighlightedArea';
 
 type DisplayNotesSidebarExampleProps = {
 	annotatedPdfId: string;
@@ -49,6 +50,8 @@ type Note = {
 	highlightAreas: HighlightArea[];
 	quote: string;
 };
+
+
 
 const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	loadedSource,
@@ -219,16 +222,8 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			/>
 		);
 	};
-	const HighlightArea = ({ area, props, idx, className }) => (
-		<div
-			key={idx}
-			className={cn("highlight-area z-10 bg-yellow-400 bg-opacity-40", className)}
-			style={Object.assign(
-				{},
-				props.getCssProperties(area, props.rotation),
-			)}
-		/>
-	);
+
+
 
 	const renderHighlights = (props: RenderHighlightsProps) => {
 		return (
@@ -239,14 +234,14 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					);
 
 					const rightmostArea = filteredAreas.reduce((maxArea, area) => {
-						return area.left > maxArea.left ? area : maxArea;
+						return area.left > (maxArea?.left ?? 0) ? area : maxArea;
 					}, filteredAreas[0]);
 
 					return (
 						<div key={note.id} className="group z-10">
 							{filteredAreas.map((area, idx) => {
 								return (
-									<HighlightArea
+									<HighlightedArea
 										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40"
 										area={area}
 										props={props}
@@ -255,32 +250,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 									/>
 								);
 							})}
-							{rightmostArea && (
-								<span
-									className="absolute text-blue-500 text-xl font-bold group-hover:hidden"
-									style={{
-										left: `${rightmostArea.left + rightmostArea.width}%`,
-										top: `${rightmostArea.top}%`,
-										transform: 'translate(8px, -50%)',
-									}}
-								>
-									*
-								</span>
-							)}
-							{rightmostArea && (
-								<span
-									className="z-20 hidden group-hover:block bg-white text-black p-2 rounded shadow-lg absolute text-sm"
-									style={{
-										left: `${rightmostArea.left + rightmostArea.width}%`,
-										top: `${rightmostArea.top}%`,
-										transform: 'translate(8px, -50%)',
-										maxWidth: '200px',
-										wordBreak: 'break-word',
-									}}
-								>
-									{note.quote}
-								</span>
-							)}
+							<NoteIndicator note={note} rightmostArea={rightmostArea} />
 						</div>
 					);
 				})}
