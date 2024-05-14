@@ -220,14 +220,11 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	};
 	const HighlightArea = ({ area, props, idx }) => (
 		<div
-			onDoubleClick={() => { console.log('double clicking') }}
 			key={idx}
+			className='bg-yellow-400 bg-opacity-40 hover:bg-yellow-600 hover:bg-opacity-40'
 			style={Object.assign(
 				{},
-				{
-					background: "yellow",
-					opacity: 0.4,
-				},
+				{ zIndex: 2 },
 				props.getCssProperties(area, props.rotation),
 			)}
 		/>
