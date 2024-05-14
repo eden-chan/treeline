@@ -2,16 +2,28 @@ import { useState, useEffect } from "react";
 import { createPortal } from 'react-dom';
 import { Pencil, Trash2 } from 'lucide-react';
 import { Input } from "@/components/ui/input";
-import { useAskHighlight } from '@src/context/ask-highlight-context';
 
-export const NoteIndicator = ({ highlight, rightmostArea, editHighlight, deleteHighlight }) => {
+type Props = {
+    highlight: any;
+    rightmostArea: {
+        height: number;
+        left: number;
+        pageIndex: number;
+        top: number;
+        width: number;
+    } | undefined;
+    editHighlight: (highlightId: string, text: string) => void;
+    deleteHighlight: (highlightId: string) => void;
+}
+export const NoteIndicator = ({ highlight, rightmostArea, editHighlight, deleteHighlight }: Props) => {
+    if (!rightmostArea) return null;
+
     const [isAsteriskHovered, setIsAsteriskHovered] = useState(false);
     const [isQuoteHovered, setIsQuoteHovered] = useState(false);
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
     const [initialPosition, setInitialPosition] = useState({ x: 0, y: 0 });
-    const { currentHighlight, setCurrentHighlight } = useAskHighlight()
     useEffect(() => {
-        const handleMouseMove = (e) => {
+        const handleMouseMove = (e: MouseEvent) => {
             setCursorPosition({ x: e.clientX, y: e.clientY });
         };
 
@@ -21,12 +33,8 @@ export const NoteIndicator = ({ highlight, rightmostArea, editHighlight, deleteH
             window.removeEventListener('mousemove', handleMouseMove);
         };
     }, []);
-
     const isHovered = isAsteriskHovered || isQuoteHovered;
     const [inputText, setInputText] = useState(highlight.content);
-    const [isEditing, setIsEditing] = useState(false);
-
-
 
     const handleAsteriskHover = () => {
         setIsAsteriskHovered(true);
@@ -36,8 +44,6 @@ export const NoteIndicator = ({ highlight, rightmostArea, editHighlight, deleteH
     const handleAsteriskLeave = () => {
         setIsAsteriskHovered(false);
     };
-
-    if (!rightmostArea) return null;
 
     const handleEdit = () => {
         editHighlight(highlight.id, inputText)
@@ -57,12 +63,9 @@ export const NoteIndicator = ({ highlight, rightmostArea, editHighlight, deleteH
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === "Enter") {
             handleEdit();
-            setIsEditing(false);
+
         }
     };
-
-
-
     return (
         <>
             <span
@@ -98,7 +101,7 @@ export const NoteIndicator = ({ highlight, rightmostArea, editHighlight, deleteH
                                             className="text-blue-500 hover:text-blue-700 p-1"
                                             onClick={handleEdit}
                                         >
-                                            <Pencil className="m-1 cursor-pointer" size={16} onClick={() => setIsEditing(true)}
+                                            <Pencil className="m-1 cursor-pointer" size={16}
                                             />
                                         </button>
                                         <button

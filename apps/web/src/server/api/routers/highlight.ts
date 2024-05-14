@@ -105,7 +105,7 @@ export const highlightRouter = createTRPCRouter({
 				highlightId: z.string(),
 			}),
 		)
-		.mutation<boolean>(async ({ input }) => {
+		.mutation<boolean | null>(async ({ input }) => {
 			const nodeIds: Record<string, string>[] = [];
 
 			try {

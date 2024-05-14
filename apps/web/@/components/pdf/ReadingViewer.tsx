@@ -28,7 +28,6 @@ import { Forest } from "@/components/pdf/Forest";
 import {
 	ResizableHandle,
 	ResizablePanel,
-	ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
 import { ReactFlowProvider } from "reactflow";

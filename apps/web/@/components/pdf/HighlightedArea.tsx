@@ -1,6 +1,21 @@
 import { cn } from '@/lib/utils';
+import { RenderHighlightsProps } from '@react-pdf-viewer/highlight';
 
-export const HighlightedArea = ({ area, props, idx, className, openForest }) => (
+type Props = {
+    props: RenderHighlightsProps;
+    area: {
+        height: number;
+        left: number;
+        pageIndex: number;
+        top: number;
+        width: number;
+    };
+    idx: number;
+    className: string;
+    openForest: () => void;
+}
+
+export const HighlightedArea = ({ area, props, idx, className, openForest }: Props) => (
     <div
         key={idx}
         onClick={(e) => {
