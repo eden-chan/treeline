@@ -5,8 +5,8 @@ export const NoteIndicator = ({ note, rightmostArea }) => {
     const [isAsteriskHovered, setIsAsteriskHovered] = useState(false);
     const [isQuoteHovered, setIsQuoteHovered] = useState(false);
     const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+    const [initialPosition, setInitialPosition] = useState({ x: 0, y: 0 });
 
-    if (!rightmostArea) return null
     useEffect(() => {
         const handleMouseMove = (e) => {
             setCursorPosition({ x: e.clientX, y: e.clientY });
@@ -19,8 +19,18 @@ export const NoteIndicator = ({ note, rightmostArea }) => {
         };
     }, []);
 
-
     const isHovered = isAsteriskHovered || isQuoteHovered;
+
+    const handleAsteriskHover = () => {
+        setIsAsteriskHovered(true);
+        setInitialPosition(cursorPosition);
+    };
+
+    const handleAsteriskLeave = () => {
+        setIsAsteriskHovered(false);
+    };
+
+    if (!rightmostArea) return null;
 
     return (
         <>
@@ -31,22 +41,21 @@ export const NoteIndicator = ({ note, rightmostArea }) => {
                     top: `${rightmostArea.top}%`,
                     transform: 'translate(8px, -50%)',
                 }}
-                onMouseEnter={() => setIsAsteriskHovered(true)}
-                onMouseLeave={() => setIsAsteriskHovered(false)}
+                onMouseEnter={handleAsteriskHover}
+                onMouseLeave={handleAsteriskLeave}
             >
                 ¶
                 {createPortal(
                     <span
                         className={`z-40 ${isHovered ? 'block' : 'hidden'} absolute bg-white text-black p-4 rounded shadow-lg text-sm break-all max-w-xs transition-opacity duration-200 overflow-visible`}
                         style={{
-                            left: `${cursorPosition.x - 10}px `,
-                            top: `${cursorPosition.y}px`,
+                            left: `${initialPosition.x - 10}px`,
+                            top: `${initialPosition.y}px`,
                             transform: 'translateY(-50%)',
                             width: '100%',
-
                         }}
                         onMouseEnter={() => setIsQuoteHovered(true)}
-                        onMouseLeave={() => setTimeout(() => setIsQuoteHovered(false), 2000)}
+                        onMouseLeave={() => setIsQuoteHovered(false)}
                     >
                         {note.quote}
                     </span>,
