@@ -214,7 +214,7 @@ export const AskHighlightProvider: FC<{
 	});
 
 	const utils = clientApi.useUtils();
-	// const updateHighlightMutation = clientApi.highlight.updateHighlight.useMutation();
+
 	const createHighlightMutation =
 		clientApi.highlight.createHighlight.useMutation({
 			onMutate: async (newData) => {
@@ -244,7 +244,7 @@ export const AskHighlightProvider: FC<{
 								parentId: null,
 								highlightId,
 								children: [],
-								comments: [], // Add this line
+								comments: [],
 							}
 							: null;
 						const newHighlight = {

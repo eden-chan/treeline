@@ -32,7 +32,7 @@ import {
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
 import { ReactFlowProvider } from "reactflow";
 import QuestionPopup from "./QuestionPopup";
-import { NoteIndicator } from './NoteIndicator';
+import { PastNote } from './PastNote';
 import { HighlightedArea } from './HighlightedArea';
 import {
 	ImperativePanelGroupHandle,
@@ -63,7 +63,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	annotatedPdfId,
 	annotatedPdfsWithProfile,
 }) => {
-	const [message, setMessage] = useState("");
+
 	const [notes, setNotes] = useState<Note[]>([]);
 	const [friendHighlights, setFriendHighlights] = useState<Highlight[]>([]);
 
@@ -193,7 +193,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		});
 	};
 
-
+	const textInputRef = useRef(null);
 
 	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
 		return (
@@ -207,23 +207,24 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					zIndex: 1,
 				}}
 			>
-				<button className="px-4 py-2 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
+				<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
 					Save
 				</button>
 				<div className="group">
-					<button className="px-4 py-2 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
+					<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
 						Ask
 					</button>
-					<div className="absolute mt-1 w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
+					<div className="absolute w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
 						<textarea
-							className="block w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+							ref={textInputRef}
+							className="block w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 group-hover:visible rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
 							placeholder="Enter text..."
 							rows={3}
 						></textarea>
-						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left">
+						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
 							Define
 						</button>
-						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left">
+						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
 							Summarize
 						</button>
 					</div>
@@ -232,28 +233,31 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		);
 	};
 
+	const inputRef = useRef<HTMLTextAreaElement | null>(null)
 	const renderHighlightContent = (props: RenderHighlightContentProps) => {
 		const addNote = () => {
-			if (message !== "") {
+			if (inputRef.current && inputRef.current.value) {
 				const note: Note = {
 					id: ++noteId,
-					content: message,
+					content: inputRef.current.value,
 					highlightAreas: props.highlightAreas,
 					quote: props.selectedText,
 				};
 				setNotes(notes.concat([note]));
-
+				// COMMENT is a highlight without LLM response
+				// Otherwise; it is ASK which requires LLM response
+				const type = inputRef.current.value === '' ? 'COMMENT' : 'ASK'
 				const extendedNote: NewHighlightWithRelationsInput = {
 					...note,
-					annotatedPdfId, // Placeholder or dynamic value as needed
-					id_: noteId, // Placeholder or dynamic value as needed
-					type: "COMMENT",
-					node: {
-						prompt: message,
+					annotatedPdfId,
+					id_: noteId,
+					type,
+					node: type === 'ASK' ? {
+						prompt: inputRef.current.value,
 						response: null,
 						timestamp: new Date(),
 						comments: [],
-					},
+					} : null, // include node if it is ASK; the root is a COMMENT and does not have a tree
 				};
 				createAskHighlight(extendedNote);
 				props.cancel();
@@ -262,15 +266,14 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 		return (
 			<QuestionPopup
+				inputRef={inputRef}
 				left={`${props.selectionRegion.left}%`}
 				top={`${props.selectionRegion.top + props.selectionRegion.height}%`}
-				onChange={(e) => setMessage(e.target.value)}
 				onSubmit={addNote}
 				onCancel={props.cancel}
 			/>
 		);
 	};
-
 
 	const ref = useRef<ImperativePanelGroupHandle>(null);
 
@@ -316,7 +319,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 									/>
 								);
 							})}
-							<NoteIndicator highlight={highlight} rightmostArea={rightmostArea} editHighlight={editHighlight} deleteHighlight={deleteHighlight} />
+							<PastNote highlight={highlight} rightmostArea={rightmostArea} editHighlight={editHighlight} deleteHighlight={deleteHighlight} />
 						</div>
 					);
 				})}

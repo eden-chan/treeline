@@ -9,15 +9,9 @@ datasource db {
 }
 
 type HighlightComment {
-  emoji     String?
-  text      String?
+  text      String
   timestamp DateTime @db.Date
   userId    String
-}
-
-type HighlightContent {
-  image String?
-  text  String?
 }
 
 type HighlightScaledPosition {

@@ -132,9 +132,8 @@ export const HighlightContentSchema = z.object({
 
 export const CommentSchema = z.object({
 	text: z.string().or(z.null()),
-	emoji: z.string().or(z.null()),
 	timestamp: z.date(),
-	userId: z.string(),
+	userId: z.string(), // who replied or commented
 });
 
 export const CurriculumNodeSchemaBase = z.object({
