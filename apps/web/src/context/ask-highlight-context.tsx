@@ -305,6 +305,24 @@ export const AskHighlightProvider: FC<{
 	const createAskHighlight = async (
 		highlight: NewHighlightWithRelationsInput,
 	): Promise<Highlight | undefined> => {
+
+		const highlightId = uuidv4();
+		if (highlight.type === 'COMMENT') {
+			// Add node to DB
+			createHighlightMutation.mutate({
+				highlight,
+			});
+
+			const tempHighlight = {
+				...highlight,
+				id: highlightId,
+			};
+
+			// setCurrentHighlight(tempHighlight, false);
+			return tempHighlight;
+
+		}
+
 		if (!highlight.node?.prompt) return;
 
 		const promptWithContext = `<question>${highlight.node.prompt}</question>
@@ -326,7 +344,6 @@ ${highlight.content}
 			highlight,
 		});
 
-		const highlightId = uuidv4();
 		const tempHighlight = {
 			...highlight,
 			id: highlightId,

@@ -72,16 +72,6 @@ export const highlightRouter = createTRPCRouter({
 			let updatedHighlight: HighlightWithRelations;
 
 			try {
-				const res = await db.highlight.findFirst({
-					where: {
-						id: input.highlightId,
-					},
-				});
-
-				if (!res?.content) {
-					throw Error("Cannot find comment to be updated");
-				}
-
 				updatedHighlight = await db.highlight.update({
 					where: {
 						id: input.highlightId,

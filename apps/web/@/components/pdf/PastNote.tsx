@@ -59,9 +59,9 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
                 transform: 'translate(8px, -50%)',
             }}
         >
-            <div className="flex items-center space-x-0.5">
+            <div className="relative">
                 <span>¶</span>
-                <div className="invisible group-hover:visible">
+                <div className="hidden group-hover:block absolute left-4 top-0">
                     <button
                         className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded"
                         onClick={handleEdit}
@@ -75,17 +75,17 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
                         <Trash2 className="cursor-pointer" size={16} />
                     </button>
                 </div>
-            </div>
-            <div className="invisible group-hover:visible bg-white">
-                <Textarea ref={inputRef} onKeyDown={handleKeyDown} />
-                <div className="sticky bottom-0 left-0 bg-white z-10">
-                    <div className="flex justify-end">
-                        <button
-                            className="text-blue-500 hover:text-blue-700 font-semibold text-sm"
-                            onClick={handleReply}
-                        >
-                            Reply
-                        </button>
+                <div className="hidden group-hover:block absolute left-4 top-8 bg-white">
+                    <Textarea ref={inputRef} onKeyDown={handleKeyDown} />
+                    <div className="sticky bottom-0 left-0 bg-white z-10">
+                        <div className="flex justify-end">
+                            <button
+                                className="text-blue-500 hover:text-blue-700 font-semibold text-sm"
+                                onClick={handleReply}
+                            >
+                                Reply
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

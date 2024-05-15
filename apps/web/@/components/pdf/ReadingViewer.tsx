@@ -190,18 +190,34 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 	const inputRef = useRef<HTMLTextAreaElement | null>(null)
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (e.key === "Enter") {
-			if (inputRef.current) {
-				// createAskHighlight(highlight.id, inputRef.current.value)
-			}
-		}
-	};
 
 
 	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
+		const saveHighlight = () => {
 
-		const addNote = () => {
+			const note: Note = {
+				id: ++noteId,
+				content: '',
+				highlightAreas: props.highlightAreas,
+				quote: props.selectedText,
+			};
+			setNotes(notes.concat([note]));
+			// COMMENT is a highlight without LLM response
+			// Otherwise; it is ASK which requires LLM response
+			const type = 'COMMENT'
+			const extendedNote: NewHighlightWithRelationsInput = {
+				...note,
+				annotatedPdfId,
+				id_: noteId, // this is bad, noteID should be random. 
+				type
+			};
+			console.log(extendedNote)
+			createAskHighlight(extendedNote);
+			props.cancel();
+
+		};
+
+		const askQuestion = () => {
 			if (inputRef.current && inputRef.current.value) {
 				const note: Note = {
 					id: ++noteId,
@@ -212,21 +228,28 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 				setNotes(notes.concat([note]));
 				// COMMENT is a highlight without LLM response
 				// Otherwise; it is ASK which requires LLM response
-				const type = inputRef.current.value === '' ? 'COMMENT' : 'ASK'
+				const type = 'ASK'
 				const extendedNote: NewHighlightWithRelationsInput = {
 					...note,
 					annotatedPdfId,
 					id_: noteId,
 					type,
-					node: type === 'ASK' ? {
+					node: {
 						prompt: inputRef.current.value,
 						response: null,
 						timestamp: new Date(),
 						comments: [],
-					} : null, // include node if it is ASK; the root is a COMMENT and does not have a tree
+					}
 				};
 				createAskHighlight(extendedNote);
-				props.cancel();
+			}
+		};
+
+		const submitQuestion = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+			if (e.key === "Enter") {
+				if (inputRef.current) {
+					askQuestion()
+				}
 			}
 		};
 
@@ -241,7 +264,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					zIndex: 1,
 				}}
 			>
-				<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
+				<button onClick={saveHighlight} className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
 					Save
 				</button>
 				<div className="group">
@@ -249,7 +272,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 						Ask
 					</button>
 					<div className="absolute w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
-						{/* <Textarea onKeyDown ref={inputRef} /> */}
+						<Textarea placeholder="Ask a question or @ someone" onKeyDown={submitQuestion} ref={inputRef} />
 						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
 							Define
 						</button>
@@ -261,50 +284,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			</div>
 		);
 	};
-
-	// const renderHighlightContent = (props: RenderHighlightContentProps) => {
-	// 	const addNote = () => {
-	// 		if (inputRef.current && inputRef.current.value) {
-	// 			const note: Note = {
-	// 				id: ++noteId,
-	// 				content: inputRef.current.value,
-	// 				highlightAreas: props.highlightAreas,
-	// 				quote: props.selectedText,
-	// 			};
-	// 			setNotes(notes.concat([note]));
-	// 			// COMMENT is a highlight without LLM response
-	// 			// Otherwise; it is ASK which requires LLM response
-	// 			const type = inputRef.current.value === '' ? 'COMMENT' : 'ASK'
-	// 			const extendedNote: NewHighlightWithRelationsInput = {
-	// 				...note,
-	// 				annotatedPdfId,
-	// 				id_: noteId,
-	// 				type,
-	// 				node: type === 'ASK' ? {
-	// 					prompt: inputRef.current.value,
-	// 					response: null,
-	// 					timestamp: new Date(),
-	// 					comments: [],
-	// 				} : null, // include node if it is ASK; the root is a COMMENT and does not have a tree
-	// 			};
-	// 			createAskHighlight(extendedNote);
-	// 			props.cancel();
-	// 		}
-	// 	};
-
-	// 	return (
-	// 		<QuestionPopup
-	// 			inputRef={inputRef}
-	// 			left={`${props.selectionRegion.left}%`}
-	// 			top={`${props.selectionRegion.top + props.selectionRegion.height}%`}
-	// 			onSubmit={addNote}
-	// 			onCancel={props.cancel}
-	// 		/>
-	// 	);
-	// };
-
 	const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
-
 	const setPDFViewerWidthPercentage = (pdfViewerWidth: number = 50) => {
 		const panelGroup = panelGroupRef.current;
 		if (panelGroup) {
@@ -341,7 +321,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 							setPDFViewerWidthPercentage(50)
 						}
 					}
-
 					return (
 						<div key={highlight.id} className="group z-10">
 							{filteredAreas.map((area, idx) => {
