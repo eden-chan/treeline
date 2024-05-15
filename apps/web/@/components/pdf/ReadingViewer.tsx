@@ -331,6 +331,15 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 						return area.left > (maxArea?.left ?? 0) ? area : maxArea;
 					}, filteredAreas[0]);
 
+					const topmostArea = filteredAreas.reduce((minArea, area) => {
+						return area.top < (minArea?.top ?? 0) ? area : minArea;
+					}, filteredAreas[0]);
+
+					const bottommostArea = filteredAreas.reduce((maxArea, area) => {
+						return area.top > (maxArea?.top ?? Number.MAX_VALUE) ? area : maxArea;
+					}, filteredAreas[0]);
+
+					const middleHeight = (topmostArea && bottommostArea) ? (topmostArea.top + bottommostArea.top + bottommostArea.height) / 2 : undefined;
 					const openForest = () => {
 						setCurrentHighlight(highlight)
 						const panelGroup = ref.current;
@@ -354,7 +363,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 									/>
 								);
 							})}
-							<PastNote highlight={highlight} rightmostArea={rightmostArea} editHighlight={editHighlight} deleteHighlight={deleteHighlight} />
+							<PastNote highlight={highlight} middleHeight={middleHeight} rightmostArea={rightmostArea} editHighlight={editHighlight} deleteHighlight={deleteHighlight} />
 						</div>
 					);
 				})}
