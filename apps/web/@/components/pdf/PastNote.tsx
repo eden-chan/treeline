@@ -1,7 +1,5 @@
-import { useState, useEffect, useRef } from "react";
-import { createPortal } from 'react-dom';
+import { useEffect, useRef } from "react";
 import { Pencil, Trash2 } from 'lucide-react';
-import { Input } from "@/components/ui/input";
 import { Textarea } from '../ui/textarea';
 
 type Props = {
@@ -53,36 +51,33 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
         }
     };
     return (
-        <>
-            <span
-                className="z-50 absolute text-blue-500 text-xl font-bold group"
-                style={{
-                    left: `${rightmostArea.left + rightmostArea.width}%`,
-                    top: `${middleHeight ?? rightmostArea.top}%`,
-                    transform: 'translate(8px, -50%)',
-                }}
-            >
-                <div className="bg-white z-10 py-1">
-                    <div className="flex justify-start items-center"> {/* Changed justify-end to justify-start */}
-                        <div className="flex items-center space-x-0.5">
-                            ¶¶
-                            <button
-                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded"
-                                onClick={handleEdit}
-                            >
-                                <Pencil className="cursor-pointer" size={16} />
-                            </button>
-                            <button
-                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded"
-                                onClick={handleTrash}
-                            >
-                                <Trash2 className="cursor-pointer" size={16} />
-                            </button>
-                        </div>
-                    </div>
+        <span
+            className="z-50 absolute text-blue-500 text-xl font-bold group w-[300px]"
+            style={{
+                left: `${rightmostArea.left + rightmostArea.width}%`,
+                top: `${middleHeight ?? rightmostArea.top}%`,
+                transform: 'translate(8px, -50%)',
+            }}
+        >
+            <div className="flex items-center space-x-0.5">
+                <span>¶</span>
+                <div className="invisible group-hover:visible">
+                    <button
+                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded"
+                        onClick={handleEdit}
+                    >
+                        <Pencil className="cursor-pointer" size={16} />
+                    </button>
+                    <button
+                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded"
+                        onClick={handleTrash}
+                    >
+                        <Trash2 className="cursor-pointer" size={16} />
+                    </button>
                 </div>
-                <Textarea ref={inputRef}
-                    onKeyDown={handleKeyDown} />
+            </div>
+            <div className="invisible group-hover:visible bg-white">
+                <Textarea ref={inputRef} onKeyDown={handleKeyDown} />
                 <div className="sticky bottom-0 left-0 bg-white z-10">
                     <div className="flex justify-end">
                         <button
@@ -93,7 +88,7 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
                         </button>
                     </div>
                 </div>
-            </span >
-        </>
+            </div>
+        </span>
     );
 };
