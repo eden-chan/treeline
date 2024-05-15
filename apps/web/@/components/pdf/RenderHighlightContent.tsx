@@ -47,7 +47,7 @@ const RenderHighlightContentExample: React.FC<
 				position={Position.TopCenter}
 				target={
 					<Button onClick={props.toggle}>
-						<MessageIcon />
+						Save
 					</Button>
 				}
 				content={() => <div style={{ width: "100px" }}>Ask a question</div>}

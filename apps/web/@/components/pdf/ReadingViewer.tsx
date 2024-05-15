@@ -193,13 +193,13 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		});
 	};
 
-	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
 
+
+	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
 		return (
 			<div
+				className="relative flex space-x-2"
 				style={{
-					background: "#eee",
-					display: "flex",
 					position: "absolute",
 					left: `${props.selectionRegion.left + props.selectionRegion.width}%`,
 					top: `${props.selectionRegion.top}%`,
@@ -207,19 +207,30 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					zIndex: 1,
 				}}
 			>
-				<Tooltip
-					position={Position.RightCenter}
-					target={
-						<Button onClick={props.toggle}>
-							<MessageIcon />
-						</Button>
-					}
-					content={() => <div style={{ width: "100px" }}>Ask a question</div>}
-					offset={{ left: 0, top: -8 }}
-				/>
+				<button className="px-4 py-2 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
+					Save
+				</button>
+				<div className="group">
+					<button className="px-4 py-2 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
+						Ask
+					</button>
+					<div className="absolute mt-1 w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
+						<textarea
+							className="block w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+							placeholder="Enter text..."
+							rows={3}
+						></textarea>
+						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left">
+							Define
+						</button>
+						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left">
+							Summarize
+						</button>
+					</div>
+				</div>
 			</div>
 		);
-	}
+	};
 
 	const renderHighlightContent = (props: RenderHighlightContentProps) => {
 		const addNote = () => {
