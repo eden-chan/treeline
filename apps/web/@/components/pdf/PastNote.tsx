@@ -94,14 +94,14 @@ export const PastNote = ({ highlight, rightmostArea, editHighlight, deleteHighli
                             left: `${initialPosition.x - 20}px`,
                             top: `${initialPosition.y + 40}px`,
                             transform: 'translate(16px, -50%)',
-                            width: '250px',
+                            width: '200px',
                             minHeight: '150px',
                             flexGrow: '1', // Edit: will this flex grow
                         }}
                         onMouseEnter={() => setIsQuoteHovered(true)}
                         onMouseLeave={() => setIsQuoteHovered(false)}
                     >
-                        <div className="flex flex-col h-full">
+                        <div className="flex flex-col h-full group">
                             <div className="sticky top-0 left-0 bg-white z-10 py-2">
                                 <div className="flex justify-start items-center">
                                     <div className="flex items-center space-x-1">
@@ -109,14 +109,14 @@ export const PastNote = ({ highlight, rightmostArea, editHighlight, deleteHighli
                                             className="text-blue-500 hover:text-blue-700 p-1"
                                             onClick={handleEdit}
                                         >
-                                            <Pencil className="m-1 cursor-pointer" size={16}
+                                            <Pencil className="m-1 cursor-pointer" size={12}
                                             />
                                         </button>
                                         <button
                                             className="text-blue-500 hover:text-blue-700 p-1"
                                             onClick={handleTrash}
                                         >
-                                            <Trash2 size={16} />
+                                            <Trash2 className="m-1 cursor-pointer" size={12} />
                                         </button>
                                     </div>
                                 </div>

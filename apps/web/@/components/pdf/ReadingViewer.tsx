@@ -38,6 +38,7 @@ import {
 	ImperativePanelGroupHandle,
 	PanelGroup,
 } from "react-resizable-panels";
+import { Textarea } from '../ui/textarea';
 
 type DisplayNotesSidebarExampleProps = {
 	annotatedPdfId: string;
@@ -193,48 +194,19 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		});
 	};
 
-	const textInputRef = useRef(null);
+	const inputRef = useRef<HTMLTextAreaElement | null>(null)
 
-	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
-		return (
-			<div
-				className="relative flex space-x-2"
-				style={{
-					position: "absolute",
-					left: `${props.selectionRegion.left + props.selectionRegion.width}%`,
-					top: `${props.selectionRegion.top}%`,
-					transform: "translate(0, 8px)",
-					zIndex: 1,
-				}}
-			>
-				<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
-					Save
-				</button>
-				<div className="group">
-					<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
-						Ask
-					</button>
-					<div className="absolute w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
-						<textarea
-							ref={textInputRef}
-							className="block w-full px-4 py-2 text-gray-800 bg-white border border-gray-300 group-hover:visible rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-							placeholder="Enter text..."
-							rows={3}
-						></textarea>
-						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
-							Define
-						</button>
-						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
-							Summarize
-						</button>
-					</div>
-				</div>
-			</div>
-		);
+	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (e.key === "Enter") {
+			if (inputRef.current) {
+				// createAskHighlight(highlight.id, inputRef.current.value)
+			}
+		}
 	};
 
-	const inputRef = useRef<HTMLTextAreaElement | null>(null)
-	const renderHighlightContent = (props: RenderHighlightContentProps) => {
+
+	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
+
 		const addNote = () => {
 			if (inputRef.current && inputRef.current.value) {
 				const note: Note = {
@@ -264,16 +236,79 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			}
 		};
 
+		console.log(props)
 		return (
-			<QuestionPopup
-				inputRef={inputRef}
-				left={`${props.selectionRegion.left}%`}
-				top={`${props.selectionRegion.top + props.selectionRegion.height}%`}
-				onSubmit={addNote}
-				onCancel={props.cancel}
-			/>
+			<div
+				className="relative flex space-x-2"
+				style={{
+					position: "absolute",
+					left: `${props.selectionRegion.left + props.selectionRegion.width}%`,
+					top: `${props.selectionRegion.top}%`,
+					transform: "translate(0, 8px)",
+					zIndex: 1,
+				}}
+			>
+				<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
+					Save
+				</button>
+				<div className="group">
+					<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
+						Ask
+					</button>
+					<div className="absolute w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
+						{/* <Textarea onKeyDown ref={inputRef} /> */}
+						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
+							Define
+						</button>
+						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
+							Summarize
+						</button>
+					</div>
+				</div>
+			</div>
 		);
 	};
+
+	// const renderHighlightContent = (props: RenderHighlightContentProps) => {
+	// 	const addNote = () => {
+	// 		if (inputRef.current && inputRef.current.value) {
+	// 			const note: Note = {
+	// 				id: ++noteId,
+	// 				content: inputRef.current.value,
+	// 				highlightAreas: props.highlightAreas,
+	// 				quote: props.selectedText,
+	// 			};
+	// 			setNotes(notes.concat([note]));
+	// 			// COMMENT is a highlight without LLM response
+	// 			// Otherwise; it is ASK which requires LLM response
+	// 			const type = inputRef.current.value === '' ? 'COMMENT' : 'ASK'
+	// 			const extendedNote: NewHighlightWithRelationsInput = {
+	// 				...note,
+	// 				annotatedPdfId,
+	// 				id_: noteId,
+	// 				type,
+	// 				node: type === 'ASK' ? {
+	// 					prompt: inputRef.current.value,
+	// 					response: null,
+	// 					timestamp: new Date(),
+	// 					comments: [],
+	// 				} : null, // include node if it is ASK; the root is a COMMENT and does not have a tree
+	// 			};
+	// 			createAskHighlight(extendedNote);
+	// 			props.cancel();
+	// 		}
+	// 	};
+
+	// 	return (
+	// 		<QuestionPopup
+	// 			inputRef={inputRef}
+	// 			left={`${props.selectionRegion.left}%`}
+	// 			top={`${props.selectionRegion.top + props.selectionRegion.height}%`}
+	// 			onSubmit={addNote}
+	// 			onCancel={props.cancel}
+	// 		/>
+	// 	);
+	// };
 
 	const ref = useRef<ImperativePanelGroupHandle>(null);
 
@@ -329,7 +364,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 	const highlightPluginInstance = highlightPlugin({
 		renderHighlightTarget,
-		renderHighlightContent,
+		// renderHighlightContent,
 		renderHighlights,
 	});
 
