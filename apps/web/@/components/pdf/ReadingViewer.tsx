@@ -5,7 +5,7 @@ import {
 	RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
 
-// modified highlightPlugin to handle selecting non-pdf content
+// modified highlightPlugin to handle selecting non-pdf content that causes re-rendering issue
 const highlightPlugin = require("./highlight.js").highlightPlugin;
 import {
 	Viewer,

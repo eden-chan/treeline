@@ -1,5 +1,5 @@
 "use strict";
-// ADDED EARLY EXIT CASE FOR NON-PDF CONTENT
+// modified highlightPlugin to handle selecting non-pdf content that causes re-rendering issue
 var core = require("@react-pdf-viewer/core");
 var React = require("react");
 
