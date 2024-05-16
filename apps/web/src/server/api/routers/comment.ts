@@ -27,7 +27,9 @@ export const commentRouter = createTRPCRouter({
 						timestamp: new Date(),
 					},
 					update: {
-						...input,
+						...Object.fromEntries(
+							Object.entries(input).filter(([key]) => key !== "id"),
+						),
 						timestamp: new Date(),
 					},
 				},

@@ -36,6 +36,7 @@ export const PastNote = ({
 	if (!rightmostArea) return null;
 
 	const inputRef = useRef<HTMLTextAreaElement>(null);
+	const replyInputRef = useRef<HTMLTextAreaElement>(null);
 
 	useEffect(() => {
 		if (inputRef.current) {
@@ -57,12 +58,35 @@ export const PastNote = ({
 		deleteHighlight(highlight.id);
 	};
 
-	const handleReply = () => {
-		// Dummy function for handling comment
+	const [showReplyTextarea, setShowReplyTextarea] = useState(false);
+
+	const handleReplyKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		if (showReplyTextarea && e.key === "Enter" && (e.shiftKey || e.altKey)) {
+			e.preventDefault();
+			if (replyInputRef.current) {
+				const updateComment = await editHighlight({
+					id: highlight.comments?.[0]?.id,
+					highlightId: highlight.id,
+					text: replyInputRef.current.value,
+				});
+				console.log('updateComment', updateComment);
+			}
+		}
+	};
+
+	const handleReply = async () => {
+		if (replyInputRef.current) {
+			const updateComment = await editHighlight({
+				id: highlight.comments?.[highlight.comments.length - 1]?.id,
+				highlightId: highlight.id,
+				text: replyInputRef.current.value,
+			});
+			console.log('updateComment', updateComment);
+		}
 	};
 
 	const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (e.key === "Enter" && e.shiftKey) {
+		if (e.key === "Enter" && (e.shiftKey || e.altKey)) {
 			e.preventDefault();
 			if (inputRef.current) {
 				const updateComment = await editHighlight({
@@ -70,10 +94,11 @@ export const PastNote = ({
 					highlightId: highlight.id,
 					text: inputRef.current.value,
 				});
-				console.log('updateComment', updateComment)
+				console.log('updateComment', updateComment);
 			}
 		}
 	};
+
 	return (
 		<span
 			className="z-50 absolute text-xl w-[20px] group"
@@ -93,31 +118,39 @@ export const PastNote = ({
 						>
 							<Trash2 className="cursor-pointer" size={16} />
 						</button>
-						{/* <img
-							src="/path/to/profile-picture.jpg"
-							alt="Profile"
-							className="w-6 h-6 rounded-full ml-2"
-						/> */}
-						<span className="text-xs ml-1 select-none">Eden Chan</span>
+						<span className="text-xs ml-1 select-none self-end">Eden Chan</span>
 					</div>
 				</span>
-				<div className="invisible group-hover:visible absolute w-full">
-					<Textarea ref={inputRef} onKeyDown={handleKeyDown} />
-					<div className="sticky bottom-0 left-0  z-10">
-						<div className="flex justify-end">
-							<button
-								className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
-								onClick={handleReply}
-							>
-								Reply
-							</button>
-							<button
-								className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded select-none"
-								onClick={handleSubmit}
-							>
-								<CircleArrowUp className="cursor-pointer" size={16} />
-							</button>
-						</div>
+				<div className="invisible group-hover:visible absolute w-full bg-white">
+					<Textarea ref={inputRef} placeholder={'Comment or share with @'} disabled={showReplyTextarea} onKeyDown={handleKeyDown} />
+					<div className="sticky bottom-0 left-0 z-50 bg-white">
+						{!showReplyTextarea &&
+							<div className="flex justify-end bg-white">
+
+								<button
+									className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
+									onClick={() => setShowReplyTextarea(true)}
+								>
+									Reply
+								</button>
+								<button
+									className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded select-none"
+									onClick={handleSubmit}
+								>
+									<CircleArrowUp className="cursor-pointer" size={16} />
+								</button>
+
+
+							</div>
+						}
+						{showReplyTextarea && (
+							<Textarea
+								ref={replyInputRef}
+								placeholder="Reply"
+								className='min-h-[24px]'
+								onKeyDown={handleReplyKeyDown}
+							/>
+						)}
 					</div>
 				</div>
 			</div>

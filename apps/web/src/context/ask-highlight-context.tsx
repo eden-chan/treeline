@@ -22,6 +22,7 @@ import {
 	HighlightWithRelations,
 } from "@src/lib/types";
 import { getNodeById } from "@src/utils/curriculum";
+import { ObjectId } from 'mongodb';
 
 export type ContextProps = {
 	currentHighlight: HighlightWithRelations | null;
@@ -238,12 +239,12 @@ export const AskHighlightProvider: FC<{
 						const highlightId = uuidv4(); // TODO: get the object ID
 						const newNode = newData.highlight.node
 							? {
-									...newData.highlight.node,
-									id: uuidv4(),
-									parentId: null,
-									highlightId,
-									children: [],
-								}
+								...newData.highlight.node,
+								id: uuidv4(),
+								parentId: null,
+								highlightId,
+								children: [],
+							}
 							: null;
 						const newHighlight = {
 							...newData.highlight,
@@ -304,16 +305,18 @@ export const AskHighlightProvider: FC<{
 	const createAskHighlight = async (
 		highlight: NewHighlightWithRelationsInput,
 	): Promise<HighlightWithRelations | undefined> => {
-		const highlightId = uuidv4();
-		if (!highlight.node?.prompt) return;
 
-		const promptWithContext = `<question>${highlight.node.prompt}</question>`;
-		// Query AI for response
-		append({
-			role: "user",
-			content: promptWithContext,
-			createdAt: new Date(),
-		});
+		const highlightId = uuidv4();
+
+		if (highlight.node?.prompt) {
+			const promptWithContext = `<question>${highlight.node.prompt}</question>`;
+			// Query AI for response
+			append({
+				role: "user",
+				content: promptWithContext,
+				createdAt: new Date(),
+			});
+		}
 
 		// Add node to DB
 		createHighlightMutation.mutate({
@@ -324,13 +327,15 @@ export const AskHighlightProvider: FC<{
 			...highlight,
 			id: highlightId,
 			comments: [],
-			node: {
-				...highlight.node,
-				id: uuidv4(),
-				highlightId,
-				parentId: null,
-				children: [],
-			},
+			node: highlight.node
+				? {
+					...highlight.node,
+					id: uuidv4(), // is this generated properly after it's saved? 
+					highlightId,
+					parentId: null,
+					children: [],
+				}
+				: undefined,
 		};
 
 		setCurrentHighlight(tempHighlight, false);
