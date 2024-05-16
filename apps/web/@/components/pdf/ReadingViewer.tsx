@@ -1,11 +1,9 @@
 import { useCallback, useRef, useState } from "react";
 import {
-	HighlightArea,
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
 import { defaultLayoutPlugin, ToolbarProps } from '@react-pdf-viewer/default-layout';
-
 
 // modified highlightPlugin to handle selecting non-pdf content that causes re-rendering issue
 const highlightPlugin = require("./highlight.js").highlightPlugin;
@@ -31,7 +29,7 @@ import { ImperativePanelGroupHandle, PanelGroup } from "react-resizable-panels";
 import { Textarea } from "../ui/textarea";
 import readingIndicatorPlugin from './ReadingIndicator';
 
-type DisplayNotesSidebarExampleProps = {
+type Props = {
 	annotatedPdfId: string;
 	loadedSource: string;
 	userId: string;
@@ -39,23 +37,15 @@ type DisplayNotesSidebarExampleProps = {
 	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
 };
 
-type Note = {
-	id: number;
-	content: string;
-	highlightAreas: HighlightArea[];
-	quote: string;
-};
 
-
-
-const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
+const ReadingViewer: React.FC<Props> = ({
 	loadedSource,
 	userHighlights,
 	userId,
 	annotatedPdfId,
 	annotatedPdfsWithProfile,
 }) => {
-	const [notes, setNotes] = useState<Note[]>([]);
+
 	const [friendHighlights, setFriendHighlights] = useState<Highlight[]>([]);
 
 	const {
@@ -65,7 +55,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		clearSelectedHighlight,
 		setCurrentHighlight,
 	} = useAskHighlight();
-	let noteId = notes.length;
+
 
 	const utils = clientApi.useUtils();
 
@@ -165,40 +155,32 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
 		const saveHighlight = () => {
-			const note: Note = {
-				id: ++noteId,
-				content: "",
+
+
+			const highlightDraft: NewHighlightWithRelationsInput = {
+				annotatedPdfId,
 				highlightAreas: props.highlightAreas,
 				quote: props.selectedText,
+
 			};
-			setNotes(notes.concat([note]));
-			const extendedNote: NewHighlightWithRelationsInput = {
-				...note,
-				annotatedPdfId,
-			};
-			console.log(extendedNote);
-			createAskHighlight(extendedNote);
+
+			createAskHighlight(highlightDraft);
 			props.cancel();
 		};
 
 		const askQuestion = async (prompt: string) => {
-			const note: Note = {
-				id: ++noteId,
-				content: prompt, // this should be the initial question
+
+			const highlightDraft: NewHighlightWithRelationsInput = {
+				annotatedPdfId,
 				highlightAreas: props.highlightAreas,
 				quote: props.selectedText,
-			};
-			setNotes(notes.concat([note]));
-			const extendedNote: NewHighlightWithRelationsInput = {
-				...note,
-				annotatedPdfId,
 				node: {
 					prompt,
 					response: null,
 					timestamp: new Date(),
 				},
 			};
-			return await createAskHighlight(extendedNote);
+			return await createAskHighlight(highlightDraft);
 		};
 
 		const submitQuestion = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

@@ -90,7 +90,7 @@ model ParsedPaper {
   updated          DateTime              @db.Date
 }
 
-type HighlightV2HighlightAreas {
+type HighlightAreas {
   height    Float
   left      Float
   pageIndex Int
@@ -100,7 +100,7 @@ type HighlightV2HighlightAreas {
 
 model Highlight {
   id             String                      @id @default(auto()) @map("_id") @db.ObjectId
-  highlightAreas HighlightV2HighlightAreas[]
+  highlightAreas HighlightAreas[]
   comments       Comment[]
   quote          String
   node           CurriculumNode?

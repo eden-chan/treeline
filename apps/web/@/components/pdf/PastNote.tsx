@@ -61,15 +61,16 @@ export const PastNote = ({
 		// Dummy function for handling comment
 	};
 
-	const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 		if (e.key === "Enter" && e.shiftKey) {
 			e.preventDefault();
 			if (inputRef.current) {
-				editHighlight({
+				const updateComment = await editHighlight({
 					id: highlight.comments?.[0]?.id,
 					highlightId: highlight.id,
 					text: inputRef.current.value,
 				});
+				console.log('updateComment', updateComment)
 			}
 		}
 	};
@@ -82,21 +83,27 @@ export const PastNote = ({
 				transform: "translate(8px, -50%)",
 			}}
 		>
-			<div className="relative group-hover:w-[200px]">
+			<div className="relative group-hover:w-[200px] bg-white">
 				<span className="flex items-center">
 					<span className="select-none font-bold text-blue-500 inline">¶</span>
-					<div className="invisible group-hover:visible">
+					<div className="invisible group-hover:visible flex items-center">
 						<button
 							className="text-blue-500 hover:text-blue-700 p-0.5 rounded select-none ml-2"
 							onClick={handleTrash}
 						>
 							<Trash2 className="cursor-pointer" size={16} />
 						</button>
+						{/* <img
+							src="/path/to/profile-picture.jpg"
+							alt="Profile"
+							className="w-6 h-6 rounded-full ml-2"
+						/> */}
+						<span className="text-xs ml-1 select-none">Eden Chan</span>
 					</div>
 				</span>
 				<div className="invisible group-hover:visible absolute w-full">
 					<Textarea ref={inputRef} onKeyDown={handleKeyDown} />
-					<div className="sticky bottom-0 left-0 bg-white z-10">
+					<div className="sticky bottom-0 left-0  z-10">
 						<div className="flex justify-end">
 							<button
 								className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"

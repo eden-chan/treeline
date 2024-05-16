@@ -3,6 +3,7 @@ import { Comment } from "@prisma/client";
 
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 import { db } from "@src/lib/db";
+import { ObjectId } from "mongodb";
 
 export const commentRouter = createTRPCRouter({
 	upsertComment: publicProcedure
@@ -19,7 +20,7 @@ export const commentRouter = createTRPCRouter({
 			const upsertCommentParams: Parameters<typeof db.comment.upsert> = [
 				{
 					where: {
-						id: input.id,
+						id: input.id ?? new ObjectId().toString(), // Handle undefined id by creating a new ObjectId
 					},
 					create: {
 						...input,
