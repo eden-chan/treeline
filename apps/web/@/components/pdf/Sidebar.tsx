@@ -1,7 +1,7 @@
 import React from "react";
 
 import { HighlightWithRelations } from "@src/lib/types";
-import { Highlight } from "./Highlight";
+import SidebarHighlight from "@/components/pdf/SidebarHighlight";
 
 type Props = {
 	highlights: Array<HighlightWithRelations>;
@@ -26,7 +26,7 @@ export function Sidebar({
 
 			<ul className="list-none p-0">
 				{highlights.map((highlight, idx) => (
-					<Highlight
+					<SidebarHighlight
 						key={idx}
 						highlight={highlight}
 						deleteHighlight={deleteHighlight}

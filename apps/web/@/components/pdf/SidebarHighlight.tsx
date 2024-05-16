@@ -12,7 +12,7 @@ type Props = {
 	onHighlightClick: (highlight: HighlightWithRelations) => void;
 };
 
-export function Highlight({ highlight, deleteHighlight, onHighlightClick }: Props) {
+export default function Highlight({ highlight, deleteHighlight, onHighlightClick }: Props) {
 	return (
 		<li
 			id={`highlight-${highlight.id}`}
