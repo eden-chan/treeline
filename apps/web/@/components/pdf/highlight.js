@@ -658,6 +658,10 @@ var Tracker = function (_a) {
 		switch (rangeType) {
 			case SelectionRange.SameDiv:
 				var rect = getRectFromOffsets(startDiv, startOffset, endOffset);
+				if (rect === null) {
+					// <EDGE_CASE>
+					return;
+				}
 				highlightAreas = [
 					{
 						height: (rect.height * 100) / startPageRect.height,
@@ -670,14 +674,17 @@ var Tracker = function (_a) {
 				];
 				break;
 			case SelectionRange.DifferentDivs:
-				highlightAreas = [
-					getRectFromOffsets(
-						startDiv,
-						startOffset,
+				const rect = getRectFromOffsets(
+					startDiv,
+					startOffset,
 
-						startDiv.textContent.length,
-					),
-				]
+					startDiv.textContent.length,
+				);
+				if (rect === null) {
+					// <EDGE_CASE>
+					return;
+				}
+				highlightAreas = [rect]
 					.concat(
 						getRectBetween(
 							startDivIndex + 1,
