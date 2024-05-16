@@ -1,9 +1,11 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
 	HighlightArea,
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
+import { defaultLayoutPlugin, ToolbarProps } from '@react-pdf-viewer/default-layout';
+
 
 // modified highlightPlugin to handle selecting non-pdf content that causes re-rendering issue
 const highlightPlugin = require("./highlight.js").highlightPlugin;
@@ -27,6 +29,7 @@ import { PastNote } from "./PastNote";
 import { HighlightedArea } from "./HighlightedArea";
 import { ImperativePanelGroupHandle, PanelGroup } from "react-resizable-panels";
 import { Textarea } from "../ui/textarea";
+import readingIndicatorPlugin from './ReadingIndicator';
 
 type DisplayNotesSidebarExampleProps = {
 	annotatedPdfId: string;
@@ -42,6 +45,8 @@ type Note = {
 	highlightAreas: HighlightArea[];
 	quote: string;
 };
+
+
 
 const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 	loadedSource,
@@ -208,7 +213,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		const define = async () => {
 			const highlight = await askQuestion(
 				"Concisely define the following term and why it is important." +
-					props.selectedText,
+				props.selectedText,
 			);
 			console.log("define highlight", highlight);
 			if (highlight) {
@@ -302,9 +307,9 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 						const middleHeight =
 							topmostArea && bottommostArea
 								? (topmostArea.top +
-										bottommostArea.top +
-										bottommostArea.height) /
-									2
+									bottommostArea.top +
+									bottommostArea.height) /
+								2
 								: undefined;
 
 						const openForest = () => {
@@ -348,11 +353,44 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			return <div>An error occurred while rendering highlights.</div>;
 		}
 	};
+
+	const readingIndicatorPluginInstance = readingIndicatorPlugin();
+	const { ReadingIndicator } = readingIndicatorPluginInstance;
+
+
+
+	const renderToolbar = useCallback(
+		(Toolbar: (props: ToolbarProps) => React.ReactElement) => (
+			<>
+				<Toolbar />
+				<div
+					style={{
+						bottom: '-0.25rem',
+						position: 'absolute',
+						left: 0,
+						// Take the full width of toolbar
+						width: '100%',
+					}}
+				>
+					<ReadingIndicator />
+				</div>
+			</>
+		),
+		[]
+	);
+
+	const defaultLayoutPluginInstance = defaultLayoutPlugin({
+		renderToolbar,
+	});
+
+
 	const highlightPluginInstance = highlightPlugin({
 		renderHighlightTarget,
 		// renderHighlightContent,
 		renderHighlights,
 	});
+
+
 
 	const { jumpToHighlightArea } = highlightPluginInstance;
 
@@ -380,7 +418,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					defaultSize={80}
 					style={{ height: "100vh", overflow: "auto" }}
 				>
-					<Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
+					<Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance, readingIndicatorPluginInstance, defaultLayoutPluginInstance]} />
 					{/* removes the trailing bottom whitespace */}
 					<div />
 				</ResizablePanel>

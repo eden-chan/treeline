@@ -8,16 +8,6 @@ datasource db {
   relationMode = "prisma"
 }
 
-type HighlightScaledPosition {
-  height     Float
-  width      Float
-  x1         Float
-  y1         Float
-  x2         Float
-  y2         Float
-  pageNumber Int?
-}
-
 type ParsedPaperText {
   outline  String[]
   sections ParsedPaperTextSections[]
@@ -98,13 +88,6 @@ model ParsedPaper {
   source           String
   title            String
   updated          DateTime              @db.Date
-}
-
-type HighlightPosition {
-  boundingRect      HighlightScaledPosition
-  pageNumber        Int
-  rects             HighlightScaledPosition[]
-  usePdfCoordinates Boolean?
 }
 
 type HighlightV2HighlightAreas {
