@@ -219,45 +219,64 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			props.cancel();
 		};
 
-		const askQuestion = () => {
-			if (inputRef.current && inputRef.current.value) {
-				const note: Note = {
-					id: ++noteId,
-					content: inputRef.current.value,
-					highlightAreas: props.highlightAreas,
-					quote: props.selectedText,
-				};
-				setNotes(notes.concat([note]));
-				// COMMENT is a highlight without LLM response
-				// Otherwise; it is ASK which requires LLM response
-				const type = 'ASK'
-				const extendedNote: NewHighlightWithRelationsInput = {
-					...note,
-					annotatedPdfId,
-					id_: noteId,
-					type,
-					node: {
-						prompt: inputRef.current.value,
-						response: null,
-						timestamp: new Date(),
-						comments: [],
-					}
-				};
-				createAskHighlight(extendedNote);
-			}
+		const askQuestion = async (prompt: string) => {
+			const note: Note = {
+				id: ++noteId,
+				content: prompt, // this should be the initial question
+				highlightAreas: props.highlightAreas,
+				quote: props.selectedText,
+			};
+			setNotes(notes.concat([note]));
+			// COMMENT is a highlight without LLM response
+			// Otherwise; it is ASK which requires LLM response
+			const type = 'ASK'
+			const extendedNote: NewHighlightWithRelationsInput = {
+				...note,
+				annotatedPdfId,
+				id_: noteId,
+				type,
+				node: {
+					prompt,
+					response: null,
+					timestamp: new Date(),
+					comments: [],
+				}
+			};
+			return await createAskHighlight(extendedNote);
+
 		};
 
 		const submitQuestion = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
 			if (e.key === "Enter") {
-				if (inputRef.current) {
-					askQuestion()
+				if (inputRef.current && inputRef.current.value !== '') {
+					askQuestion(inputRef.current.value)
 				}
 			}
 		};
 
+		// maybe this can be used for flashcards?
+		const define = async () => {
+			const highlight = await askQuestion('Concisely define the following term and why it is important.' + props.selectedText)
+			console.log('define highlight', highlight)
+			if (highlight) {
+				setCurrentHighlight(highlight, true)
+				// 
+			}
+
+		};
+
+		// guides the direction of the tree
+		// TODO: revise the prompt
+		const explain = async () => {
+			const highlight = await askQuestion('Concisely explain why this is important: ' + props.selectedText)
+			console.log('explain', highlight)
+			if (highlight) {
+				setCurrentHighlight(highlight, true)
+			}
+
+		};
 
 		return (
-
 			<div
 				className="relative flex space-x-2"
 				style={{
@@ -277,10 +296,10 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					</button>
 					<div className="absolute w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
 						<Textarea placeholder="Ask a question or @ someone" onKeyDown={submitQuestion} ref={inputRef} />
-						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
+						<button onClick={define} className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
 							Define
 						</button>
-						<button className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
+						<button onClick={explain} className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible">
 							Summarize
 						</button>
 					</div>

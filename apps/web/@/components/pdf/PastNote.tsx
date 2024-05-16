@@ -51,30 +51,24 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
     };
     return (
         <span
-            className="z-50 absolute text-blue-500 text-xl font-bold group w-[300px] select-none"
+            className="z-50 absolute text-xl w-[250px]"
             style={{
                 left: `${rightmostArea.left + rightmostArea.width}%`,
                 top: `${middleHeight ?? rightmostArea.top}%`,
                 transform: 'translate(8px, -50%)',
             }}
         >
-            <div className="relative">
-                <span className="bg-white select-none">¶</span>
-                <div className="hidden group-hover:block absolute left-4 top-0">
-                    {/* <button
-                        className="text-blue-500 hover:text-blue-700 p-0.5 rounded bg-white select-none"
-                        onClick={handleEdit}
-                    >
-                        <Pencil className="cursor-pointer" size={16} />
-                    </button> */}
+            <div className="relative group">
+                <span className="flex items-center">
+                    <span className="select-none font-bold text-blue-500 inline">¶</span>
                     <button
-                        className="text-blue-500 hover:text-blue-700 p-0.5 rounded bg-white select-none"
+                        className="text-blue-500 hidden group-hover:block group-hover:text-blue-700 p-0.5 rounded select-none ml-2"
                         onClick={handleTrash}
                     >
                         <Trash2 className="cursor-pointer" size={16} />
                     </button>
-                </div>
-                <div className="hidden group-hover:block absolute bg-white">
+                </span>
+                <div className="hidden group-hover:block absolute bg-yellow-500 w-[250px]">
                     <Textarea
                         ref={inputRef}
                         onKeyDown={handleKeyDown}

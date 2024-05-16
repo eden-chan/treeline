@@ -130,6 +130,7 @@ type HighlightV2HighlightAreas {
 model Highlight {
   id             String                      @id @default(auto()) @map("_id") @db.ObjectId
   content        String
+  comments       HighlightComment[]
   highlightAreas HighlightV2HighlightAreas[]
   id_            Int                         @map("id")
   quote          String
