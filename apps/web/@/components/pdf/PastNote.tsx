@@ -6,14 +6,14 @@ import { HighlightWithRelations } from "@src/lib/types";
 type Props = {
 	highlight: HighlightWithRelations;
 	rightmostArea:
-		| {
-				height: number;
-				left: number;
-				pageIndex: number;
-				top: number;
-				width: number;
-		  }
-		| undefined;
+	| {
+		height: number;
+		left: number;
+		pageIndex: number;
+		top: number;
+		width: number;
+	}
+	| undefined;
 	middleHeight: number | undefined;
 	editHighlight: ({
 		id,
@@ -75,24 +75,26 @@ export const PastNote = ({
 	};
 	return (
 		<span
-			className="z-50 absolute text-xl w-[250px]"
+			className="z-50 absolute text-xl w-[20px] group"
 			style={{
 				left: `${rightmostArea.left + rightmostArea.width}%`,
 				top: `${middleHeight ?? rightmostArea.top}%`,
 				transform: "translate(8px, -50%)",
 			}}
 		>
-			<div className="relative group">
+			<div className="relative group-hover:w-[200px]">
 				<span className="flex items-center">
 					<span className="select-none font-bold text-blue-500 inline">¶</span>
-					<button
-						className="text-blue-500 hidden group-hover:block group-hover:text-blue-700 p-0.5 rounded select-none ml-2"
-						onClick={handleTrash}
-					>
-						<Trash2 className="cursor-pointer" size={16} />
-					</button>
+					<div className="invisible group-hover:visible">
+						<button
+							className="text-blue-500 hover:text-blue-700 p-0.5 rounded select-none ml-2"
+							onClick={handleTrash}
+						>
+							<Trash2 className="cursor-pointer" size={16} />
+						</button>
+					</div>
 				</span>
-				<div className="hidden group-hover:block absolute bg-yellow-500 w-[250px]">
+				<div className="invisible group-hover:visible absolute w-full">
 					<Textarea ref={inputRef} onKeyDown={handleKeyDown} />
 					<div className="sticky bottom-0 left-0 bg-white z-10">
 						<div className="flex justify-end">
