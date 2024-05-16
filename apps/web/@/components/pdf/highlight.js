@@ -1,5 +1,6 @@
 "use strict";
 // modified highlightPlugin to handle selecting non-pdf content that causes re-rendering issue
+// SEARCH FOR <EDGE_CASE> EXIT EARLY BECAUSE THIS HIGHLIGHT LIBRARY WASN'T DESIGNED TO HANDLE NON-PDF CONTENT
 var core = require("@react-pdf-viewer/core");
 var React = require("react");
 
@@ -475,7 +476,7 @@ var getRectFromOffsets = function (textDiv, startOffset, endOffset) {
 			return null;
 		}
 	} catch (error) {
-		console.error("An error occurred in getRectFromOffsets:", error);
+		// console.error("An error occurred in getRectFromOffsets:", error);
 		return null;
 	}
 };
@@ -641,11 +642,17 @@ var Tracker = function (_a) {
 				break;
 		}
 		var getRectBetween = function (min, max, eleArray) {
-			return Array(max - min + 1)
-				.fill(0)
-				.map(function (_, i) {
-					return eleArray[min + i].getBoundingClientRect();
-				});
+			try {
+				return Array(max - min + 1)
+					.fill(0)
+					.map(function (_, i) {
+						return eleArray[min + i].getBoundingClientRect();
+					});
+			} catch (error) {
+				// <EDGE_CASE>
+				// console.error("An error occurred in getRectBetween:", error);
+				return null;
+			}
 		};
 		var highlightAreas = [];
 		switch (rangeType) {
@@ -699,17 +706,22 @@ var Tracker = function (_a) {
 				);
 
 				if (offsets === null) {
-					// EXIT EARLY BECAUSE THIS HIGHLIGHT LIBRARY WASN'T DESIGNED TO HANDLE NON-PDF CONTENT
+					// <EDGE_CASE> EXIT EARLY BECAUSE THIS HIGHLIGHT LIBRARY WASN'T DESIGNED TO HANDLE NON-PDF CONTENT
 					return;
 				}
+				const rectBetweenStart = getRectBetween(
+					startDivIndex + 1,
+					startDivSiblings.length - 1,
+					startDivSiblings,
+				);
+
+				if (rectBetweenStart === null) {
+					// <EDGE_CASE>
+					return;
+				}
+
 				var startAreas = [offsets]
-					.concat(
-						getRectBetween(
-							startDivIndex + 1,
-							startDivSiblings.length - 1,
-							startDivSiblings,
-						),
-					)
+					.concat(rectBetweenStart)
 					.map(function (rect) {
 						return {
 							height: (rect.height * 100) / startPageRect.height,
@@ -721,7 +733,17 @@ var Tracker = function (_a) {
 							width: (rect.width * 100) / startPageRect.width,
 						};
 					});
-				var endAreas = getRectBetween(0, endDivIndex - 1, endDivSiblings)
+				const rectBetweenEnd = getRectBetween(
+					0,
+					endDivIndex - 1,
+					endDivSiblings,
+				);
+
+				if (rectBetweenEnd === null) {
+					// <EDGE_CASE>
+					return;
+				}
+				var endAreas = rectBetweenEnd
 					.concat([getRectFromOffsets(endDiv, 0, endOffset)])
 					.map(function (rect) {
 						return {
