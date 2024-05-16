@@ -1,5 +1,4 @@
 import { useRef, useState } from "react";
-import { useRef, useState } from "react";
 import {
 	HighlightArea,
 	RenderHighlightsProps,
@@ -180,10 +179,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 
 	const deleteHighlight = (highlightId: string) => {
 		deleteHighlightMutation.mutate({ highlightId });
-	};
-
-	const editHighlight = (highlightId: string, text: string) => {
-		editHighlightMutation.mutate({ highlightId, text });
 	};
 
 	const editHighlight = (highlightId: string, text: string) => {
@@ -413,7 +408,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					}}
 					className="relative"
 					defaultSize={80}
-					defaultSize={80}
 					style={{ height: "100vh", overflow: "auto" }}
 				>
 					<Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
@@ -444,8 +438,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					)}
 				</ResizablePanel>
 			</PanelGroup>
-		</PanelGroup>
-		</div >
+		</div>
 	);
 };
 

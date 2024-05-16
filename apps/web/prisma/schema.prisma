@@ -129,21 +129,13 @@ type HighlightV2HighlightAreas {
 
 model Highlight {
   id             String                      @id @default(auto()) @map("_id") @db.ObjectId
+  content        String
+  comments       HighlightComment[]
   highlightAreas HighlightV2HighlightAreas[]
-  comments       Comment[]
   id_            Int                         @map("id")
   quote          String
   type           HighlightType               @default(COMMENT)
   node           CurriculumNode?
   annotatedPdf   AnnotatedPdf                @relation(fields: [annotatedPdfId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   annotatedPdfId String                      @db.ObjectId
-}
-
-model Comment {
-  id          String    @id @default(auto()) @map("_id") @db.ObjectId
-  text        String
-  timestamp   DateTime  @db.Date
-  userId      String
-  Highlight   Highlight @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  highlightId String    @db.ObjectId
 }
