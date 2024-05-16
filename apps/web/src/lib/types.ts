@@ -1,4 +1,9 @@
-import { AnnotatedPdf, Highlight, CurriculumNode } from "@prisma/client";
+import {
+	AnnotatedPdf,
+	Comment,
+	Highlight,
+	CurriculumNode,
+} from "@prisma/client";
 
 export enum EMBEDDING_TYPE {
 	FactDescriptor = "FactDescriptor",
@@ -11,6 +16,7 @@ export type CurriculumNodeWithRelations = CurriculumNode & {
 
 export type HighlightWithRelations = Highlight & {
 	node?: CurriculumNodeWithRelations | null;
+	comments: Comment[];
 };
 
 export type AnnotatedPdfWithRelations = AnnotatedPdf & {

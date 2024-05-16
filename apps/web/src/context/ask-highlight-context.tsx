@@ -26,12 +26,12 @@ import { getNodeById } from "@src/utils/curriculum";
 export type ContextProps = {
 	currentHighlight: HighlightWithRelations | null;
 	setCurrentHighlight: (
-		highlight: Highlight | null,
+		highlight: HighlightWithRelations | null,
 		forceRerender?: boolean,
 	) => void;
 	createAskHighlight: (
 		highlight: NewHighlightWithRelationsInput,
-	) => Promise<Highlight | undefined>;
+	) => Promise<HighlightWithRelations | undefined>;
 	clearSelectedHighlight: () => void;
 	selectHighlight: (h: HighlightWithRelations) => void;
 	generateFollowUpResponse: (nodeId: string) => void;
@@ -164,7 +164,6 @@ export const AskHighlightProvider: FC<{
 					id: uuidv4(),
 					parentId: currentNodeRef.current?.id ?? null,
 					highlightId: null,
-					comments: [],
 					prompt,
 					response: "",
 					children: [],
@@ -239,17 +238,17 @@ export const AskHighlightProvider: FC<{
 						const highlightId = uuidv4(); // TODO: get the object ID
 						const newNode = newData.highlight.node
 							? {
-								...newData.highlight.node,
-								id: uuidv4(),
-								parentId: null,
-								highlightId,
-								children: [],
-								comments: [],
-							}
+									...newData.highlight.node,
+									id: uuidv4(),
+									parentId: null,
+									highlightId,
+									children: [],
+								}
 							: null;
 						const newHighlight = {
 							...newData.highlight,
 							id: highlightId,
+							comments: [],
 							node: newNode,
 							annotatedPdfId,
 						};
@@ -304,25 +303,8 @@ export const AskHighlightProvider: FC<{
 
 	const createAskHighlight = async (
 		highlight: NewHighlightWithRelationsInput,
-	): Promise<Highlight | undefined> => {
-
+	): Promise<HighlightWithRelations | undefined> => {
 		const highlightId = uuidv4();
-		if (highlight.type === 'COMMENT') {
-			// Add node to DB
-			createHighlightMutation.mutate({
-				highlight,
-			});
-
-			const tempHighlight = {
-				...highlight,
-				id: highlightId,
-			};
-
-			// setCurrentHighlight(tempHighlight, false);
-			return tempHighlight;
-
-		}
-
 		if (!highlight.node?.prompt) return;
 
 		const promptWithContext = `<question>${highlight.node.prompt}</question>`;
@@ -341,6 +323,7 @@ export const AskHighlightProvider: FC<{
 		const tempHighlight = {
 			...highlight,
 			id: highlightId,
+			comments: [],
 			node: {
 				...highlight.node,
 				id: uuidv4(),

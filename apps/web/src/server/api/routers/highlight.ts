@@ -39,6 +39,7 @@ export const highlightRouter = createTRPCRouter({
 						},
 					},
 					include: {
+						comments: true,
 						node: true,
 					},
 				},
@@ -54,40 +55,15 @@ export const highlightRouter = createTRPCRouter({
 			}
 
 			try {
-				res = await db.highlight.create(...createHighlightParams);
+				res = {
+					comments: [],
+					...(await db.highlight.create(...createHighlightParams)),
+				};
 			} catch (error) {
 				console.error("Failed to create highlights:", error);
 				return null;
 			}
 			return res;
-		}),
-	updateHighlightContent: publicProcedure
-		.input(
-			z.object({
-				highlightId: z.string(),
-				text: z.string(),
-			}),
-		)
-		.mutation<HighlightWithRelations | null>(async ({ input }) => {
-			let updatedHighlight: HighlightWithRelations;
-
-			try {
-				updatedHighlight = await db.highlight.update({
-					where: {
-						id: input.highlightId,
-					},
-					data: {
-						content: input.text,
-					},
-					include: {
-						node: true,
-					},
-				});
-			} catch (error) {
-				console.error("Failed to update highlight comment:", error);
-				return null;
-			}
-			return updatedHighlight;
 		}),
 	deleteHighlight: publicProcedure
 		.input(

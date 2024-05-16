@@ -132,10 +132,7 @@ export const CurriculumNodeSchemaBase = z.object({
 	highlightId: z.string().or(z.null()),
 	response: z.string().or(z.null()),
 	timestamp: z.date(),
-	comments: z.array(CommentSchema),
 });
-
-export const HighlightTypeSchema = z.enum(["ASK", "COMMENT"]);
 
 export const HighlightV2HighlightAreasSchema = z.object({
 	height: z.number(),
@@ -146,11 +143,9 @@ export const HighlightV2HighlightAreasSchema = z.object({
 });
 
 export const HighlightSchema = z.object({
-	type: HighlightTypeSchema,
 	highlightAreas: z.array(HighlightV2HighlightAreasSchema),
 	quote: z.string(),
 	annotatedPdfId: z.string(),
-	id_: z.number(),
 });
 
 export const HighlightWithCurriculumNodeSchema = HighlightSchema.extend({

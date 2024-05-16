@@ -1,5 +1,6 @@
 import { parsedPaperRouter } from "src/server/api/routers/parsed-pdf";
 import { annotatedPdfRouter } from "@src/server/api/routers/annotated-pdf";
+import { commentRouter } from "@src/server/api/routers/comment";
 import { highlightRouter } from "@src/server/api/routers/highlight";
 import { userRouter } from "@src/server/api/routers/user";
 import { createCallerFactory, createTRPCRouter } from "@src/server/api/trpc";
@@ -14,6 +15,7 @@ export const appRouter = createTRPCRouter({
 	annotatedPdf: annotatedPdfRouter,
 	curriculum: curriculumNodeRouter,
 	highlight: highlightRouter,
+	comment: commentRouter,
 	parsedPaper: parsedPaperRouter,
 	user: userRouter,
 });

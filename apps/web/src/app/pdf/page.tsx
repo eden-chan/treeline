@@ -1,7 +1,7 @@
 import React from "react";
 
 import { User, clerkClient, currentUser } from "@clerk/nextjs/server";
-import { AnnotatedPdf, Highlight } from "@prisma/client";
+import { AnnotatedPdf } from "@prisma/client";
 import { RedirectToSignIn } from "@clerk/nextjs";
 import dynamic from "next/dynamic";
 import { headers } from "next/headers";
@@ -9,7 +9,10 @@ import { ObjectId } from "mongodb";
 
 import { api } from "@src/trpc/server";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
-import { AnnotatedPdfWithProfile } from "@src/lib/types";
+import {
+	AnnotatedPdfWithProfile,
+	HighlightWithRelations,
+} from "@src/lib/types";
 
 const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
 	ssr: false, // Disable server-side rendering for this component
@@ -45,7 +48,7 @@ export default async function Page() {
 		return <RedirectToSignIn redirectUrl={`/pdf?url=${arxivPdfUrl.href}`} />;
 	}
 
-	let newUserData: AnnotatedPdf & { highlights: Highlight[] } = {
+	let newUserData: AnnotatedPdf & { highlights: HighlightWithRelations[] } = {
 		id: new ObjectId().toString(),
 		highlights: [],
 		source: s3PdfUrl.href,

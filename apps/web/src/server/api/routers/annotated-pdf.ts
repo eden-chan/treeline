@@ -126,6 +126,7 @@ export const annotatedPdfRouter = createTRPCRouter({
 					include: {
 						highlights: {
 							include: {
+								comments: true,
 								node: {
 									include: {
 										children: true,
