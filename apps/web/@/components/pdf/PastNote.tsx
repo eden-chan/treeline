@@ -1,6 +1,7 @@
-import { useEffect, useRef } from "react";
-import { Pencil, Trash2 } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import { CircleArrowUp, Pencil, Trash2 } from 'lucide-react';
 import { Textarea } from '../ui/textarea';
+
 
 type Props = {
     highlight: any;
@@ -26,9 +27,7 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
         }
     }, [highlight.content]);
 
-
-
-    const handleEdit = () => {
+    const handleSubmit = () => {
         if (inputRef.current) {
             editHighlight(highlight.id, inputRef.current.value)
         }
@@ -36,7 +35,6 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
 
     const handleTrash = () => {
         deleteHighlight(highlight.id)
-
     };
 
     const handleReply = () => {
@@ -44,7 +42,8 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === "Enter") {
+        if (e.key === "Enter" && e.shiftKey) {
+            e.preventDefault();
             if (inputRef.current) {
                 editHighlight(highlight.id, inputRef.current.value)
             }
@@ -52,7 +51,7 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
     };
     return (
         <span
-            className="z-50 absolute text-blue-500 text-xl font-bold group w-[300px]"
+            className="z-50 absolute text-blue-500 text-xl font-bold group w-[300px] select-none"
             style={{
                 left: `${rightmostArea.left + rightmostArea.width}%`,
                 top: `${middleHeight ?? rightmostArea.top}%`,
@@ -60,35 +59,45 @@ export const PastNote = ({ highlight, rightmostArea, middleHeight, editHighlight
             }}
         >
             <div className="relative">
-                <span>¶</span>
+                <span className="bg-white select-none">¶</span>
                 <div className="hidden group-hover:block absolute left-4 top-0">
-                    <button
-                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded"
+                    {/* <button
+                        className="text-blue-500 hover:text-blue-700 p-0.5 rounded bg-white select-none"
                         onClick={handleEdit}
                     >
                         <Pencil className="cursor-pointer" size={16} />
-                    </button>
+                    </button> */}
                     <button
-                        className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded"
+                        className="text-blue-500 hover:text-blue-700 p-0.5 rounded bg-white select-none"
                         onClick={handleTrash}
                     >
                         <Trash2 className="cursor-pointer" size={16} />
                     </button>
                 </div>
-                <div className="hidden group-hover:block absolute left-4 top-8 bg-white">
-                    <Textarea ref={inputRef} onKeyDown={handleKeyDown} />
+                <div className="hidden group-hover:block absolute bg-white">
+                    <Textarea
+                        ref={inputRef}
+                        onKeyDown={handleKeyDown}
+                    />
                     <div className="sticky bottom-0 left-0 bg-white z-10">
                         <div className="flex justify-end">
                             <button
-                                className="text-blue-500 hover:text-blue-700 font-semibold text-sm"
+                                className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
                                 onClick={handleReply}
                             >
                                 Reply
+                            </button>
+                            <button
+                                className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded select-none"
+                                onClick={handleSubmit}
+                            >
+                                <CircleArrowUp className="cursor-pointer" size={16} />
                             </button>
                         </div>
                     </div>
                 </div>
             </div>
         </span>
+
     );
 };

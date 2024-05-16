@@ -1,10 +1,12 @@
 import { useRef, useState } from "react";
 import {
-	highlightPlugin,
 	HighlightArea,
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
+
+// modified highlightPlugin to handle selecting non-pdf content
+const highlightPlugin = require("./highlight.js").highlightPlugin;
 import {
 	Viewer,
 } from "@react-pdf-viewer/core";
@@ -33,6 +35,7 @@ import {
 	PanelGroup,
 } from "react-resizable-panels";
 import { Textarea } from '../ui/textarea';
+
 
 type DisplayNotesSidebarExampleProps = {
 	annotatedPdfId: string;
@@ -214,7 +217,6 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			console.log(extendedNote)
 			createAskHighlight(extendedNote);
 			props.cancel();
-
 		};
 
 		const askQuestion = () => {
@@ -253,7 +255,9 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			}
 		};
 
+
 		return (
+
 			<div
 				className="relative flex space-x-2"
 				style={{
@@ -282,6 +286,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					</div>
 				</div>
 			</div>
+
 		);
 	};
 	const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
@@ -291,58 +296,68 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			panelGroup.setLayout([pdfViewerWidth, 100 - pdfViewerWidth]);
 		}
 	};
-
 	const renderHighlights = (props: RenderHighlightsProps) => {
-		return (
-			<div>
-				{highlights.map((highlight) => {
-					const filteredAreas = highlight.highlightAreas.filter(
-						(area) => area.pageIndex === props.pageIndex && area.width > 0
-					);
+		try {
+			return (
+				<div>
+					{highlights.map((highlight) => {
+						const filteredAreas = highlight.highlightAreas.filter(
+							(area) => area.pageIndex === props.pageIndex && area.width > 0
+						);
+						const rightmostArea = filteredAreas.reduce((maxArea, area) => {
+							return area.left > (maxArea?.left ?? 0) ? area : maxArea;
+						}, filteredAreas[0]);
+						const topmostArea = filteredAreas.reduce((minArea, area) => {
+							return area.top < (minArea?.top ?? 0) ? area : minArea;
+						}, filteredAreas[0]);
+						const bottommostArea = filteredAreas.reduce((maxArea, area) => {
+							return area.top > (maxArea?.top ?? Number.MAX_VALUE) ? area : maxArea;
+						}, filteredAreas[0]);
+						const middleHeight = topmostArea && bottommostArea
+							? (topmostArea.top + bottommostArea.top + bottommostArea.height) / 2
+							: undefined;
 
-					const rightmostArea = filteredAreas.reduce((maxArea, area) => {
-						return area.left > (maxArea?.left ?? 0) ? area : maxArea;
-					}, filteredAreas[0]);
+						const openForest = () => {
+							setCurrentHighlight(highlight);
+							const panelGroup = panelGroupRef.current;
+							if (panelGroup) {
+								// Reset each Panel to 50% of the group's width
+								setPDFViewerWidthPercentage(50);
+							}
+						};
 
-					const topmostArea = filteredAreas.reduce((minArea, area) => {
-						return area.top < (minArea?.top ?? 0) ? area : minArea;
-					}, filteredAreas[0]);
-
-					const bottommostArea = filteredAreas.reduce((maxArea, area) => {
-						return area.top > (maxArea?.top ?? Number.MAX_VALUE) ? area : maxArea;
-					}, filteredAreas[0]);
-
-					const middleHeight = (topmostArea && bottommostArea) ? (topmostArea.top + bottommostArea.top + bottommostArea.height) / 2 : undefined;
-					const openForest = () => {
-						setCurrentHighlight(highlight)
-						const panelGroup = panelGroupRef.current;
-						if (panelGroup) {
-							// Reset each Panel to 50% of the group's width
-							setPDFViewerWidthPercentage(50)
-						}
-					}
-					return (
-						<div key={highlight.id} className="group z-10">
-							{filteredAreas.map((area, idx) => {
-								return (
-									<HighlightedArea
-										openForest={openForest}
-										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 cursor-pointer"
-										area={area}
-										props={props}
-										key={idx}
-										idx={idx}
-									/>
-								);
-							})}
-							<PastNote highlight={highlight} middleHeight={middleHeight} rightmostArea={rightmostArea} editHighlight={editHighlight} deleteHighlight={deleteHighlight} />
-						</div>
-					);
-				})}
-			</div>
-		);
+						return (
+							<div key={highlight.id} className="group z-10">
+								{filteredAreas.map((area, idx) => {
+									return (
+										<HighlightedArea
+											openForest={openForest}
+											className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 cursor-pointer"
+											area={area}
+											props={props}
+											key={idx}
+											idx={idx}
+										/>
+									);
+								})}
+								<PastNote
+									highlight={highlight}
+									middleHeight={middleHeight}
+									rightmostArea={rightmostArea}
+									editHighlight={editHighlight}
+									deleteHighlight={deleteHighlight}
+								/>
+							</div>
+						);
+					})}
+				</div>
+			);
+		} catch (error) {
+			console.error('Error in renderHighlights:', error);
+			// Render an error message or fallback UI
+			return <div>An error occurred while rendering highlights.</div>;
+		}
 	};
-
 	const highlightPluginInstance = highlightPlugin({
 		renderHighlightTarget,
 		// renderHighlightContent,
