@@ -122,7 +122,9 @@ export const PastNote = ({
 					</div>
 				</span>
 				<div className="invisible group-hover:visible absolute w-full bg-white">
-					<Textarea ref={inputRef} placeholder={'Comment or share with @'} disabled={showReplyTextarea} onKeyDown={handleKeyDown} />
+					<Textarea ref={inputRef}
+						placeholder={'Comment or share with @'}
+						disabled={showReplyTextarea} onKeyDown={handleKeyDown} />
 					<div className="sticky bottom-0 left-0 z-50 bg-white">
 						{!showReplyTextarea &&
 							<div className="flex justify-end bg-white">
