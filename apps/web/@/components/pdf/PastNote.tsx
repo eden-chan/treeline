@@ -101,7 +101,7 @@ export const PastNote = ({
 
 	return (
 		<span
-			className="z-50 absolute text-xl w-[20px] group"
+			className="absolute text-xl w-[20px] group z-20"
 			style={{
 				left: `${rightmostArea.left + rightmostArea.width}%`,
 				top: `${middleHeight ?? rightmostArea.top}%`,
@@ -121,14 +121,16 @@ export const PastNote = ({
 						<span className="text-xs ml-1 select-none self-end">Eden Chan</span>
 					</div>
 				</span>
-				<div className="invisible group-hover:visible absolute w-full bg-white">
-					<Textarea ref={inputRef}
+				<div className="invisible group-hover:visible group-hover:z-30 absolute w-full bg-white z-50">
+					<Textarea
+						ref={inputRef}
 						placeholder={'Comment or share with @'}
-						disabled={showReplyTextarea} onKeyDown={handleKeyDown} />
-					<div className="sticky bottom-0 left-0 z-50 bg-white">
-						{!showReplyTextarea &&
+						disabled={showReplyTextarea}
+						onKeyDown={handleKeyDown}
+					/>
+					<div className="sticky bottom-0 left-0 bg-white">
+						{!showReplyTextarea && (
 							<div className="flex justify-end bg-white">
-
 								<button
 									className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
 									onClick={() => setShowReplyTextarea(true)}
@@ -141,15 +143,12 @@ export const PastNote = ({
 								>
 									<CircleArrowUp className="cursor-pointer" size={16} />
 								</button>
-
-
 							</div>
-						}
+						)}
 						{showReplyTextarea && (
 							<Textarea
 								ref={replyInputRef}
 								placeholder="Reply"
-								className='min-h-[24px]'
 								onKeyDown={handleReplyKeyDown}
 							/>
 						)}
