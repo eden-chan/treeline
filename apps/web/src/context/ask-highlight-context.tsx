@@ -307,14 +307,7 @@ export const AskHighlightProvider: FC<{
 	): Promise<Highlight | undefined> => {
 		if (!highlight.node?.prompt) return;
 
-		const promptWithContext = `<question>${highlight.node.prompt}</question>
-${
-	highlight.content
-		? `<context>
-${highlight.content}
-</context>`
-		: ""
-}`;
+		const promptWithContext = `<question>${highlight.node.prompt}</question>`;
 		// Query AI for response
 		append({
 			role: "user",

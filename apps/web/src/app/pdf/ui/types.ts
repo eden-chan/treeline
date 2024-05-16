@@ -121,15 +121,6 @@ export const ScaledPositionSchema = z.object({
 	usePdfCoordinates: z.boolean().or(z.null()),
 });
 
-export const ContentSchema = z.object({
-	text: z.string().or(z.null()),
-	image: z.string().or(z.null()),
-});
-
-export const HighlightContentSchema = z.object({
-	content: ContentSchema,
-});
-
 export const CommentSchema = z.object({
 	text: z.string().or(z.null()),
 	emoji: z.string().or(z.null()),
@@ -156,7 +147,6 @@ export const HighlightV2HighlightAreasSchema = z.object({
 });
 
 export const HighlightSchema = z.object({
-	content: z.string(),
 	type: HighlightTypeSchema,
 	highlightAreas: z.array(HighlightV2HighlightAreasSchema),
 	quote: z.string(),
