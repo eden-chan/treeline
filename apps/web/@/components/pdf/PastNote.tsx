@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CircleArrowUp, Trash2 } from "lucide-react";
 import { Textarea } from "../ui/textarea";
-import { HighlightWithRelations } from "@src/lib/types";
+import { HighlightWithRelations, UserProfile } from "@src/lib/types";
 import { HighlightCommentTextarea } from './HighlightCommentTextArea';
-import { Comment } from '@prisma/client';
+import { calculateTimeAgo } from '@src/lib/utils';
+
 
 type Props = {
 	highlight: HighlightWithRelations;
@@ -28,6 +29,7 @@ type Props = {
 	}) => void;
 	deleteHighlight: (highlightId: string) => void;
 	userId: string;
+	userProfilesMap: Map<string, UserProfile>;
 };
 
 export const PastNote = ({
@@ -36,7 +38,7 @@ export const PastNote = ({
 	middleHeight,
 	editHighlight,
 	deleteHighlight,
-	userId
+	userId, userProfilesMap
 
 }: Props) => {
 	if (!rightmostArea) return null;
@@ -108,8 +110,13 @@ export const PastNote = ({
 		await handleReply(replyInputRef.current?.value);
 	};
 
-	const [isReplyDrafted, setIsReplyDrafted] = useState(false);
 
+	const firstCommentTimestamp = highlight.comments?.[0]?.timestamp;
+	const memoizedTimeAgo = useMemo(() => firstCommentTimestamp ? calculateTimeAgo(firstCommentTimestamp) : '', [firstCommentTimestamp]);
+	const [isReplyDrafted, setIsReplyDrafted] = useState(false);
+	const isFirstCommentEditable = highlight.comments.length === 0
+
+	const userProfile = userProfilesMap.get(highlight?.comments?.[0]?.userId ?? '')
 	return (
 		<span
 			className="absolute text-xl w-[20px] group z-20"
@@ -129,24 +136,32 @@ export const PastNote = ({
 						>
 							<Trash2 className="cursor-pointer" size={16} />
 						</button>
-						<span className="text-xs ml-1 select-none self-end">Eden Chan</span>
+						{highlight.comments.length > 0 && (
+							<span className="text-xs ml-1 select-none self-end">{userProfile?.firstName} {userProfile?.lastName} {memoizedTimeAgo} </span>
+						)}
 					</div>
 				</span>
 				<div className="invisible group-hover:visible group-hover:z-30 absolute w-full bg-white z-50">
 					<Textarea
 						ref={inputRef}
 						placeholder={'Comment or share with @'}
-						disabled={showReplyTextarea}
+						disabled={!isFirstCommentEditable}
 						onKeyDown={handleUpdateFirstCommentKeyDown}
 					/>
 					<div className="pl-5">
-						{highlight.comments.slice(1).map((comment, index) => (
-							<HighlightCommentTextarea
-								key={index}
-								value={comment.text}
-								disabled
-							/>
-						))}
+						{highlight.comments.slice(1).map((comment, index) => {
+							const userProfile = userProfilesMap.get(comment.userId)
+							const timeAgo = calculateTimeAgo(comment.timestamp)
+							return (
+								<HighlightCommentTextarea
+									userProfile={userProfile}
+									key={index}
+									value={comment.text}
+									timeAgo={timeAgo}
+									disabled
+								/>
+							)
+						})}
 					</div>
 					<div className="sticky bottom-0 left-0 bg-white">
 						{!showReplyTextarea && (

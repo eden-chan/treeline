@@ -33,3 +33,9 @@ export type UserSearchResult = {
 	name: string;
 	handle: string;
 };
+
+export type UserProfile = {
+	firstName: string;
+	lastName: string;
+	profilePicture: string;
+};

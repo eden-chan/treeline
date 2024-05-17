@@ -5,8 +5,17 @@ import { cn } from "@/lib/utils"
 import { Textarea, TextareaProps } from "@/components/ui/textarea";
 import { Trash2 } from 'lucide-react';
 
-const HighlightCommentTextarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-    ({ className, ...props }, ref) => {
+interface HighlightCommentTextareaProps extends TextareaProps {
+    userProfile?: {
+        firstName: string;
+        lastName: string;
+        profilePicture?: string;
+    };
+    timeAgo?: string;
+}
+
+const HighlightCommentTextarea = React.forwardRef<HTMLTextAreaElement, HighlightCommentTextareaProps>(
+    ({ className, userProfile, timeAgo, ...props }, ref) => {
 
         return (
             <>
@@ -16,6 +25,7 @@ const HighlightCommentTextarea = React.forwardRef<HTMLTextAreaElement, TextareaP
                     >
                         <Trash2 className="cursor-pointer" size={16} />
                     </button>
+                    <span className="text-xs ml-1 select-none self-end">{userProfile?.firstName} {userProfile?.lastName} {timeAgo}</span>
                 </div>
                 <Textarea
                     className={cn('',

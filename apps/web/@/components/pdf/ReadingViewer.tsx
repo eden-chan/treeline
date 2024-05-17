@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState, useMemo } from "react";
 import {
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
@@ -16,6 +16,7 @@ import { Highlight } from "@prisma/client";
 import {
 	AnnotatedPdfWithProfile,
 	HighlightWithRelations,
+	UserProfile,
 } from "@src/lib/types";
 import { Sidebar } from "@/components/pdf/Sidebar";
 import { clientApi } from "@src/trpc/react";
@@ -38,6 +39,7 @@ type Props = {
 };
 
 
+
 const ReadingViewer: React.FC<Props> = ({
 	loadedSource,
 	userHighlights,
@@ -47,6 +49,18 @@ const ReadingViewer: React.FC<Props> = ({
 }) => {
 
 	const [friendHighlights, setFriendHighlights] = useState<Highlight[]>([]);
+
+	const userProfilesMap = useMemo(() => {
+		const map = new Map<string, UserProfile>();
+		annotatedPdfsWithProfile.forEach((pdf) => {
+			map.set(pdf.userId, {
+				firstName: pdf.firstName,
+				lastName: pdf.lastName,
+				profilePicture: pdf.userProfilePicture,
+			});
+		});
+		return map;
+	}, [annotatedPdfsWithProfile]);
 
 	const {
 		currentHighlight,
@@ -357,6 +371,8 @@ const ReadingViewer: React.FC<Props> = ({
 									rightmostArea={rightmostArea}
 									editHighlight={editHighlight}
 									deleteHighlight={deleteHighlight}
+									userProfilesMap={userProfilesMap}
+
 								/>
 							</div>
 						);
