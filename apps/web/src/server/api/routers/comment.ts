@@ -17,10 +17,17 @@ export const commentRouter = createTRPCRouter({
 		)
 		.mutation<Comment | null>(async ({ input }) => {
 			let res: Comment;
+			console.log("before", input.id);
+			input.id =
+				input.id && input.id.trim() !== ""
+					? input.id
+					: new ObjectId().toString(); // Handle empty string, null, or undefined id by creating a new ObjectId
+
+			console.log("after", input.id);
 			const upsertCommentParams: Parameters<typeof db.comment.upsert> = [
 				{
 					where: {
-						id: input.id ?? new ObjectId().toString(), // Handle undefined id by creating a new ObjectId
+						id: input.id,
 					},
 					create: {
 						...input,

@@ -318,6 +318,7 @@ const ReadingViewer: React.FC<Props> = ({
 									);
 								})}
 								<PastNote
+									userId={userId}
 									highlight={highlight}
 									middleHeight={middleHeight}
 									rightmostArea={rightmostArea}
