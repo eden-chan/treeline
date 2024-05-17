@@ -75,31 +75,25 @@ export const PastNote = ({
 	const handleUpdateFirstComment = async () => {
 		if (inputRef.current) {
 			const updatedComment = createNewComment(inputRef.current.value, highlight.comments?.[0]?.id);
-			const result = await editHighlight(updatedComment)
-			console.log('handleUpdateFirstComment res', result)
+			await editHighlight(updatedComment)
 		}
 	};
 
 	const handleUpdateFirstCommentKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		console.log('hello update first comment keydown', showReplyTextarea)
 		if (!showReplyTextarea && e.key === "Enter" && (e.shiftKey || e.altKey)) {
-			console.log('hello update first comment keydown', showReplyTextarea)
 			e.preventDefault();
-			e.stopPropagation();
 			handleUpdateFirstComment()
 		}
 	};
 	const handleReply = async (text: string | undefined) => {
 		if (text) {
 			const newComment = createNewComment(text, undefined);
-			const result = await editHighlight(newComment)
-			console.log('handleReply res', result)
+			await editHighlight(newComment)
 		}
 	};
 
 
 	const handleUpdateCommentReplyKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		console.log('hello update reply keydown', showReplyTextarea)
 		if (showReplyTextarea && e.key === "Enter" && (e.shiftKey || e.altKey)) {
 			e.preventDefault();
 			await handleReply(replyInputRef.current?.value);

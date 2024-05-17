@@ -17,13 +17,12 @@ export const commentRouter = createTRPCRouter({
 		)
 		.mutation<Comment | null>(async ({ input }) => {
 			let res: Comment;
-			console.log("before", input.id);
+
 			input.id =
 				input.id && input.id.trim() !== ""
 					? input.id
 					: new ObjectId().toString(); // Handle empty string, null, or undefined id by creating a new ObjectId
 
-			console.log("after", input.id);
 			const upsertCommentParams: Parameters<typeof db.comment.upsert> = [
 				{
 					where: {
@@ -43,7 +42,6 @@ export const commentRouter = createTRPCRouter({
 			];
 			try {
 				res = await db.comment.upsert(...upsertCommentParams);
-				console.log("updateCommentUpsert response", res);
 			} catch (error) {
 				console.error("Failed to upsert comment:", error);
 				return null;

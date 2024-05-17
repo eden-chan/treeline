@@ -8,16 +8,11 @@ import { UserSchema } from "@src/app/pdf/ui/types";
 export const userRouter = createTRPCRouter({
 	updateFollowStatus: publicProcedure
 		.input(z.object({ loggedInUser: UserSchema, searchedUser: UserSchema }))
-		.mutation(async ({ ctx, input }) => {
+		.mutation(async ({ input }) => {
 			// Check if loggedInUser is currently following searchedUser by looking for searchedUser's email in loggedInUser's follows list.
-			console.log("Logged in user:", input.loggedInUser);
-			console.log("Searched user:", input.searchedUser);
 			const isloggedInUserFollowingsearchedUser =
 				input.loggedInUser.follows.includes(input.searchedUser.email);
-			console.log(
-				"Is logged in user following searched user:",
-				isloggedInUserFollowingsearchedUser,
-			);
+
 			if (isloggedInUserFollowingsearchedUser) {
 				// If loggedInUser is following searchedUser, remove searchedUser from loggedInUser's follows list.
 				await db.user.update({

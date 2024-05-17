@@ -142,7 +142,7 @@ const ReadingViewer: React.FC<Props> = ({
 					userId: userId,
 					source: loadedSource,
 				});
-				console.log('editHighlightMutation onMutate obj', input)
+
 				utils.annotatedPdf.fetchAnnotatedPdf.setData(
 					{
 						userId: userId,
@@ -150,7 +150,7 @@ const ReadingViewer: React.FC<Props> = ({
 					},
 					(oldData) => {
 						if (!oldData) return oldData;
-						console.log('editHighlightMutation oldData', oldData)
+
 						return {
 							...oldData,
 							highlights: [],
@@ -159,7 +159,7 @@ const ReadingViewer: React.FC<Props> = ({
 				);
 			},
 			onSuccess: (input) => {
-				console.log('editHighlightMutation onSuccess', input)
+
 				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
 					userId: userId,
 					source: loadedSource,
@@ -188,7 +188,7 @@ const ReadingViewer: React.FC<Props> = ({
 		text: string;
 	}) => {
 		const response = await editHighlightMutation.mutate({ id, highlightId, text, userId });
-		console.log('editHighlight resp:', response)
+
 		return response
 	};
 
@@ -244,7 +244,7 @@ const ReadingViewer: React.FC<Props> = ({
 				"Concisely define the following term and why it is important." +
 				props.selectedText,
 			);
-			console.log("define highlight", highlight);
+
 			if (highlight) {
 				setCurrentHighlight(highlight, true);
 				//
@@ -257,7 +257,7 @@ const ReadingViewer: React.FC<Props> = ({
 			const highlight = await askQuestion(
 				"Concisely explain why this is important: " + props.selectedText,
 			);
-			console.log("explain", highlight);
+
 			if (highlight) {
 				setCurrentHighlight(highlight, true);
 			}
