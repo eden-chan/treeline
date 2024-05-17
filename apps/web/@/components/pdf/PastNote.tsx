@@ -150,10 +150,14 @@ export const PastNote = ({
 	const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
 		const value = event.target.value;
 		const selectionStart = event.target.selectionStart;
+		const textarea = event.target;
+
+
+
+
 		if (value.includes('@')) {
 			setIsExpanded(true);
 			const caretPosition = getCaretPosition();
-
 
 			if (listboxRef.current) {
 				const parentElement = parentRef.current;
@@ -163,15 +167,22 @@ export const PastNote = ({
 					top: parentRect?.top || 0,
 				};
 
-				const leftPosition = `${caretPosition.x - parentOffset.left}px`;
-				const topPosition = `${caretPosition.y - parentOffset.top}px`;
+				console.log(`Caret Position X: ${caretPosition.x}, Parent Offset Left: ${parentOffset.left}`);
+				const leftPosition = `${(caretPosition.x - parentOffset.left) * 1.1}px`;
+				const topPosition = `${textarea.scrollHeight - 20}px`;
 
-				listboxRef.current.style.left = leftPosition;
+
+
+				const listboxWidth = listboxRef.current.clientWidth;
+				console.log(`listboxRef current width: ${listboxWidth}px`);
+				console.log(`textarea width: ${200}px`);
+				const parsedLeftPosition = `${(parseFloat(leftPosition) % (152))}px`;
+
+				listboxRef.current.style.left = parsedLeftPosition;
 				listboxRef.current.style.top = topPosition;
+				console.log({ leftPosition, parsedLeftPosition, topPosition, 'height': textarea.clientHeight }, 'height', listboxRef.current.style.top, `textarea.style.height = ${textarea.scrollHeight}px`);
 
-				console.log('leftPosition:', leftPosition, 'topPosition:', topPosition, 'listboxRef.current.style:', listboxRef.current.style, 'listboxref', 'listboxRef.current.style.right:', listboxRef.current.style.right, 'top', 'listboxRef.current.style.top:', listboxRef.current.style.top);
 			}
-			// calculateOptionsPosition(event.target, selectionStart);
 		} else {
 			setIsExpanded(false);
 		}
@@ -231,27 +242,19 @@ export const PastNote = ({
 								ref={listboxRef}
 								role="listbox"
 								aria-label="Suggestions"
-								className="absolute bg-white border border-gray-300 rounded-md py-1"
+								className="absolute bg-white border border-gray-300 rounded-md py-0.5 w-[200px]"
 							>
-								<li
-									id="suggestion1"
-									role="option"
-									className={`px-3 py-2 cursor-pointer ${activeOption === 'suggestion1' ? 'bg-gray-100' : ''
-										}`}
-									onClick={() => handleOptionClick('suggestion1')}
-								>
-									Suggestion 1
-								</li>
-								<li
-									id="suggestion2"
-									role="option"
-									className={`px-3 py-2 cursor-pointer ${activeOption === 'suggestion2' ? 'bg-gray-100' : ''
-										}`}
-									onClick={() => handleOptionClick('suggestion2')}
-								>
-									Suggestion 2
-								</li>
-								{/* Add more suggestion items as needed */}
+								{Array.from(userProfilesMap.entries()).map(([userId, userProfile], index) => (
+									<li
+										key={userId}
+										id={`suggestion${index + 1}`}
+										role="option"
+										className={`px-2 py-1 h-[20px] text-xs cursor-pointer ${activeOption === `suggestion${index + 1}` ? 'bg-gray-100' : ''}`}
+										onClick={() => handleOptionClick(`suggestion${index + 1}`)}
+									>
+										{userProfile.firstName} {userProfile.lastName}
+									</li>
+								))}
 							</ul>
 						)}
 					</div>
