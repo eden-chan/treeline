@@ -123,12 +123,12 @@ const ReadingViewer: React.FC<Props> = ({
 
 	const editHighlightMutation = clientApi.comment.upsertComment.useMutation(
 		{
-			onMutate: async () => {
+			onMutate: async (input) => {
 				await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
 					userId: userId,
 					source: loadedSource,
 				});
-
+				console.log('editHighlightMutation onMutate obj', input)
 				utils.annotatedPdf.fetchAnnotatedPdf.setData(
 					{
 						userId: userId,
@@ -136,6 +136,7 @@ const ReadingViewer: React.FC<Props> = ({
 					},
 					(oldData) => {
 						if (!oldData) return oldData;
+						console.log('editHighlightMutation oldData', oldData)
 						return {
 							...oldData,
 							highlights: [],
@@ -144,6 +145,7 @@ const ReadingViewer: React.FC<Props> = ({
 				);
 			},
 			onSuccess: (input) => {
+				console.log('editHighlightMutation onSuccess', input)
 				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
 					userId: userId,
 					source: loadedSource,
