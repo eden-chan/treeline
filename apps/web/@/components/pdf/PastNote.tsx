@@ -152,10 +152,9 @@ export const PastNote = ({
 		const selectionStart = event.target.selectionStart;
 		const textarea = event.target;
 
+		const mostRecentAtIndex = value.lastIndexOf('@', selectionStart - 1);
 
-
-
-		if (value.includes('@')) {
+		if (mostRecentAtIndex !== -1) {
 			setIsExpanded(true);
 			const caretPosition = getCaretPosition();
 
@@ -171,8 +170,6 @@ export const PastNote = ({
 				const leftPosition = `${(caretPosition.x - parentOffset.left) * 1.1}px`;
 				const topPosition = `${textarea.scrollHeight - 20}px`;
 
-
-
 				const listboxWidth = listboxRef.current.clientWidth;
 				console.log(`listboxRef current width: ${listboxWidth}px`);
 				console.log(`textarea width: ${200}px`);
@@ -181,7 +178,6 @@ export const PastNote = ({
 				listboxRef.current.style.left = parsedLeftPosition;
 				listboxRef.current.style.top = topPosition;
 				console.log({ leftPosition, parsedLeftPosition, topPosition, 'height': textarea.clientHeight }, 'height', listboxRef.current.style.top, `textarea.style.height = ${textarea.scrollHeight}px`);
-
 			}
 		} else {
 			setIsExpanded(false);
@@ -189,7 +185,16 @@ export const PastNote = ({
 		// Perform any additional logic here, such as filtering suggestions based on the entered value
 	};
 
-	const handleOptionClick = (optionId) => {
+	const handleOptionClick = (optionId: string) => {
+		console.log(optionId)
+		const selectedUserProfile = userProfilesMap.get(optionId);
+		if (selectedUserProfile && inputRef.current) {
+			const currentValue = inputRef.current.value;
+			const atIndex = currentValue.lastIndexOf('@', inputRef.current.selectionStart - 1);
+			const newValue = `${currentValue.substring(0, atIndex + 1)}${selectedUserProfile.firstName} ${selectedUserProfile.lastName} `;
+			inputRef.current.value = newValue;
+			console.log(atIndex)
+		}
 		setActiveOption(optionId);
 		setIsExpanded(false);
 		// Perform any additional logic here, such as updating the textarea value or triggering an action
@@ -247,10 +252,10 @@ export const PastNote = ({
 								{Array.from(userProfilesMap.entries()).map(([userId, userProfile], index) => (
 									<li
 										key={userId}
-										id={`suggestion${index + 1}`}
+										id={userId}
 										role="option"
 										className={`px-2 py-1 h-[20px] text-xs cursor-pointer ${activeOption === `suggestion${index + 1}` ? 'bg-gray-100' : ''}`}
-										onClick={() => handleOptionClick(`suggestion${index + 1}`)}
+										onClick={() => handleOptionClick(userId)}
 									>
 										{userProfile.firstName} {userProfile.lastName}
 									</li>
