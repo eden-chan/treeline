@@ -80,6 +80,7 @@ export const PastNote = ({
 	};
 
 	const handleUpdateFirstCommentKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+
 		if (!showReplyTextarea && e.key === "Enter" && (e.shiftKey || e.altKey)) {
 			e.preventDefault();
 			handleUpdateFirstComment()
@@ -111,6 +112,79 @@ export const PastNote = ({
 	const isFirstCommentEditable = highlight.comments.length === 0
 
 	const userProfile = userProfilesMap.get(highlight?.comments?.[0]?.userId ?? '')
+
+	const [isExpanded, setIsExpanded] = useState(false);
+	const [activeOption, setActiveOption] = useState('');
+
+
+	const listboxRef = useRef<HTMLUListElement>(null);
+
+	function getCaretPosition() {
+		if (!inputRef.current) return { x: 0, y: 0 };
+
+
+
+		const inputElement = inputRef.current;
+		// Create a temporary span element
+		const tempSpan = document.createElement('span');
+		tempSpan.textContent = inputElement.value.substring(0, inputElement.selectionStart);
+
+		// Insert the temporary span just before the caret
+		inputElement.parentNode?.insertBefore(tempSpan, inputElement.nextSibling);
+
+		// Calculate the position of the temporary span
+		const tempRect = tempSpan.getBoundingClientRect();
+		const inputRect = inputElement.getBoundingClientRect();
+
+		// Remove the temporary span
+		tempSpan.remove();
+
+		// Return the calculated position
+		return {
+			x: inputRect.left + (tempRect.width / 2),
+			y: inputRect.top + (tempRect.height / 2)
+		};
+	}
+
+
+	const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+		const value = event.target.value;
+		const selectionStart = event.target.selectionStart;
+		if (value.includes('@')) {
+			setIsExpanded(true);
+			const caretPosition = getCaretPosition();
+
+
+			if (listboxRef.current) {
+				const parentElement = parentRef.current;
+				const parentRect = parentElement?.getBoundingClientRect();
+				const parentOffset = {
+					left: parentRect?.left || 0,
+					top: parentRect?.top || 0,
+				};
+
+				const leftPosition = `${caretPosition.x - parentOffset.left}px`;
+				const topPosition = `${caretPosition.y - parentOffset.top}px`;
+
+				listboxRef.current.style.left = leftPosition;
+				listboxRef.current.style.top = topPosition;
+
+				console.log('leftPosition:', leftPosition, 'topPosition:', topPosition, 'listboxRef.current.style:', listboxRef.current.style, 'listboxref', 'listboxRef.current.style.right:', listboxRef.current.style.right, 'top', 'listboxRef.current.style.top:', listboxRef.current.style.top);
+			}
+			// calculateOptionsPosition(event.target, selectionStart);
+		} else {
+			setIsExpanded(false);
+		}
+		// Perform any additional logic here, such as filtering suggestions based on the entered value
+	};
+
+	const handleOptionClick = (optionId) => {
+		setActiveOption(optionId);
+		setIsExpanded(false);
+		// Perform any additional logic here, such as updating the textarea value or triggering an action
+	};
+
+	const parentRef = useRef<HTMLDivElement>(null);
 	return (
 		<span
 			className="absolute text-xl w-[20px] group z-20"
@@ -120,7 +194,7 @@ export const PastNote = ({
 				transform: "translate(8px, -50%)",
 			}}
 		>
-			<div className="relative group-hover:w-[200px] bg-white">
+			<div ref={parentRef} className="relative group-hover:w-[200px] bg-white">
 				<span className="flex items-center">
 					<span className="select-none font-bold text-blue-500 inline">¶</span>
 					<div className="invisible group-hover:visible flex items-center">
@@ -136,12 +210,52 @@ export const PastNote = ({
 					</div>
 				</span>
 				<div className="invisible group-hover:visible group-hover:z-30 absolute w-full bg-white z-50">
-					<Textarea
-						ref={inputRef}
-						placeholder={'Comment or share with @'}
-						disabled={!isFirstCommentEditable}
-						onKeyDown={handleUpdateFirstCommentKeyDown}
-					/>
+
+					<div>
+						<Textarea
+							ref={inputRef}
+							placeholder="Comment or share with @"
+							disabled={!isFirstCommentEditable}
+							onKeyDown={handleUpdateFirstCommentKeyDown}
+							onChange={handleInputChange}
+							role="combobox"
+							aria-controls="suggestions"
+							aria-autocomplete="list"
+							aria-expanded={isExpanded}
+							aria-activedescendant={activeOption}
+							className="w-full"
+						/>
+						{isExpanded && (
+							<ul
+								id="suggestions"
+								ref={listboxRef}
+								role="listbox"
+								aria-label="Suggestions"
+								className="absolute bg-white border border-gray-300 rounded-md py-1"
+							>
+								<li
+									id="suggestion1"
+									role="option"
+									className={`px-3 py-2 cursor-pointer ${activeOption === 'suggestion1' ? 'bg-gray-100' : ''
+										}`}
+									onClick={() => handleOptionClick('suggestion1')}
+								>
+									Suggestion 1
+								</li>
+								<li
+									id="suggestion2"
+									role="option"
+									className={`px-3 py-2 cursor-pointer ${activeOption === 'suggestion2' ? 'bg-gray-100' : ''
+										}`}
+									onClick={() => handleOptionClick('suggestion2')}
+								>
+									Suggestion 2
+								</li>
+								{/* Add more suggestion items as needed */}
+							</ul>
+						)}
+					</div>
+
 					<div className="pl-5">
 						{highlight.comments.slice(1).map((comment, index) => {
 							const userProfile = userProfilesMap.get(comment.userId)
