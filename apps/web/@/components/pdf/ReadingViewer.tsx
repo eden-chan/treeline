@@ -121,7 +121,36 @@ const ReadingViewer: React.FC<Props> = ({
 			},
 		});
 
-	const editHighlightMutation = clientApi.comment.upsertComment.useMutation();
+	const editHighlightMutation = clientApi.comment.upsertComment.useMutation(
+		{
+			onMutate: async () => {
+				await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
+					userId: userId,
+					source: loadedSource,
+				});
+
+				utils.annotatedPdf.fetchAnnotatedPdf.setData(
+					{
+						userId: userId,
+						source: loadedSource,
+					},
+					(oldData) => {
+						if (!oldData) return oldData;
+						return {
+							...oldData,
+							highlights: [],
+						};
+					},
+				);
+			},
+			onSuccess: (input) => {
+				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+					userId: userId,
+					source: loadedSource,
+				});
+			},
+		}
+	);
 
 	const highlights =
 		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
@@ -133,7 +162,7 @@ const ReadingViewer: React.FC<Props> = ({
 		deleteHighlightMutation.mutate({ highlightId });
 	};
 
-	const editHighlight = ({
+	const editHighlight = async ({
 		id,
 		highlightId,
 		text,
@@ -142,7 +171,9 @@ const ReadingViewer: React.FC<Props> = ({
 		highlightId: string;
 		text: string;
 	}) => {
-		editHighlightMutation.mutate({ id, highlightId, text, userId });
+		const response = await editHighlightMutation.mutate({ id, highlightId, text, userId });
+		console.log('editHighlight resp:', response)
+		return response
 	};
 
 	const resetHighlights = () => {

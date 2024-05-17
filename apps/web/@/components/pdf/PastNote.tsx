@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { CircleArrowUp, Pencil, Trash2 } from "lucide-react";
+import { CircleArrowUp, Trash2 } from "lucide-react";
 import { Textarea } from "../ui/textarea";
 import { HighlightWithRelations } from "@src/lib/types";
 import { HighlightCommentTextarea } from './HighlightCommentTextArea';
@@ -43,86 +43,70 @@ export const PastNote = ({
 
 	const inputRef = useRef<HTMLTextAreaElement>(null);
 	const replyInputRef = useRef<HTMLTextAreaElement>(null);
-	const [comments, setComments] = useState<Comment[]>(highlight.comments);
+
 	useEffect(() => {
 		if (inputRef.current) {
-			inputRef.current.value = comments?.[0]?.text ?? "";
+			inputRef.current.value = highlight.comments?.[0]?.text ?? "";
 		}
-	}, [comments]);
+	}, [highlight.comments]);
 
 	const handleTrash = async () => {
 		try {
 			await deleteHighlight(highlight.id);
 		} catch (error) {
-			setComments(highlight.comments);
+
 			console.error("Failed to delete highlight:", error);
 		}
 	};
 
 	const [showReplyTextarea, setShowReplyTextarea] = useState(false);
 
-	const createNewComment = (text: string) => ({
-		id: comments?.[0]?.id ?? '', // id will be supplied in returned response
+	const createNewComment = (text: string, commentId: string | undefined) => ({
+		id: commentId, // id will be supplied in returned response
 		highlightId: highlight.id,
 		text,
 		timestamp: new Date(),
 		userId,
 	});
-	const handleCommentUpdate = async (newComment: Comment, optimisticComments: Comment[]) => {
-		setComments(optimisticComments);
-		try {
-			return await editHighlight(newComment);
-		} catch (error) {
-			setComments(highlight.comments);
-			console.error("Failed to update comment:", error);
-		}
-	};
+
 
 	const handleUpdateFirstComment = async () => {
 		if (inputRef.current) {
-			const updatedComment = createNewComment(inputRef.current.value);
-			const optimisticComments: Comment[] = [updatedComment, ...comments.slice(1)];
-			const result = await handleCommentUpdate(updatedComment, optimisticComments);
+			const updatedComment = createNewComment(inputRef.current.value, highlight.comments?.[0]?.id);
+			const result = await editHighlight(updatedComment)
 			console.log('handleUpdateFirstComment res', result)
 		}
 	};
 
+	const handleUpdateFirstCommentKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		console.log('hello update first comment keydown', showReplyTextarea)
+		if (!showReplyTextarea && e.key === "Enter" && (e.shiftKey || e.altKey)) {
+			console.log('hello update first comment keydown', showReplyTextarea)
+			e.preventDefault();
+			e.stopPropagation();
+			handleUpdateFirstComment()
+		}
+	};
 	const handleReply = async (text: string | undefined) => {
 		if (text) {
-			const newComment = createNewComment(text);
-			const optimisticComments = [...comments, newComment];
-			await handleCommentUpdate(newComment, optimisticComments);
+			const newComment = createNewComment(text, undefined);
+			const result = await editHighlight(newComment)
+			console.log('handleReply res', result)
 		}
 	};
 
-	const handleUpdateFirstCommentKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (e.key === "Enter" && (e.shiftKey || e.altKey)) {
-			e.preventDefault();
-			if (inputRef.current && comments.length > 0) {
-				const updatedComment = {
-					id: comments[0]!.id,
-					highlightId: highlight.id,
-					text: inputRef.current.value,
-					timestamp: new Date(),
-					userId,
-				};
-				const optimisticComments = [updatedComment, ...comments.slice(1)];
-				await handleCommentUpdate(updatedComment, optimisticComments);
-			}
-		}
-	};
 
-	const handleReplyKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+	const handleUpdateCommentReplyKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+		console.log('hello update reply keydown', showReplyTextarea)
 		if (showReplyTextarea && e.key === "Enter" && (e.shiftKey || e.altKey)) {
 			e.preventDefault();
 			await handleReply(replyInputRef.current?.value);
 		}
 	};
 
-	const handleReplySubmit = async () => {
+	const handleUpdateCommentSubmit = async () => {
 		await handleReply(replyInputRef.current?.value);
 	};
-
 
 	const [isReplyDrafted, setIsReplyDrafted] = useState(false);
 
@@ -156,7 +140,7 @@ export const PastNote = ({
 						onKeyDown={handleUpdateFirstCommentKeyDown}
 					/>
 					<div className="pl-5">
-						{comments.slice(1).map((comment, index) => (
+						{highlight.comments.slice(1).map((comment, index) => (
 							<HighlightCommentTextarea
 								key={index}
 								value={comment.text}
@@ -167,7 +151,7 @@ export const PastNote = ({
 					<div className="sticky bottom-0 left-0 bg-white">
 						{!showReplyTextarea && (
 							<div className="flex justify-end bg-white">
-								{comments?.length > 0 &&
+								{highlight.comments?.length > 0 &&
 									<button
 										className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
 										onClick={() => setShowReplyTextarea(true)}
@@ -188,7 +172,7 @@ export const PastNote = ({
 								<Textarea
 									ref={replyInputRef}
 									placeholder="Reply"
-									onKeyDown={handleReplyKeyDown}
+									onKeyDown={handleUpdateCommentReplyKeyDown}
 									onChange={() => { setIsReplyDrafted(true) }}
 								/>
 								{isReplyDrafted && (
@@ -201,7 +185,7 @@ export const PastNote = ({
 										</button>
 										<button
 											className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
-											onClick={handleReplySubmit}
+											onClick={handleUpdateCommentSubmit}
 										>
 											Save
 										</button>

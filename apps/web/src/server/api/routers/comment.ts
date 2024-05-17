@@ -43,6 +43,7 @@ export const commentRouter = createTRPCRouter({
 			];
 			try {
 				res = await db.comment.upsert(...upsertCommentParams);
+				console.log("updateCommentUpsert response", res);
 			} catch (error) {
 				console.error("Failed to upsert comment:", error);
 				return null;
