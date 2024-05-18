@@ -89,3 +89,7 @@ h5,
 h6 {
 	font-family: var(--font-libre_franklin), sans-serif;
 }
+
+.rpv-core__page-layer::after {
+	box-shadow: none;
+}

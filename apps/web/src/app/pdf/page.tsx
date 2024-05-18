@@ -18,6 +18,9 @@ const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
 	ssr: false, // Disable server-side rendering for this component
 });
 
+// Removes box shadow
+import "./ui/style/pdf_viewer.css";
+
 const S3_BASE_URL = "https://treeline.s3.us-east-2.amazonaws.com";
 
 export default async function Page() {
