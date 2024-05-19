@@ -56,22 +56,7 @@ export default async function Profile({
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
           </div>
-          <FollowButton user1={loggedInUser} user2={searchedUser} />
-
-          <div className="mt-4">
-            <Link
-              href={`https://x.com/${searchedUser.handle}`}
-              className="text-blue-500 hover:underline"
-            >
-              Twitter
-            </Link>
-            <Link
-              href={"https://edenchan.ca"}
-              className="text-blue-500 hover:underline"
-            >
-              Website
-            </Link>
-          </div>
+          <FollowButton loggedInUser={loggedInUser} searchedUser={searchedUser} />
         </div>
         <div className="mt-8">
           <LearningActivityCalendar />
@@ -95,7 +80,7 @@ export default async function Profile({
             <ul className="space-y-2">
               {friendsSection.friends.map(({ clerk_id, handle, first_name, recentPaper }) => (
                 <li key={clerk_id}>
-                  <Link className="block" href={`/${handle}`}>
+                  <Link className="block" href={`/user/${handle}`}>
                     <span className="font-medium">{first_name}</span>
                   </Link>
                 </li>

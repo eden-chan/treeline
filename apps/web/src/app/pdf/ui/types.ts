@@ -123,9 +123,8 @@ export const ScaledPositionSchema = z.object({
 
 export const CommentSchema = z.object({
 	text: z.string().or(z.null()),
-	emoji: z.string().or(z.null()),
 	timestamp: z.date(),
-	userId: z.string(),
+	userId: z.string(), // who replied or commented
 });
 
 export const CurriculumNodeSchemaBase = z.object({
@@ -133,10 +132,7 @@ export const CurriculumNodeSchemaBase = z.object({
 	highlightId: z.string().or(z.null()),
 	response: z.string().or(z.null()),
 	timestamp: z.date(),
-	comments: z.array(CommentSchema),
 });
-
-export const HighlightTypeSchema = z.enum(["ASK", "COMMENT"]);
 
 export const HighlightV2HighlightAreasSchema = z.object({
 	height: z.number(),
@@ -147,11 +143,9 @@ export const HighlightV2HighlightAreasSchema = z.object({
 });
 
 export const HighlightSchema = z.object({
-	type: HighlightTypeSchema,
 	highlightAreas: z.array(HighlightV2HighlightAreasSchema),
 	quote: z.string(),
 	annotatedPdfId: z.string(),
-	id_: z.number(),
 });
 
 export const HighlightWithCurriculumNodeSchema = HighlightSchema.extend({

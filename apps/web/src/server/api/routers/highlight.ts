@@ -39,6 +39,7 @@ export const highlightRouter = createTRPCRouter({
 						},
 					},
 					include: {
+						comments: true,
 						node: true,
 					},
 				},
@@ -54,7 +55,10 @@ export const highlightRouter = createTRPCRouter({
 			}
 
 			try {
-				res = await db.highlight.create(...createHighlightParams);
+				res = {
+					comments: [],
+					...(await db.highlight.create(...createHighlightParams)),
+				};
 			} catch (error) {
 				console.error("Failed to create highlights:", error);
 				return null;

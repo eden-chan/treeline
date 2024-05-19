@@ -5,6 +5,7 @@ import Timeline from "./pdf/ui/components/Timeline";
 import { currentUser } from "@clerk/nextjs";
 import Navbar from "./pdf/ui/components/Navbar";
 import { AnnotatedPdf } from "@prisma/client";
+import { clerkClient } from '@clerk/nextjs/server';
 
 
 export default async function Page() {
@@ -14,10 +15,16 @@ export default async function Page() {
 		email: clerkUserEmail,
 	});
 
-	const followedUsers =
-		(await api.user.fetchUsers({
-			userEmailList: user?.follows ?? [],
-		})) ?? [];
+	const clerkUsers = await clerkClient.users.getUserList();
+	const userEmails = [];
+	for (let i = 0; i < clerkUsers.length; i++) {
+		const emailAddress = clerkUsers[i]?.emailAddresses?.[0]?.emailAddress;
+		if (emailAddress) {
+			userEmails.push(emailAddress);
+		}
+	}
+
+	const users = await api.user.fetchUsersByEmails({ userEmailList: userEmails }) ?? [];
 
 	// Populate timeline with highlights of user and follows.
 	let timeline: AnnotatedPdf[] = [];
@@ -36,7 +43,7 @@ export default async function Page() {
 	return (
 		<main className="text-black flex flex-col gap-10">
 			<section className="flex h-screen overflow-x-hidden flex-col">
-				<Navbar users={followedUsers} loggedInUser={user} />
+				<Navbar users={users} loggedInUser={user} />
 				<SearchCta />
 			</section>
 			{/* <BentoGridThirdDemo /> */}

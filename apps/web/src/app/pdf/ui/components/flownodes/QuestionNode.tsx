@@ -21,11 +21,11 @@ function QuestionNode({ data, isConnectable }: NodeProps<NodeData>) {
 
 			<div>
 				<p className="text-black">Question:</p>
-				<p className="text-gray-500 ml-2"> {compiler(question)} </p>
+				<div className="text-gray-500 ml-2"> {compiler(question)} </div>
 				{answer && (
 					<>
 						<p className="text-black">Answer:</p>
-						<p className="text-gray-500 ml-2"> {compiler(answer)} </p>
+						<div className="text-gray-500 ml-2"> {compiler(answer)} </div>
 					</>
 				)}
 			</div>

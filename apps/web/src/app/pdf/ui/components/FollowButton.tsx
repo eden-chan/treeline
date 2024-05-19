@@ -6,25 +6,27 @@ import { followAction } from "@src/app/actions";
 import { useState, useTransition } from "react";
 
 export default function FollowButton({
-	user1,
-	user2,
+	loggedInUser,
+	searchedUser,
 }: {
-	user1: User;
-	user2: User;
+	loggedInUser: User;
+	searchedUser: User;
 }) {
+
 	const [isPending, startTransition] = useTransition();
 	const [error, setError] = useState(null);
 
+
 	// Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
 	const [isFollowing, setIsFollowing] = useState(
-		user1.follows.includes(user2.email),
+		loggedInUser.follows.includes(searchedUser.email),
 	);
 
 	const handleFollow = async () => {
 		setError(null);
 		try {
 			startTransition(async () => {
-				await followAction(user1, user2);
+				await followAction(loggedInUser, searchedUser);
 			});
 		} catch (error) {
 			// setError(error.message);

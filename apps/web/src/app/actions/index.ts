@@ -16,11 +16,11 @@ import {
 import { redirect } from "next/navigation";
 
 // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
-export const followAction = async (searchedUser: User, loggedInUser: User) => {
+export const followAction = async (loggedInUser: User, searchedUser: User) => {
 	try {
 		const updatedFollowStatus = await api.user.updateFollowStatus({
-			user1: loggedInUser,
-			user2: searchedUser,
+			loggedInUser,
+			searchedUser,
 		});
 		return updatedFollowStatus;
 	} catch (error) {

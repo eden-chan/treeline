@@ -8,28 +8,6 @@ datasource db {
   relationMode = "prisma"
 }
 
-type HighlightComment {
-  emoji     String?
-  text      String?
-  timestamp DateTime @db.Date
-  userId    String
-}
-
-type HighlightContent {
-  image String?
-  text  String?
-}
-
-type HighlightScaledPosition {
-  height     Float
-  width      Float
-  x1         Float
-  y1         Float
-  x2         Float
-  y2         Float
-  pageNumber Int?
-}
-
 type ParsedPaperText {
   outline  String[]
   sections ParsedPaperTextSections[]
@@ -51,21 +29,15 @@ type ParsedPaperTextSectionsFacts {
 }
 
 model CurriculumNode {
-  id          String             @id @default(auto()) @map("_id") @db.ObjectId
-  comments    HighlightComment[]
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
   prompt      String?
   response    String?
-  timestamp   DateTime           @db.Date
-  parentId    String?            @db.ObjectId
-  parent      CurriculumNode?    @relation("SubNodes", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children    CurriculumNode[]   @relation("SubNodes")
-  highlightId String?            @unique @db.ObjectId
-  highlight   Highlight?         @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-}
-
-enum HighlightType {
-  ASK
-  COMMENT
+  timestamp   DateTime         @db.Date
+  parentId    String?          @db.ObjectId
+  parent      CurriculumNode?  @relation("SubNodes", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    CurriculumNode[] @relation("SubNodes")
+  highlightId String?          @unique @db.ObjectId
+  highlight   Highlight?       @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model AnnotatedPdf {
@@ -118,14 +90,7 @@ model ParsedPaper {
   updated          DateTime              @db.Date
 }
 
-type HighlightPosition {
-  boundingRect      HighlightScaledPosition
-  pageNumber        Int
-  rects             HighlightScaledPosition[]
-  usePdfCoordinates Boolean?
-}
-
-type HighlightV2HighlightAreas {
+type HighlightAreas {
   height    Float
   left      Float
   pageIndex Int
@@ -135,11 +100,9 @@ type HighlightV2HighlightAreas {
 
 model Highlight {
   id             String                      @id @default(auto()) @map("_id") @db.ObjectId
-  highlightAreas HighlightV2HighlightAreas[]
+  highlightAreas HighlightAreas[]
   comments       Comment[]
-  id_            Int                         @map("id")
   quote          String
-  type           HighlightType               @default(COMMENT)
   node           CurriculumNode?
   annotatedPdf   AnnotatedPdf                @relation(fields: [annotatedPdfId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   annotatedPdfId String                      @db.ObjectId

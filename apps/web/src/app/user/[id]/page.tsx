@@ -43,7 +43,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     }
   }
 
-  const users = await api.user.fetchUsers({ userEmailList: userEmails });
+  const users = await api.user.fetchUsersByEmails({ userEmailList: userEmails });
   const timeline =
     (await api.annotatedPdf.fetchAllAnnotatedPdfs({
       userList: userEmails,

@@ -22,16 +22,17 @@ import {
 	HighlightWithRelations,
 } from "@src/lib/types";
 import { getNodeById } from "@src/utils/curriculum";
+import { ObjectId } from 'mongodb';
 
 export type ContextProps = {
 	currentHighlight: HighlightWithRelations | null;
 	setCurrentHighlight: (
-		highlight: Highlight | null,
+		highlight: HighlightWithRelations | null,
 		forceRerender?: boolean,
 	) => void;
 	createAskHighlight: (
 		highlight: NewHighlightWithRelationsInput,
-	) => Promise<Highlight | undefined>;
+	) => Promise<HighlightWithRelations | undefined>;
 	clearSelectedHighlight: () => void;
 	selectHighlight: (h: HighlightWithRelations) => void;
 	generateFollowUpResponse: (nodeId: string) => void;
@@ -164,7 +165,6 @@ export const AskHighlightProvider: FC<{
 					id: uuidv4(),
 					parentId: currentNodeRef.current?.id ?? null,
 					highlightId: null,
-					comments: [],
 					prompt,
 					response: "",
 					children: [],
@@ -214,7 +214,7 @@ export const AskHighlightProvider: FC<{
 	});
 
 	const utils = clientApi.useUtils();
-	// const updateHighlightMutation = clientApi.highlight.updateHighlight.useMutation();
+
 	const createHighlightMutation =
 		clientApi.highlight.createHighlight.useMutation({
 			onMutate: async (newData) => {
@@ -239,17 +239,17 @@ export const AskHighlightProvider: FC<{
 						const highlightId = uuidv4(); // TODO: get the object ID
 						const newNode = newData.highlight.node
 							? {
-									...newData.highlight.node,
-									id: uuidv4(),
-									parentId: null,
-									highlightId,
-									children: [],
-									comments: [], // Add this line
-								}
+								...newData.highlight.node,
+								id: uuidv4(),
+								parentId: null,
+								highlightId,
+								children: [],
+							}
 							: null;
 						const newHighlight = {
 							...newData.highlight,
 							id: highlightId,
+							comments: [],
 							node: newNode,
 							annotatedPdfId,
 						};
@@ -304,33 +304,38 @@ export const AskHighlightProvider: FC<{
 
 	const createAskHighlight = async (
 		highlight: NewHighlightWithRelationsInput,
-	): Promise<Highlight | undefined> => {
-		if (!highlight.node?.prompt) return;
+	): Promise<HighlightWithRelations | undefined> => {
 
-		const promptWithContext = `<question>${highlight.node.prompt}</question>`;
-		// Query AI for response
-		append({
-			role: "user",
-			content: promptWithContext,
-			createdAt: new Date(),
-		});
+		const highlightId = uuidv4();
+
+		if (highlight.node?.prompt) {
+			const promptWithContext = `<question>${highlight.node.prompt}</question>`;
+			// Query AI for response
+			append({
+				role: "user",
+				content: promptWithContext,
+				createdAt: new Date(),
+			});
+		}
 
 		// Add node to DB
 		createHighlightMutation.mutate({
 			highlight,
 		});
 
-		const highlightId = uuidv4();
 		const tempHighlight = {
 			...highlight,
 			id: highlightId,
-			node: {
-				...highlight.node,
-				id: uuidv4(),
-				highlightId,
-				parentId: null,
-				children: [],
-			},
+			comments: [],
+			node: highlight.node
+				? {
+					...highlight.node,
+					id: uuidv4(), // is this generated properly after it's saved? 
+					highlightId,
+					parentId: null,
+					children: [],
+				}
+				: undefined,
 		};
 
 		setCurrentHighlight(tempHighlight, false);

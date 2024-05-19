@@ -4,15 +4,15 @@ import { Button, PrimaryButton } from "@react-pdf-viewer/core";
 interface QuestionPopupProps {
 	left: React.CSSProperties["left"];
 	top: React.CSSProperties["top"];
-	onChange: React.ChangeEventHandler<HTMLTextAreaElement>;
 	onCancel: () => void;
 	onSubmit: () => void;
+	inputRef: React.RefObject<HTMLTextAreaElement>
 }
 
 const QuestionPopup: React.FC<QuestionPopupProps> = ({
 	left,
 	top,
-	onChange,
+	inputRef,
 	onCancel,
 	onSubmit,
 }) => {
@@ -41,8 +41,8 @@ const QuestionPopup: React.FC<QuestionPopupProps> = ({
 					style={{
 						border: "1px solid rgba(0, 0, 0, .3)",
 					}}
-					onChange={onChange}
 					onKeyDown={handleKeyDown}
+					ref={inputRef}
 				></textarea>
 			</div>
 			<div

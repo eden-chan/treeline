@@ -1,13 +1,13 @@
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState, useMemo } from "react";
 import {
-	highlightPlugin,
-	MessageIcon,
-	HighlightArea,
-	RenderHighlightContentProps,
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
-import { Button, Position, Tooltip, Viewer } from "@react-pdf-viewer/core";
+import { defaultLayoutPlugin, ToolbarProps } from '@react-pdf-viewer/default-layout';
+
+// modified highlightPlugin to handle selecting non-pdf content that causes re-rendering issue
+const highlightPlugin = require("./highlight.js").highlightPlugin;
+import { Viewer } from "@react-pdf-viewer/core";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
@@ -16,6 +16,7 @@ import { Highlight } from "@prisma/client";
 import {
 	AnnotatedPdfWithProfile,
 	HighlightWithRelations,
+	UserProfile,
 } from "@src/lib/types";
 import { Sidebar } from "@/components/pdf/Sidebar";
 import { clientApi } from "@src/trpc/react";
@@ -23,36 +24,43 @@ import { Forest } from "@/components/pdf/Forest";
 import { ResizableHandle, ResizablePanel } from "@/components/ui/resizable";
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
 import { ReactFlowProvider } from "reactflow";
-import QuestionPopup from "./QuestionPopup";
-import { NoteIndicator } from "./NoteIndicator";
+import { PastNote } from "./PastNote";
 import { HighlightedArea } from "./HighlightedArea";
 import { ImperativePanelGroupHandle, PanelGroup } from "react-resizable-panels";
+import { Textarea } from "../ui/textarea";
+import readingIndicatorPlugin from './ReadingIndicator';
 
-type DisplayNotesSidebarExampleProps = {
+type Props = {
 	annotatedPdfId: string;
 	loadedSource: string;
 	userId: string;
-	userHighlights: Highlight[];
+	userHighlights: HighlightWithRelations[];
 	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
 };
 
-type Note = {
-	id: number;
-	content: string;
-	highlightAreas: HighlightArea[];
-	quote: string;
-};
 
-const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
+
+const ReadingViewer: React.FC<Props> = ({
 	loadedSource,
 	userHighlights,
 	userId,
 	annotatedPdfId,
 	annotatedPdfsWithProfile,
 }) => {
-	const [message, setMessage] = useState("");
-	const [notes, setNotes] = useState<Note[]>([]);
+
 	const [friendHighlights, setFriendHighlights] = useState<Highlight[]>([]);
+
+	const userProfilesMap = useMemo(() => {
+		const map = new Map<string, UserProfile>();
+		annotatedPdfsWithProfile.forEach((pdf) => {
+			map.set(pdf.userId, {
+				firstName: pdf.firstName,
+				lastName: pdf.lastName,
+				profilePicture: pdf.userProfilePicture,
+			});
+		});
+		return map;
+	}, [annotatedPdfsWithProfile]);
 
 	const {
 		currentHighlight,
@@ -61,7 +69,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		clearSelectedHighlight,
 		setCurrentHighlight,
 	} = useAskHighlight();
-	let noteId = notes.length;
+
 
 	const utils = clientApi.useUtils();
 
@@ -127,9 +135,9 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 			},
 		});
 
-	const editHighlightMutation =
-		clientApi.highlight.updateHighlightContent.useMutation({
-			onMutate: async (newData) => {
+	const editHighlightMutation = clientApi.comment.upsertComment.useMutation(
+		{
+			onMutate: async (input) => {
 				await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
 					userId: userId,
 					source: loadedSource,
@@ -142,22 +150,23 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					},
 					(oldData) => {
 						if (!oldData) return oldData;
+
 						return {
 							...oldData,
-							highlights: highlights.filter(
-								(highlight) => highlight.id != newData.highlightId,
-							),
+							highlights: [],
 						};
 					},
 				);
 			},
 			onSuccess: (input) => {
+
 				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
 					userId: userId,
 					source: loadedSource,
 				});
 			},
-		});
+		}
+	);
 
 	const highlights =
 		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
@@ -169,8 +178,18 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		deleteHighlightMutation.mutate({ highlightId });
 	};
 
-	const editHighlight = (highlightId: string, text: string) => {
-		editHighlightMutation.mutate({ highlightId, text });
+	const editHighlight = async ({
+		id,
+		highlightId,
+		text,
+	}: {
+		id?: string;
+		highlightId: string;
+		text: string;
+	}) => {
+		const response = await editHighlightMutation.mutate({ id, highlightId, text, userId });
+
+		return response
 	};
 
 	const resetHighlights = () => {
@@ -179,12 +198,75 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 		});
 	};
 
+	const inputRef = useRef<HTMLTextAreaElement | null>(null);
+
 	const renderHighlightTarget = (props: RenderHighlightTargetProps) => {
+		const saveHighlight = () => {
+
+
+			const highlightDraft: NewHighlightWithRelationsInput = {
+				annotatedPdfId,
+				highlightAreas: props.highlightAreas,
+				quote: props.selectedText,
+
+			};
+
+			createAskHighlight(highlightDraft);
+			props.cancel();
+		};
+
+		const askQuestion = async (prompt: string) => {
+
+			const highlightDraft: NewHighlightWithRelationsInput = {
+				annotatedPdfId,
+				highlightAreas: props.highlightAreas,
+				quote: props.selectedText,
+				node: {
+					prompt,
+					response: null,
+					timestamp: new Date(),
+				},
+			};
+			return await createAskHighlight(highlightDraft);
+		};
+
+		const submitQuestion = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+			if (e.key === "Enter") {
+				if (inputRef.current && inputRef.current.value !== "") {
+					askQuestion(inputRef.current.value);
+				}
+			}
+		};
+
+		// maybe this can be used for flashcards?
+		const define = async () => {
+			const highlight = await askQuestion(
+				"Concisely define the following term and why it is important." +
+				props.selectedText,
+			);
+
+			if (highlight) {
+				setCurrentHighlight(highlight, true);
+				//
+			}
+		};
+
+		// guides the direction of the tree
+		// TODO: revise the prompt
+		const explain = async () => {
+			const highlight = await askQuestion(
+				"Concisely explain why this is important: " + props.selectedText,
+			);
+
+			if (highlight) {
+				setCurrentHighlight(highlight, true);
+			}
+		};
+
 		return (
 			<div
+				className="relative flex space-x-2"
 				style={{
-					background: "#eee",
-					display: "flex",
 					position: "absolute",
 					left: `${props.selectionRegion.left + props.selectionRegion.width}%`,
 					top: `${props.selectionRegion.top}%`,
@@ -192,121 +274,155 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					zIndex: 1,
 				}}
 			>
-				<Tooltip
-					position={Position.RightCenter}
-					target={
-						<Button onClick={props.toggle}>
-							<MessageIcon />
-						</Button>
-					}
-					content={() => <div style={{ width: "100px" }}>Ask a question</div>}
-					offset={{ left: 0, top: -8 }}
-				/>
+				<button
+					onClick={saveHighlight}
+					className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600"
+				>
+					Save
+				</button>
+				<div className="group">
+					<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
+						Ask
+					</button>
+					<div className="absolute w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
+						<Textarea
+							placeholder="Ask a question or @ someone"
+							onKeyDown={submitQuestion}
+							ref={inputRef}
+						/>
+						<button
+							onClick={define}
+							className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible"
+						>
+							Define
+						</button>
+						<button
+							onClick={explain}
+							className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible"
+						>
+							Summarize
+						</button>
+					</div>
+				</div>
 			</div>
 		);
 	};
-
-	const renderHighlightContent = (props: RenderHighlightContentProps) => {
-		const addNote = () => {
-			if (message !== "") {
-				const note: Note = {
-					id: ++noteId,
-					content: message,
-					highlightAreas: props.highlightAreas,
-					quote: props.selectedText,
-				};
-				setNotes(notes.concat([note]));
-
-				const extendedNote: NewHighlightWithRelationsInput = {
-					...note,
-					annotatedPdfId, // Placeholder or dynamic value as needed
-					id_: noteId, // Placeholder or dynamic value as needed
-					type: "COMMENT",
-					node: {
-						prompt: message,
-						response: null,
-						timestamp: new Date(),
-						comments: [],
-					},
-				};
-				createAskHighlight(extendedNote);
-				props.cancel();
-			}
-		};
-
-		return (
-			<QuestionPopup
-				left={`${props.selectionRegion.left}%`}
-				top={`${props.selectionRegion.top + props.selectionRegion.height}%`}
-				onChange={(e) => setMessage(e.target.value)}
-				onSubmit={addNote}
-				onCancel={props.cancel}
-			/>
-		);
-	};
-
-	const ref = useRef<ImperativePanelGroupHandle>(null);
-
+	const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
 	const setPDFViewerWidthPercentage = (pdfViewerWidth: number = 50) => {
-		const panelGroup = ref.current;
+		const panelGroup = panelGroupRef.current;
 		if (panelGroup) {
 			panelGroup.setLayout([pdfViewerWidth, 100 - pdfViewerWidth]);
 		}
 	};
-
 	const renderHighlights = (props: RenderHighlightsProps) => {
-		return (
-			<div>
-				{highlights.map((highlight) => {
-					const filteredAreas = highlight.highlightAreas.filter(
-						(area) => area.pageIndex === props.pageIndex && area.width > 0,
-					);
+		try {
+			return (
+				<div>
+					{highlights.map((highlight) => {
+						const filteredAreas = highlight.highlightAreas.filter(
+							(area) => area.pageIndex === props.pageIndex && area.width > 0,
+						);
+						const rightmostArea = filteredAreas.reduce((maxArea, area) => {
+							return area.left > (maxArea?.left ?? 0) ? area : maxArea;
+						}, filteredAreas[0]);
+						const topmostArea = filteredAreas.reduce((minArea, area) => {
+							return area.top < (minArea?.top ?? 0) ? area : minArea;
+						}, filteredAreas[0]);
+						const bottommostArea = filteredAreas.reduce((maxArea, area) => {
+							return area.top > (maxArea?.top ?? Number.MAX_VALUE)
+								? area
+								: maxArea;
+						}, filteredAreas[0]);
+						const middleHeight =
+							topmostArea && bottommostArea
+								? (topmostArea.top +
+									bottommostArea.top +
+									bottommostArea.height) /
+								2
+								: undefined;
 
-					const rightmostArea = filteredAreas.reduce((maxArea, area) => {
-						return area.left > (maxArea?.left ?? 0) ? area : maxArea;
-					}, filteredAreas[0]);
+						const openForest = () => {
+							setCurrentHighlight(highlight);
+							const panelGroup = panelGroupRef.current;
+							if (panelGroup) {
+								// Reset each Panel to 50% of the group's width
+								setPDFViewerWidthPercentage(50);
+							}
+						};
 
-					const openForest = () => {
-						setCurrentHighlight(highlight);
-						const panelGroup = ref.current;
-						if (panelGroup) {
-							// Reset each Panel to 50% of the group's width
-							setPDFViewerWidthPercentage(50);
-						}
-					};
+						return (
+							<div key={highlight.id} className="group z-10">
+								{filteredAreas.map((area, idx) => {
+									return (
+										<HighlightedArea
+											openForest={openForest}
+											className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 cursor-pointer"
+											area={area}
+											props={props}
+											key={idx}
+											idx={idx}
+										/>
+									);
+								})}
+								<PastNote
+									userId={userId}
+									highlight={highlight}
+									middleHeight={middleHeight}
+									rightmostArea={rightmostArea}
+									editHighlight={editHighlight}
+									deleteHighlight={deleteHighlight}
+									userProfilesMap={userProfilesMap}
 
-					return (
-						<div key={highlight.id} className="group z-10">
-							{filteredAreas.map((area, idx) => {
-								return (
-									<HighlightedArea
-										openForest={openForest}
-										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 cursor-pointer"
-										area={area}
-										props={props}
-										key={idx}
-										idx={idx}
-									/>
-								);
-							})}
-							<NoteIndicator
-								highlight={highlight}
-								rightmostArea={rightmostArea}
-								editHighlight={editHighlight}
-								deleteHighlight={deleteHighlight}
-							/>
-						</div>
-					);
-				})}
-			</div>
-		);
+								/>
+							</div>
+						);
+					})}
+				</div>
+			);
+		} catch (error) {
+			console.error("Error in renderHighlights:", error);
+			// Render an error message or fallback UI
+			return <div>An error occurred while rendering highlights.</div>;
+		}
 	};
+
+	const readingIndicatorPluginInstance = readingIndicatorPlugin();
+	const { ReadingIndicator } = readingIndicatorPluginInstance;
+
+
+
+	const renderToolbar = useCallback(
+		(Toolbar: (props: ToolbarProps) => React.ReactElement) => (
+			<>
+				<Toolbar />
+				<div
+					style={{
+						bottom: '-0.25rem',
+						position: 'absolute',
+						left: 0,
+						// Take the full width of toolbar
+						width: '100%',
+					}}
+				>
+					<ReadingIndicator />
+				</div>
+			</>
+		),
+		[]
+	);
+
+	const defaultLayoutPluginInstance = defaultLayoutPlugin({
+		renderToolbar,
+	});
+
 
 	const highlightPluginInstance = highlightPlugin({
 		renderHighlightTarget,
-		renderHighlightContent,
+		// renderHighlightContent,
 		renderHighlights,
 	});
+
+
 
 	const { jumpToHighlightArea } = highlightPluginInstance;
 
@@ -325,7 +441,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 				allHighlightsWithProfile={annotatedPdfsWithProfile}
 			/>
 
-			<PanelGroup className="w-full" direction="horizontal" ref={ref}>
+			<PanelGroup className="w-full" direction="horizontal" ref={panelGroupRef}>
 				<ResizablePanel
 					onClick={() => {
 						setPDFViewerWidthPercentage(100);
@@ -334,7 +450,7 @@ const ReadingViewer: React.FC<DisplayNotesSidebarExampleProps> = ({
 					defaultSize={80}
 					style={{ height: "100vh", overflow: "auto" }}
 				>
-					<Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance]} />
+					<Viewer fileUrl={loadedSource} plugins={[highlightPluginInstance, readingIndicatorPluginInstance, defaultLayoutPluginInstance]} />
 					{/* removes the trailing bottom whitespace */}
 					<div />
 				</ResizablePanel>

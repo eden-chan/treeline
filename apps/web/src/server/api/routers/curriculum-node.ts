@@ -45,7 +45,6 @@ export const curriculumNodeRouter = createTRPCRouter({
 						prompt: input.curriculumNode.prompt,
 						response: input.curriculumNode.response,
 						timestamp: input.curriculumNode.timestamp,
-						comments: input.curriculumNode.comments,
 					},
 					include: {
 						children: true,
@@ -63,7 +62,6 @@ export const curriculumNodeRouter = createTRPCRouter({
 							prompt: child.prompt,
 							response: child.response,
 							timestamp: child.timestamp,
-							comments: child.comments,
 						})),
 					},
 				};
