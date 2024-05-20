@@ -1,176 +1,169 @@
 import { z } from "zod";
 import { AnnotatedPdf, User } from "@prisma/client";
 export interface LTWH {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
+	left: number;
+	top: number;
+	width: number;
+	height: number;
 }
 
 export interface LTWHP extends LTWH {
-  pageNumber?: number;
+	pageNumber?: number;
 }
 
 export interface Scaled {
-  x1: number;
-  y1: number;
-  x2: number;
-  y2: number;
-  width: number;
-  height: number;
-  pageNumber?: number;
+	x1: number;
+	y1: number;
+	x2: number;
+	y2: number;
+	width: number;
+	height: number;
+	pageNumber?: number;
 }
 
 export interface Position {
-  boundingRect: LTWHP;
-  rects: Array<LTWHP>;
-  pageNumber: number;
+	boundingRect: LTWHP;
+	rects: Array<LTWHP>;
+	pageNumber: number;
 }
 
 export interface ScaledPosition {
-  boundingRect: Scaled;
-  rects: Array<Scaled>;
-  pageNumber: number;
-  usePdfCoordinates?: boolean;
+	boundingRect: Scaled;
+	rects: Array<Scaled>;
+	pageNumber: number;
+	usePdfCoordinates?: boolean;
 }
 
 export interface Content {
-  text?: string | null;
-  image?: string | null;
+	text?: string | null;
+	image?: string | null;
 }
 
 export interface HighlightContent {
-  content: Content;
+	content: Content;
 }
 
 export interface Comment {
-  text: string | null;
-  emoji: string | null;
-  timestamp: Date;
-  userId: string;
+	text: string | null;
+	emoji: string | null;
+	timestamp: Date;
+	userId: string;
 }
 
 export interface NewHighlight extends HighlightContent {
-  position: ScaledPosition;
-  timestamp: Date;
-  comments: Array<Comment>;
+	position: ScaledPosition;
+	timestamp: Date;
+	comments: Array<Comment>;
 }
 
 export interface IHighlight extends NewHighlight {
-  id: string;
+	id: string;
 }
 
 export interface ViewportHighlight extends HighlightContent {
-  position: Position;
-  comments: Array<Comment>;
+	position: Position;
+	comments: Array<Comment>;
 }
 
 export interface Viewport {
-  convertToPdfPoint: (x: number, y: number) => Array<number>;
-  convertToViewportRectangle: (pdfRectangle: Array<number>) => Array<number>;
-  width: number;
-  height: number;
+	convertToPdfPoint: (x: number, y: number) => Array<number>;
+	convertToViewportRectangle: (pdfRectangle: Array<number>) => Array<number>;
+	width: number;
+	height: number;
 }
 
 export interface Page {
-  node: HTMLElement;
-  number: number;
+	node: HTMLElement;
+	number: number;
 }
 
 export interface PDFHighlightsWithProfile extends AnnotatedPdf {
-  userProfilePicture: string;
-  firstName: string;
-  lastName: string;
+	userProfilePicture: string;
+	firstName: string;
+	lastName: string;
 }
 
 export interface UserWithProfile extends User {
-  imageUrl: string;
+	imageUrl: string;
 }
 
 export const LTWHSchema = z.object({
-  left: z.number(),
-  top: z.number(),
-  width: z.number(),
-  height: z.number(),
+	left: z.number(),
+	top: z.number(),
+	width: z.number(),
+	height: z.number(),
 });
 
 export const LTWHPSchema = LTWHSchema.extend({
-  pageNumber: z.number(),
+	pageNumber: z.number(),
 });
 
 export const ScaledSchema = z.object({
-  x1: z.number(),
-  y1: z.number(),
-  x2: z.number(),
-  y2: z.number(),
-  width: z.number(),
-  height: z.number(),
-  pageNumber: z.number().or(z.null()),
+	x1: z.number(),
+	y1: z.number(),
+	x2: z.number(),
+	y2: z.number(),
+	width: z.number(),
+	height: z.number(),
+	pageNumber: z.number().or(z.null()),
 });
 
 export const PositionSchema = z.object({
-  boundingRect: LTWHPSchema,
-  rects: z.array(LTWHPSchema),
-  pageNumber: z.number(),
+	boundingRect: LTWHPSchema,
+	rects: z.array(LTWHPSchema),
+	pageNumber: z.number(),
 });
 
 export const ScaledPositionSchema = z.object({
-  boundingRect: ScaledSchema,
-  rects: z.array(ScaledSchema),
-  pageNumber: z.number(),
-  usePdfCoordinates: z.boolean().or(z.null()),
-});
-
-export const ContentSchema = z.object({
-  text: z.string().or(z.null()),
-  image: z.string().or(z.null()),
-});
-
-export const HighlightContentSchema = z.object({
-  content: ContentSchema,
+	boundingRect: ScaledSchema,
+	rects: z.array(ScaledSchema),
+	pageNumber: z.number(),
+	usePdfCoordinates: z.boolean().or(z.null()),
 });
 
 export const CommentSchema = z.object({
-  text: z.string().or(z.null()),
-  emoji: z.string().or(z.null()),
-  timestamp: z.date(),
-  userId: z.string(),
+	text: z.string().or(z.null()),
+	timestamp: z.date(),
+	userId: z.string(), // who replied or commented
 });
 
 export const CurriculumNodeSchemaBase = z.object({
-  comments: z.array(CommentSchema),
-  prompt: z.string().or(z.null()),
-  highlightId: z.string().or(z.null()),
-  response: z.string().or(z.null()),
-  timestamp: z.date(),
+	prompt: z.string().or(z.null()),
+	highlightId: z.string().or(z.null()),
+	response: z.string().or(z.null()),
+	timestamp: z.date(),
 });
 
-export const HighlightTypeSchema = z.enum(["ASK", "COMMENT"]);
+export const HighlightV2HighlightAreasSchema = z.object({
+	height: z.number(),
+	left: z.number(),
+	pageIndex: z.number(),
+	top: z.number(),
+	width: z.number(),
+});
 
 export const HighlightSchema = z.object({
-  content: ContentSchema,
-  type: HighlightTypeSchema,
-  position: ScaledPositionSchema,
-  comment: CommentSchema.or(z.null()),
-  annotatedPdfId: z.string(),
+	highlightAreas: z.array(HighlightV2HighlightAreasSchema),
+	quote: z.string(),
+	annotatedPdfId: z.string(),
 });
 
 export const HighlightWithCurriculumNodeSchema = HighlightSchema.extend({
-  node: CurriculumNodeSchemaBase.omit({ highlightId: true })
-    .or(z.undefined())
-    .or(z.null()),
+	node: CurriculumNodeSchemaBase.omit({ highlightId: true })
+		.or(z.undefined())
+		.or(z.null()),
 });
 
 export const IHighlightSchema = HighlightSchema.extend({
-  id: z.string(),
+	id: z.string(),
 });
 
 export const UserSchema = z.object({
-  id: z.string(),
-  email: z.string(),
-  first_name: z.string(),
-  followers: z.array(z.string()),
-  follows: z.array(z.string()),
-  handle: z.string(),
-  last_name: z.string(),
+	id: z.string(),
+	email: z.string(),
+	first_name: z.string(),
+	followers: z.array(z.string()),
+	follows: z.array(z.string()),
+	handle: z.string(),
+	last_name: z.string(),
 });

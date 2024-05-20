@@ -7,7 +7,7 @@
       }
     ],
     "baseUrl": ".",
-    "strict": false,
+    "strict": true,
     "paths": {
       "@src/*": ["./src/*"]
     }
@@ -17,8 +17,7 @@
     "next.config.js",
     "**/*.ts",
     "**/*.tsx",
-    ".next/types/**/*.ts",
-    "src/server/api/routers/highlight"
+    ".next/types/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }

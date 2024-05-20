@@ -6,14 +6,15 @@
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import Link from "next/link";
 import Timeline from "./Timeline";
-import { ParsedPapers, User } from "@prisma/client";
+import { ParsedPaper, User } from "@prisma/client";
 import FollowButton from "./FollowButton";
 
 import { useMemo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
 import LearningActivityCalendar from "@src/components/activity-calendar";
-import ChromaForm from './ChromaForm';
-import { AnnotatedPdf } from '@src/lib/types';
+
+import { AnnotatedPdfWithRelations } from '@src/lib/types';
+import { BentoGridThirdDemo } from '@src/components/paper-card';
 
 export default async function Profile({
   users,
@@ -24,11 +25,11 @@ export default async function Profile({
   parsedPapers,
 }: {
   users: User[];
-  timeline: AnnotatedPdf[];
+  timeline: AnnotatedPdfWithRelations[];
   searchedUser: User;
   loggedInUser: User;
   searchedUserImageUrl: string;
-  parsedPapers: ParsedPapers[]
+  parsedPapers: ParsedPaper[]
 }) {
   const userHighlights = useMemo(
     () =>
@@ -55,22 +56,7 @@ export default async function Profile({
               <AvatarFallback>CN</AvatarFallback>
             </Avatar>
           </div>
-          <FollowButton user1={loggedInUser} user2={searchedUser} />
-          <ChromaForm />
-          <div className="mt-4">
-            <Link
-              href={`https://x.com/${searchedUser.handle}`}
-              className="text-blue-500 hover:underline"
-            >
-              Twitter
-            </Link>
-            <Link
-              href={"https://edenchan.ca"}
-              className="text-blue-500 hover:underline"
-            >
-              Website
-            </Link>
-          </div>
+          <FollowButton loggedInUser={loggedInUser} searchedUser={searchedUser} />
         </div>
         <div className="mt-8">
           <LearningActivityCalendar />
@@ -94,13 +80,8 @@ export default async function Profile({
             <ul className="space-y-2">
               {friendsSection.friends.map(({ clerk_id, handle, first_name, recentPaper }) => (
                 <li key={clerk_id}>
-                  <Link className="block" href={`/${handle}`}>
+                  <Link className="block" href={`/user/${handle}`}>
                     <span className="font-medium">{first_name}</span>
-                    {recentPaper?.highlights?.slice(-1)?.[0]?.comment?.timestamp && (
-                      <span className="text-sm text-gray-500">
-                        {" " + calculateTimeAgo(recentPaper.highlights.slice(-1)[0].comment.timestamp)}
-                      </span>
-                    )}
                   </Link>
                 </li>
               ))}

@@ -1,6 +1,22 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   transpilePackages: ["@repo/ui"],
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "img.clerk.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "pbs.twimg.com",
+        port: "",
+        pathname: "/**",
+      },
+    ],
+  },
   webpack: (config, { isServer }) => {
     if (!isServer) {
       // Fixes npm packages that depend on `fs` module

@@ -8,49 +8,20 @@ datasource db {
   relationMode = "prisma"
 }
 
-type HighlightComment {
-  emoji     String?
-  text      String?
-  timestamp DateTime @db.Date
-  userId    String
-}
-
-type HighlightContent {
-  image String?
-  text  String?
-}
-
-type HighlightPosition {
-  boundingRect      HighlightScaledPosition
-  pageNumber        Int
-  rects             HighlightScaledPosition[]
-  usePdfCoordinates Boolean?
-}
-
-type HighlightScaledPosition {
-  height     Float
-  width      Float
-  x1         Float
-  y1         Float
-  x2         Float
-  y2         Float
-  pageNumber Int?
-}
-
-type ParsedPapersText {
+type ParsedPaperText {
   outline  String[]
-  sections ParsedPapersTextSections[]
+  sections ParsedPaperTextSections[]
   title    String
 }
 
-type ParsedPapersTextSections {
-  facts ParsedPapersTextSectionsFacts[]
+type ParsedPaperTextSections {
+  facts ParsedPaperTextSectionsFacts[]
   name  String
   page  Int
   text  String
 }
 
-type ParsedPapersTextSectionsFacts {
+type ParsedPaperTextSectionsFacts {
   expectedInfo String
   fact         String
   nextSource   String
@@ -58,32 +29,15 @@ type ParsedPapersTextSectionsFacts {
 }
 
 model CurriculumNode {
-  id          String             @id @default(auto()) @map("_id") @db.ObjectId
-  comments    HighlightComment[]
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
   prompt      String?
   response    String?
-  timestamp   DateTime           @db.Date
-  parentId    String?            @db.ObjectId
-  parent      CurriculumNode?    @relation("SubNodes", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  children    CurriculumNode[]   @relation("SubNodes")
-  highlightId String?            @unique @db.ObjectId
-  highlight   Highlight?         @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-}
-
-model Highlight {
-  id             String            @id @default(auto()) @map("_id") @db.ObjectId
-  content        HighlightContent
-  position       HighlightPosition
-  comment        HighlightComment?
-  type           HighlightType     @default(COMMENT)
-  node           CurriculumNode?
-  annotatedPdf   AnnotatedPdf      @relation(fields: [annotatedPdfId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  annotatedPdfId String            @db.ObjectId
-}
-
-enum HighlightType {
-  ASK
-  COMMENT
+  timestamp   DateTime         @db.Date
+  parentId    String?          @db.ObjectId
+  parent      CurriculumNode?  @relation("SubNodes", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    CurriculumNode[] @relation("SubNodes")
+  highlightId String?          @unique @db.ObjectId
+  highlight   Highlight?       @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model AnnotatedPdf {
@@ -104,19 +58,19 @@ model User {
   last_name  String
 }
 
-type ParsedPapersFacts {
+type ParsedPaperFacts {
   expectedInfo String
   fact         String
   nextSource   String
   relevance    String
 }
 
-type ParsedPapersSections {
-  metadata ParsedPapersSectionsMetadata
+type ParsedPaperSections {
+  metadata ParsedPaperSectionsMetadata
   text     String
 }
 
-type ParsedPapersSectionsMetadata {
+type ParsedPaperSectionsMetadata {
   Header_1 String?
   Header_2 String?
   Header_3 String?
@@ -124,15 +78,41 @@ type ParsedPapersSectionsMetadata {
   Header_5 String?
 }
 
-model ParsedPapers {
-  id               String                 @id @default(auto()) @map("_id") @db.ObjectId
+model ParsedPaper {
+  id               String                @id @default(auto()) @map("_id") @db.ObjectId
   abstract         String
-  facts            ParsedPapersFacts[]
+  facts            ParsedPaperFacts[]
   primary_category String
-  published        DateTime               @db.Date
-  sections         ParsedPapersSections[]
+  published        DateTime              @db.Date
+  sections         ParsedPaperSections[]
   source           String
   title            String
-  updated          DateTime               @db.Date
+  updated          DateTime              @db.Date
 }
 
+type HighlightAreas {
+  height    Float
+  left      Float
+  pageIndex Int
+  top       Float
+  width     Float
+}
+
+model Highlight {
+  id             String                      @id @default(auto()) @map("_id") @db.ObjectId
+  highlightAreas HighlightAreas[]
+  comments       Comment[]
+  quote          String
+  node           CurriculumNode?
+  annotatedPdf   AnnotatedPdf                @relation(fields: [annotatedPdfId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  annotatedPdfId String                      @db.ObjectId
+}
+
+model Comment {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  text        String
+  timestamp   DateTime  @db.Date
+  userId      String
+  Highlight   Highlight @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  highlightId String    @db.ObjectId
+}

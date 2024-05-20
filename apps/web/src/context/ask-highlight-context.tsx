@@ -1,360 +1,425 @@
-//@ts-nocheck
 "use client";
 import React, {
-  FC,
-  ReactNode,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-  useMemo
+	FC,
+	ReactNode,
+	useContext,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
 } from "react";
 import { useChat, Message } from "ai/react";
 import { v4 as uuidv4 } from "uuid";
+import { cloneDeep } from "lodash";
 
-import { Highlight } from "@prisma/client";
+import { Highlight, ParsedPaper } from "@prisma/client";
 import { clientApi } from "@src/trpc/react";
 import { FOLLOW_UP_PROMPT, generateSystemPrompt } from "@src/utils/prompts";
-import { ragQuery } from '@src/app/actions';
+import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
 
-
-import { ParsedPapers } from "@prisma/client";
 import {
-  NewHighlightWithRelationsInput,
-  HighlightWithRelations,
-} from "@src/server/api/routers/highlight";
-import { CurriculumNodeWithRelations } from "@src/server/api/routers/annotated-pdf";
-
-
+	CurriculumNodeWithRelations,
+	HighlightWithRelations,
+} from "@src/lib/types";
+import { getNodeById } from "@src/utils/curriculum";
+import { ObjectId } from 'mongodb';
 
 export type ContextProps = {
-  currentHighlight: Highlight | null;
-  setCurrentHighlight: (
-    highlight: Highlight | null,
-    forceRerender?: boolean,
-  ) => void;
-  createAskHighlight: (
-    highlight: NewHighlightWithRelationsInput,
-  ) => Promise<Highlight | undefined>;
-  clearSelectedHighlight: () => void;
-  selectHighlight: (h: HighlightWithRelations) => void;
+	currentHighlight: HighlightWithRelations | null;
+	setCurrentHighlight: (
+		highlight: HighlightWithRelations | null,
+		forceRerender?: boolean,
+	) => void;
+	createAskHighlight: (
+		highlight: NewHighlightWithRelationsInput,
+	) => Promise<HighlightWithRelations | undefined>;
+	clearSelectedHighlight: () => void;
+	selectHighlight: (h: HighlightWithRelations) => void;
+	generateFollowUpResponse: (nodeId: string) => void;
 } & ReturnType<typeof useChat>;
 
 export const useAskHighlight = () => {
-  return useContext(AskHighlightContext);
+	return useContext(AskHighlightContext);
 };
 
 // @ts-ignore: too many default values for useChat to include
 export const AskHighlightContext = React.createContext<ContextProps>({
-  currentHighlight: null,
-  setCurrentHighlight: () => null,
+	currentHighlight: null,
+	setCurrentHighlight: () => null,
 });
 
 export const AskHighlightProvider: FC<{
-  annotatedPdfId: string;
-  userId: string;
-  loadedSource: string;
-  parsedPaper: ParsedPapers,
-  children: ReactNode;
-}> = ({ annotatedPdfId, userId, loadedSource, parsedPaper, children }) => {
-  const [_, setForceRerender] = useState<Boolean>(false);
-  // Refs are required so that their values are not cached in callback functions
-  const currentHighlightRef = useRef<HighlightWithRelations | null>(null);
-  const currentNodeRef = useRef<CurriculumNodeWithRelations | null>(null);
-  const setCurrentHighlight = (
-    highlight: HighlightWithRelations | null,
-    forceRerender = true,
-  ) => {
-    currentHighlightRef.current = highlight;
-    if (forceRerender) {
-      setForceRerender((prev) => !prev);
-    }
-  };
-  const setCurrentNode = (
-    node: CurriculumNodeWithRelations | null,
-    forceRerender = true,
-  ) => {
-    currentNodeRef.current = node;
-    if (forceRerender) {
-      setForceRerender((prev) => !prev);
-    }
-  };
-  const isGeneratingFollowUpsRef = useRef<Boolean>(false);
+	annotatedPdfId: string;
+	userId: string;
+	loadedSource: string;
+	children: ReactNode;
+	parsedPaper: ParsedPaper | null;
+}> = ({ annotatedPdfId, userId, loadedSource, children, parsedPaper }) => {
+	const [_, setForceRerender] = useState<Boolean>(false);
+	// Refs are required so that their values are not cached in callback functions
+	const currentHighlightRef = useRef<HighlightWithRelations | null>(null);
+	const currentNodeRef = useRef<CurriculumNodeWithRelations | null>(null);
+	const setCurrentHighlight = (
+		highlight: HighlightWithRelations | null,
+		forceRerender = true,
+	) => {
+		if (forceRerender) {
+			// Necessary for useMemo/useCallback to execute
+			currentHighlightRef.current = cloneDeep(highlight);
+			if (currentNodeRef.current) {
+				currentNodeRef.current =
+					getNodeById(
+						currentNodeRef.current.id,
+						currentHighlightRef.current?.node,
+					) ?? null;
+			}
+			setForceRerender((prev) => !prev);
+		} else {
+			currentHighlightRef.current = highlight;
+		}
+	};
+	const setChildrenInNode = (
+		children: CurriculumNodeWithRelations[],
+		forceRerender = true,
+	) => {
+		if (!currentNodeRef.current) return;
+		currentNodeRef.current.children = children;
+		if (forceRerender) {
+			currentHighlightRef.current = cloneDeep(currentHighlightRef.current);
+			if (currentNodeRef.current) {
+				currentNodeRef.current =
+					getNodeById(
+						currentNodeRef.current.id,
+						currentHighlightRef.current?.node,
+					) ?? null;
+			}
+			setForceRerender((prev) => !prev);
+		}
+	};
 
-  const onFinish = (message: Message) => {
-    // Update DB once entire response is received
-    if (!currentHighlightRef.current) {
-      console.debug("No current highlight reference found.");
-      return;
-    }
+	const isGeneratingFollowUpsRef = useRef<Boolean>(false);
 
-    if (!currentHighlightRef.current.node) {
-      console.debug("No current highlight node found.");
-      return;
-    }
+	const onFinishChatResponse = (message: Message) => {
+		// Update DB once entire response is received
+		if (!currentHighlightRef.current) {
+			console.debug("No current highlight reference found.");
+			return;
+		}
 
-    /**
-     * Case 1: Finished generating the response to the question being asked
-     * Case 2: Finished generating followup questions for the previous response
-     */
-    if (!isGeneratingFollowUpsRef.current) {
-      const newHighlight = {
-        ...currentHighlightRef.current,
-        node: {
-          ...currentHighlightRef.current.node,
-          response: message.content,
-        },
-      };
+		if (!currentHighlightRef.current.node) {
+			console.debug("No current highlight node found.");
+			return;
+		}
 
-      setCurrentHighlight(newHighlight, false);
+		/**
+		 * Case 1: Finished generating the response to the question being asked
+		 * Case 2: Finished generating the response to a follow up node
+		 * Case 2: Finished generating followup questions for the previous response
+		 */
+		if (!isGeneratingFollowUpsRef.current && !currentNodeRef.current) {
+			const newHighlight = {
+				...currentHighlightRef.current,
+				node: {
+					...currentHighlightRef.current.node,
+					response: message.content,
+				},
+			};
 
-      updateCurriculumNodeMutation.mutate({
-        curriculumNode: newHighlight.node,
-      });
+			setCurrentHighlight(newHighlight, false);
 
-      setCurrentNode(newHighlight.node, false);
+			updateCurriculumNodeMutation.mutate({
+				curriculumNode: newHighlight.node,
+			});
 
-      // Timeout is required since useChat may cause a socket connection error if opening a new connection with append as the old connection is closing
-      setTimeout(() => {
-        append({
-          role: "user",
-          content: FOLLOW_UP_PROMPT,
-          createdAt: new Date(),
-        });
-        isGeneratingFollowUpsRef.current = true;
-      }, 500);
-    } else if (isGeneratingFollowUpsRef.current && currentNodeRef.current) {
-      const newPrompts = [...message.content.split("\n")];
-      const newChildren = newPrompts.map((prompt) => {
-        return {
-          id: uuidv4(),
-          parentId: currentNodeRef.current?.id ?? null,
-          highlightId: null,
-          comments: [],
-          prompt,
-          response: "",
-          children: [],
-          timestamp: new Date(),
-        };
-      });
-      const newNode = {
-        ...currentNodeRef.current,
-        children: newChildren,
-      };
+			currentNodeRef.current = newHighlight.node;
 
-      updateCurriculumNodeMutation.mutate({
-        curriculumNode: newNode,
-      });
+			// Timeout is required since useChat may cause a socket connection error if opening a new connection with append as the old connection is closing
+			setTimeout(() => {
+				append({
+					role: "user",
+					content: FOLLOW_UP_PROMPT,
+					createdAt: new Date(),
+				});
+				isGeneratingFollowUpsRef.current = true;
+			}, 500);
+		} else if (!isGeneratingFollowUpsRef.current && currentNodeRef.current) {
+			currentNodeRef.current.response = message.content;
 
-      setCurrentNode(newNode, false);
-      isGeneratingFollowUpsRef.current = false;
-    }
-  };
+			updateCurriculumNodeMutation.mutate({
+				curriculumNode: currentNodeRef.current,
+			});
 
+			// Timeout is required since useChat may cause a socket connection error if opening a new connection with append as the old connection is closing
+			setTimeout(() => {
+				append({
+					role: "user",
+					content: FOLLOW_UP_PROMPT,
+					createdAt: new Date(),
+				});
+				isGeneratingFollowUpsRef.current = true;
+			}, 500);
+		} else if (isGeneratingFollowUpsRef.current && currentNodeRef.current) {
+			const newPrompts = [...message.content.split("\n")];
+			const newChildren = newPrompts.map((prompt) => {
+				return {
+					id: uuidv4(),
+					parentId: currentNodeRef.current?.id ?? null,
+					highlightId: null,
+					prompt,
+					response: "",
+					children: [],
+					timestamp: new Date(),
+				};
+			});
+			const newNode = {
+				...currentNodeRef.current,
+				children: newChildren,
+			};
 
-  // fetch paper text and field from db
-  const concatenatedText = useMemo(() => parsedPaper.sections.map(section => section.text).join(" "), [parsedPaper.sections]);
-  const systemPrompt = useMemo(() => generateSystemPrompt(concatenatedText, parsedPaper.primary_category), [concatenatedText, parsedPaper.primary_category]);
+			updateCurriculumNodeMutation.mutate({
+				curriculumNode: newNode,
+			});
 
-  const initialMessages: Message[] = [{
-    role: 'system',
-    content: systemPrompt,
-  }]
+			setChildrenInNode(newChildren);
+			isGeneratingFollowUpsRef.current = false;
+		}
+	};
 
-  const { messages, setMessages, append, ...chat } = useChat({
-    initialMessages,
-    onFinish,
-    onError: (error) => console.error("Error occured in useChat:", error),
-  });
-  const utils = clientApi.useUtils();
-  // const updateHighlightMutation = clientApi.highlight.updateHighlight.useMutation();
-  const createHighlightMutation =
-    clientApi.highlight.createHighlight.useMutation({
-      onMutate: async (newData) => {
-        console.debug('chatMessages', messages)
+	// #TODO: fetch paper text and field from db
+	// fetch paper text and field from db
+	const concatenatedText = useMemo(
+		() => parsedPaper?.sections.map((section) => section.text).join(" "),
+		[parsedPaper?.sections],
+	);
+	const systemPrompt = useMemo(
+		() =>
+			generateSystemPrompt(
+				concatenatedText ?? "",
+				parsedPaper?.primary_category ?? "",
+			),
+		[concatenatedText, parsedPaper?.primary_category],
+	);
+	const systemPromptId = useMemo(() => uuidv4(), []);
+	const initialMessages: Message[] = [
+		{
+			id: systemPromptId,
+			role: "system",
+			content: systemPrompt,
+		},
+	];
+	const { messages, setMessages, append, ...chat } = useChat({
+		initialMessages,
+		onFinish: onFinishChatResponse,
+		onError: (error) => console.error("Error occured in useChat:", error),
+	});
 
-        await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
-          userId: userId,
-          source: loadedSource,
-        });
+	const utils = clientApi.useUtils();
 
-        const previousData = utils.annotatedPdf.fetchAnnotatedPdf.getData({
-          userId: userId,
-          source: loadedSource,
-        });
+	const createHighlightMutation =
+		clientApi.highlight.createHighlight.useMutation({
+			onMutate: async (newData) => {
+				await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
+					userId: userId,
+					source: loadedSource,
+				});
 
-        utils.annotatedPdf.fetchAnnotatedPdf.setData(
-          {
-            userId: userId,
-            source: loadedSource,
-          },
-          (oldData) => {
-            if (!oldData) return oldData;
+				const previousData = utils.annotatedPdf.fetchAnnotatedPdf.getData({
+					userId: userId,
+					source: loadedSource,
+				});
 
-            const highlightId = uuidv4();
-            const newNode = newData.highlight.node
-              ? {
-                ...newData.highlight.node,
-                id: uuidv4(),
-                parentId: null,
-                highlightId,
-                children: [],
-              }
-              : null;
-            const newHighlight = {
-              ...newData.highlight,
-              id: highlightId,
-              node: newNode,
-              annotatedPdfId,
-            };
+				utils.annotatedPdf.fetchAnnotatedPdf.setData(
+					{
+						userId: userId,
+						source: loadedSource,
+					},
+					(oldData) => {
+						if (!oldData) return oldData;
 
-            return {
-              ...oldData,
-              highlights: [newHighlight, ...oldData.highlights],
-            };
-          },
-        );
+						const highlightId = uuidv4(); // TODO: get the object ID
+						const newNode = newData.highlight.node
+							? {
+								...newData.highlight.node,
+								id: uuidv4(),
+								parentId: null,
+								highlightId,
+								children: [],
+							}
+							: null;
+						const newHighlight = {
+							...newData.highlight,
+							id: highlightId,
+							comments: [],
+							node: newNode,
+							annotatedPdfId,
+						};
 
-        return { previousData };
-      },
-      onSuccess: (input) => {
-        utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
-          userId: userId,
-          source: loadedSource,
-        });
+						return {
+							...oldData,
+							highlights: [newHighlight, ...oldData.highlights],
+						};
+					},
+				);
 
-        // Todo: address potential race condition where onFinish callback for useChat executes before
-        // setting the new id values
-        if (!input?.node || !currentHighlightRef.current?.node) return;
-        currentHighlightRef.current.id = input.id;
-        currentHighlightRef.current.node.id = input.node.id;
-        currentHighlightRef.current.node.highlightId = input.node.highlightId;
-      },
-    });
-  const updateCurriculumNodeMutation =
-    clientApi.curriculum.updateNode.useMutation();
+				return { previousData };
+			},
+			onSuccess: (input) => {
+				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+					userId: userId,
+					source: loadedSource,
+				});
 
-  const createAskHighlight = async (
-    highlight: NewHighlightWithRelationsInput,
-  ): Promise<Highlight | undefined> => {
-    if (!highlight.node?.prompt) return;
+				// Todo: address potential race condition where onFinish callback for useChat executes before
+				// setting the new id values
+				if (!input?.node || !currentHighlightRef.current?.node) return;
+				currentHighlightRef.current.id = input.id;
+				currentHighlightRef.current.node.id = input.node.id;
+				currentHighlightRef.current.node.highlightId = input.node.highlightId;
+			},
+		});
+	const updateCurriculumNodeMutation =
+		clientApi.curriculum.updateNode.useMutation({
+			onSuccess: (input) => {
+				// Invalidate annotatedPdf so highlights is updated
+				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
+					userId: userId,
+					source: loadedSource,
+				});
 
+				// Todo: address potential race condition where onFinish callback for useChat executes before
+				// setting the new id values
+				if (!input?.children || !currentNodeRef.current?.children) return;
+				for (let child of input.children) {
+					let pseudoChild = currentNodeRef.current.children.find(
+						(c) => c.prompt === child.prompt,
+					);
+					if (!pseudoChild) return;
 
+					pseudoChild.id = child.id;
+				}
+				// Used to cause a force rerender of the nodes in useMemo
+				setCurrentHighlight(currentHighlightRef.current, true);
+			},
+		});
 
-    // Walking RAG - Cyclical Generation
-    // Fetch most relevant chunks (descriptors)
-    // fetch fact - descriptors for pdf.use chroma to embed the descriptors and store the embeddings
-    // vector search on user query over all descriptors for the pdf.
-    // retrieve relevant facts to inject into context
+	const createAskHighlight = async (
+		highlight: NewHighlightWithRelationsInput,
+	): Promise<HighlightWithRelations | undefined> => {
 
-    const collectionName = 'ParsedPapers'
-    const source = loadedSource
-    const query = highlight.node.prompt
-    let ragContext = ''
-    try {
+		const highlightId = uuidv4();
 
-      const results = await ragQuery(collectionName, source, query)
-      const { documents } = results;
+		if (highlight.node?.prompt) {
+			const promptWithContext = `<question>${highlight.node.prompt}</question>`;
+			// Query AI for response
+			append({
+				role: "user",
+				content: promptWithContext,
+				createdAt: new Date(),
+			});
+		}
 
+		// Add node to DB
+		createHighlightMutation.mutate({
+			highlight,
+		});
 
-      if (documents && documents.length > 0) {
-        const relevantChunks = documents.flat().join(' ')
-        ragContext = relevantChunks
-        console.debug('retrieved ragContext: ', ragContext)
-      }
-    } catch (e) {
-      console.debug('Error fetching RAG context. Continuing gracefully without rag context: ', e)
-    }
+		const tempHighlight = {
+			...highlight,
+			id: highlightId,
+			comments: [],
+			node: highlight.node
+				? {
+					...highlight.node,
+					id: uuidv4(), // is this generated properly after it's saved? 
+					highlightId,
+					parentId: null,
+					children: [],
+				}
+				: undefined,
+		};
 
+		setCurrentHighlight(tempHighlight, false);
 
-    const promptWithContext = `<question>${highlight.node.prompt}</question>
-${highlight.content?.text
-        ? `<context>
-${highlight.content.text}
-</context>`
-        : ""
-      }`;
+		return tempHighlight;
+	};
 
-    // Query AI for response
-    append({
-      role: "user",
-      content: promptWithContext,
-      createdAt: new Date(),
-    });
+	const generateFollowUpResponse = (nodeId: string) => {
+		const root = currentHighlightRef.current?.node;
+		if (!root) return;
 
-    // Add node to DB
-    createHighlightMutation.mutate({
-      highlight,
-    });
+		const node = getNodeById(nodeId, root);
+		if (!node || !node.prompt) return;
 
-    const highlightId = uuidv4();
-    const tempHighlight = {
-      ...highlight,
-      id: highlightId,
-      node: {
-        ...highlight.node,
-        id: uuidv4(),
-        highlightId,
-        parentId: null,
-        children: [],
-      },
-    };
+		currentNodeRef.current = node;
 
-    setCurrentHighlight(tempHighlight, false);
+		append({
+			role: "user",
+			content: node.prompt,
+			createdAt: new Date(),
+		});
+	};
 
-    return tempHighlight;
-  };
+	// Update the highlight as the AI response streams in
+	// TODO: Update API so we don't rely on useEffect anymore. Just work off of callbacks once the response is done streaming
+	useEffect(() => {
+		if (isGeneratingFollowUpsRef.current) return;
+		if (messages.length < 2 || !currentHighlightRef.current?.node?.prompt)
+			return;
+		if (messages[messages.length - 1]?.role === "user") return;
 
-  // Update the highlight as the AI response streams in
-  // TODO: Update API so we don't rely on useEffect anymore. Just work off of callbacks once the response is done streaming
-  useEffect(() => {
-    if (isGeneratingFollowUpsRef.current) return;
-    if (messages.length < 2 || !currentHighlightRef.current?.node?.prompt)
-      return;
-    if (messages[messages.length - 1]?.role === "user") return;
+		const question = messages[messages.length - 2]?.content;
+		const response = messages[messages.length - 1]?.content;
 
-    const question = messages[messages.length - 2]?.content;
-    const response = messages[messages.length - 1]?.content;
+		if (!question || !response) return;
 
-    if (!question || !response) return;
+		// Case 1: Stream response for original highlighted question being asked
+		// Case 2: Stream response for follow up node question being selected
+		if (!currentNodeRef.current) {
+			const newHighlight = {
+				...currentHighlightRef.current,
+				node: {
+					...currentHighlightRef.current.node,
+					response,
+				},
+			};
 
-    const newHighlight = {
-      ...currentHighlightRef.current,
-      node: {
-        ...currentHighlightRef.current.node,
-        response,
-      },
-    };
+			setCurrentHighlight(newHighlight, false);
+		} else {
+			currentNodeRef.current.response = response;
+			setCurrentHighlight(currentHighlightRef.current, true);
+		}
+	}, [messages, isGeneratingFollowUpsRef]);
 
-    setCurrentHighlight(newHighlight, false);
-  }, [messages, isGeneratingFollowUpsRef]);
+	const selectHighlight = (highlight: HighlightWithRelations) => {
+		setCurrentHighlight(highlight);
+		if (highlight.node) {
+			currentNodeRef.current = highlight.node;
+		}
+		// Todo: Construct message history
+	};
 
-  const selectHighlight = (highlight: HighlightWithRelations) => {
-    setCurrentHighlight(highlight);
-    // Todo: Construct message history
-  };
+	const clearSelectedHighlight = () => {
+		setCurrentHighlight(null);
+		currentNodeRef.current = null;
+		isGeneratingFollowUpsRef.current = false;
+	};
 
-  const clearSelectedHighlight = () => {
-    setCurrentHighlight(null);
-    setCurrentNode(null, false);
-    isGeneratingFollowUpsRef.current = false;
-  };
+	const value = {
+		currentHighlight: currentHighlightRef.current,
+		setCurrentHighlight,
+		messages,
+		setMessages,
+		createAskHighlight,
+		selectHighlight,
+		clearSelectedHighlight,
+		generateFollowUpResponse,
+		append,
+		...chat,
+	};
 
-  const value = {
-    currentHighlight: currentHighlightRef.current,
-    setCurrentHighlight,
-    messages,
-    setMessages,
-    createAskHighlight,
-    selectHighlight,
-    clearSelectedHighlight,
-    append,
-    ...chat,
-  };
-
-  return (
-    <AskHighlightContext.Provider value={value}>
-      {children}
-    </AskHighlightContext.Provider>
-  );
+	return (
+		<AskHighlightContext.Provider value={value}>
+			{children}
+		</AskHighlightContext.Provider>
+	);
 };

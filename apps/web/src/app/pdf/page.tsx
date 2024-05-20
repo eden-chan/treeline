@@ -1,127 +1,142 @@
 import React from "react";
 
-import dynamic from "next/dynamic";
-import { ObjectId } from "mongodb";
 import { User, clerkClient, currentUser } from "@clerk/nextjs/server";
-import { headers } from "next/headers";
-import { AnnotatedPdf, Highlight } from "@prisma/client";
+import { AnnotatedPdf } from "@prisma/client";
 import { RedirectToSignIn } from "@clerk/nextjs";
+import dynamic from "next/dynamic";
+import { headers } from "next/headers";
+import { ObjectId } from "mongodb";
 
 import { api } from "@src/trpc/server";
 import { AskHighlightProvider } from "@src/context/ask-highlight-context";
-import { PDFHighlightsWithProfile } from "./ui";
-const PDFViewer = dynamic(() => import("@src/components/pdf-viewer"), {
-  ssr: false, // Disable server-side rendering for this component
+import {
+	AnnotatedPdfWithProfile,
+	HighlightWithRelations,
+} from "@src/lib/types";
+
+const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
+	ssr: false, // Disable server-side rendering for this component
 });
 
+// Removes box shadow
+import "./ui/style/pdf_viewer.css";
+
+const S3_BASE_URL = "https://treeline.s3.us-east-2.amazonaws.com";
+
 export default async function Page() {
-  const headersList = headers();
-  const header_url = headersList.get("x-url") || "";
+	const headersList = headers();
+	const header_url = headersList.get("x-url") || "";
 
-  const urlParams = new URLSearchParams(header_url.split("?")[1]);
-  const defaultPdfURL = "https://arxiv.org/pdf/1706.03762.pdf";
-  let pdfUrl: URL;
+	const urlParams = new URLSearchParams(header_url.split("?")[1]);
+	const defaultPdfURL = `${S3_BASE_URL}/1706.03762.pdf`;
+	let arxivPdfUrl: URL;
+	let s3PdfUrl: URL;
 
-  try {
-    pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
-  } catch (error) {
-    console.error(error);
-    return <div>Not a valid URL</div>;
-  }
+	try {
+		// get the uploaded PDF id
+		arxivPdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
+		const key = arxivPdfUrl.href.substring(
+			arxivPdfUrl.href.lastIndexOf("/") + 1,
+		); // Extract the PDF ID from the URL
+		s3PdfUrl = new URL(`${S3_BASE_URL}/${key}`);
+	} catch (error) {
+		console.error(error);
+		return <div>Not a valid URL</div>;
+	}
 
-  const user: User | null = await currentUser();
-  const userEmail: string | undefined = user?.emailAddresses[0]?.emailAddress;
+	const user: User | null = await currentUser();
+	const userEmail: string | undefined = user?.emailAddresses[0]?.emailAddress;
 
-  if (!user || !userEmail) {
-    return <RedirectToSignIn redirectUrl={`/pdf?url=${pdfUrl.href}`} />;
-  }
+	if (!user || !userEmail) {
+		return <RedirectToSignIn redirectUrl={`/pdf?url=${arxivPdfUrl.href}`} />;
+	}
 
-  let newUserData: AnnotatedPdf & { highlights: Highlight[] } = {
-    id: new ObjectId().toString(),
-    highlights: [],
-    source: pdfUrl.href,
-    userId: userEmail,
-  };
+	let newUserData: AnnotatedPdf & { highlights: HighlightWithRelations[] } = {
+		id: new ObjectId().toString(),
+		highlights: [],
+		source: s3PdfUrl.href,
+		userId: userEmail,
+	};
 
-  let { id, highlights, source, userId } = newUserData;
-  try {
-    const data = await api.annotatedPdf.fetchAnnotatedPdf({
-      userId: userEmail,
-      source: pdfUrl.href,
-    });
+	let { id, highlights, source, userId } = newUserData;
+	try {
+		const data = await api.annotatedPdf.fetchAnnotatedPdf({
+			userId: userEmail,
+			source: s3PdfUrl.href,
+		});
 
-    if (data) {
-      id = data.id;
-      highlights = data.highlights;
-      source = data.source;
-      userId = data.userId;
-    } else if (userEmail) {
-      await api.annotatedPdf.upsertAnnotatedPdf({
-        id,
-        highlights,
-        source,
-        userId: userEmail,
-      });
-    }
-  } catch (error) {
-    console.error("Error fetching user highlights:", error);
-  }
+		if (data) {
+			id = data.id;
+			highlights = data.highlights;
+			source = data.source;
+			userId = data.userId;
+		} else if (userEmail) {
+			await api.annotatedPdf.upsertAnnotatedPdf({
+				id,
+				highlights,
+				source,
+				userId: userEmail,
+			});
+		}
+	} catch (error) {
+		console.error("Error fetching user highlights:", error);
+	}
 
-  const users = await clerkClient.users.getUserList();
-  const userEmails = users.map(
-    (user) => user.emailAddresses[0]?.emailAddress ?? "",
-  );
-  const emailToPicture = users.map((user) => {
-    return {
-      email: user!.emailAddresses[0]?.emailAddress ?? "",
-      imageUrl: user!.imageUrl,
-      firstName: user!.firstName,
-      lastName: user!.lastName,
-    };
-  });
+	const users = await clerkClient.users.getUserList();
+	const userEmails = users.map(
+		(user) => user.emailAddresses[0]?.emailAddress ?? "",
+	);
+	const userProfiles = users.map((user) => {
+		return {
+			email: user.emailAddresses[0]?.emailAddress ?? "",
+			imageUrl: user.imageUrl,
+			firstName: user.firstName,
+			lastName: user.lastName,
+		};
+	});
 
-  const allHighlights = await api.annotatedPdf.fetchAllAnnotatedPdfs({
-    source: pdfUrl.href,
-    userList: userEmails,
-  });
+	const annotatedPdfs = await api.annotatedPdf.fetchAllAnnotatedPdfs({
+		source: s3PdfUrl.href,
+		userList: userEmails,
+	});
 
-  const allHighlightsWithProfile = allHighlights
-    ? allHighlights.map((pdfHighlight) => {
-      return {
-        ...pdfHighlight,
-        userProfilePicture: emailToPicture.find(
-          (user) => user.email === pdfHighlight.userId,
-        )?.imageUrl,
-        firstName: emailToPicture.find(
-          (user) => user.email === pdfHighlight.userId,
-        )?.firstName,
-        lastName: emailToPicture.find(
-          (user) => user.email === pdfHighlight.userId,
-        )?.lastName,
-      }
-    })
-    : [];
+	let annotatedPdfsWithProfile: AnnotatedPdfWithProfile[] = [];
+	if (annotatedPdfs) {
+		for (let annotatedPdf of annotatedPdfs) {
+			const userProfile = userProfiles.find(
+				(user) => user.email === annotatedPdf.userId,
+			);
 
-  const parsedPaper = await api.parsedPapers.fetchParsedPdf({
-    source: pdfUrl.href,
-  });
+			if (!userProfile) continue;
 
+			annotatedPdfsWithProfile.push({
+				...annotatedPdf,
+				userProfilePicture: userProfile.imageUrl,
+				firstName: userProfile.firstName || "",
+				lastName: userProfile.lastName || "",
+			});
+		}
+	}
 
-  return (
-    <AskHighlightProvider
-      annotatedPdfId={id}
-      userId={userId}
-      loadedSource={source}
-      parsedPaper={parsedPaper}
-    >
-      <PDFViewer
-        annotatedPdfId={id}
-        loadedSource={source}
-        userId={userId}
-        userHighlights={highlights}
-        allHighlights={allHighlightsWithProfile}
+	const parsedPaper =
+		(await api.parsedPaper.fetchParsedPdf({
+			source: arxivPdfUrl.href,
+		})) ?? null;
 
-      />
-    </AskHighlightProvider>
-  );
+	return (
+		<AskHighlightProvider
+			annotatedPdfId={id}
+			userId={userId}
+			loadedSource={source}
+			parsedPaper={parsedPaper}
+		>
+			<PDFViewer
+				annotatedPdfId={id}
+				loadedSource={source}
+				userId={userId}
+				userHighlights={highlights}
+				annotatedPdfsWithProfile={annotatedPdfsWithProfile}
+			/>
+		</AskHighlightProvider>
+	);
 }

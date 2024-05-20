@@ -6,40 +6,41 @@ import { followAction } from "@src/app/actions";
 import { useState, useTransition } from "react";
 
 export default function FollowButton({
-  user1,
-  user2,
+	loggedInUser,
+	searchedUser,
 }: {
-  user1: User;
-  user2: User;
+	loggedInUser: User;
+	searchedUser: User;
 }) {
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState(null);
 
-  // Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
-  const [isFollowing, setIsFollowing] = useState(
-    user1.follows.includes(user2.email),
-  );
+	const [isPending, startTransition] = useTransition();
+	const [error, setError] = useState(null);
 
-  const handleFollow = async () => {
-    setError(null);
-    try {
-      startTransition(async () => {
-        await followAction(user1, user2);
-      });
-    } catch (error) {
-      setError(error.message);
-    }
 
-    setIsFollowing((isFollowing) => !isFollowing);
-  };
+	// Check if user1 is currently following user2 by looking for user2's email in user1's follows list.
+	const [isFollowing, setIsFollowing] = useState(
+		loggedInUser.follows.includes(searchedUser.email),
+	);
 
-  return (
-    <>
-      <Button onClick={handleFollow} disabled={isPending}>
-        {isFollowing ? "Following" : "Follow"}
-      </Button>
-      {error && <p>{error}</p>}
-    </>
-  );
+	const handleFollow = async () => {
+		setError(null);
+		try {
+			startTransition(async () => {
+				await followAction(loggedInUser, searchedUser);
+			});
+		} catch (error) {
+			// setError(error.message);
+		}
+
+		setIsFollowing((isFollowing) => !isFollowing);
+	};
+
+	return (
+		<>
+			<Button onClick={handleFollow} disabled={isPending}>
+				{isFollowing ? "Following" : "Follow"}
+			</Button>
+			{error && <p>{error}</p>}
+		</>
+	);
 }
-
