@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState, useMemo } from "react";
+import { useCallback, useRef, useState, useMemo, useEffect } from "react";
 import {
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,

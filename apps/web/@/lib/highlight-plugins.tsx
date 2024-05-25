@@ -55,7 +55,7 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 		if (e.key === "Enter") {
 			if (props.inputRef.current && props.inputRef.current.value !== "") {
 				const highlight = await askQuestion(
-					`${props.inputRef.current.value} Here is some more context: ` +
+					`${props.inputRef.current.value} Here is the context: ` +
 						props.selectedText,
 				);
 
@@ -114,13 +114,20 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 			>
 				Save
 			</button>
-			<div className="group">
+			<div
+				className="group"
+				onMouseEnter={() => props.inputRef.current?.focus()}
+				onMouseLeave={() => props.inputRef.current?.blur()}
+			>
 				<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
 					Ask
 				</button>
 				<div className="absolute w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
 					<Textarea
 						placeholder="Ask a question or @ someone"
+						onClick={(e) => {
+							e.stopPropagation();
+						}}
 						onKeyDown={submitQuestion}
 						ref={props.inputRef}
 					/>
