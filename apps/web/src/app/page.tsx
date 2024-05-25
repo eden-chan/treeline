@@ -42,10 +42,10 @@ export default async function Page() {
 
 	return (
 		<main className="text-black flex flex-col gap-10">
-			<section className="flex h-screen overflow-x-hidden flex-col">
+			<div className="flex h-screen overflow-x-hidden flex-col">
 				<Navbar users={users} loggedInUser={user} />
 				<SearchCta />
-			</section>
+			</div>
 			{/* <BentoGridThirdDemo /> */}
 			<Timeline articles={timeline} parsedPapers={parsedPapers} />
 		</main>

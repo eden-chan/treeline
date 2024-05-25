@@ -5,7 +5,7 @@ const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762.pdf";
 export default function SearchCta() {
 	// TODO: add form validation and error
 	return (
-		<section className="flex grow flex-col items-center justify-center bg-gradient-to-br from-[#6366F1] to-[#8B5CF6]">
+		<section className="flex grow flex-col items-center justify-center bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] p-4">
 			<div className="mx-auto w-full max-w-md space-y-6">
 				<div className="text-center">
 					<h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">

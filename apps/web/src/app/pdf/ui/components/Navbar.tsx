@@ -6,6 +6,7 @@
 
 import { SignUpButton, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
+import Image from "next/image";
 import SearchWithAutocomplete from "./SearchWithAutocomplete";
 import type { User } from "@prisma/client";
 import { ImportButton } from "@src/components/import-button";
@@ -27,16 +28,24 @@ export default function Navbar({
 	return (
 		<header className="flex p-4 justify-between items-center sticky top-0 bg-white z-50">
 			<Link href="/">
-				<h1 className="text-3xl font-bold self-center">Treeline</h1>
+				<div className="flex items-center gap-2">
+					<Image
+						src="/treeline.png"
+						alt="Logo of treeline"
+						width={80}
+						height={40}
+					/>
+					<h1 className="text-3xl font-bold self-center">Treeline</h1>
+				</div>
 			</Link>
 			<div className="flex space-x-4 items-center">
 				{loggedInUser ? (
 					<>
-						<div className="w-[200px] self-center">
+						<div className="hidden md:block w-[200px] self-center">
 							<SearchWithAutocomplete items={items} />
 						</div>
 						<Link
-							className="text-gray-600 hover:text-gray-900 self-center"
+							className="text-gray-600 hover:text-gray-900 self-center hidden md:block"
 							href={`/user/${loggedInUser?.handle}`}
 						>
 							My bookshelf
