@@ -101,7 +101,7 @@ const Timeline = memo(
 				defaultValue="explore"
 				className="lg:max-w-7xl w-full px-4 lg:px-8 mx-auto mb-4 lg:mb-10"
 			>
-				<TabsList className="w-full flex items-center justify-between bg-white">
+				<TabsList className="w-full flex items-center justify-between">
 					<div className="flex items-center space-x-4">
 						<TabsTrigger value="explore"> Explore </TabsTrigger>
 						{/* <TabsTrigger value="favorites"> Favorites </TabsTrigger> */}

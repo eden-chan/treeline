@@ -41,11 +41,11 @@ export default async function Page() {
 	const parsedPapers = (await api.parsedPaper.fetchAllParsedPapers()) ?? [];
 
 	return (
-		<main className="text-black flex flex-col gap-10">
-			<section className="flex h-screen overflow-x-hidden flex-col">
+		<main className="text-black flex flex-col gap-10 bg-slate-100">
+			<div className="flex h-screen overflow-x-hidden flex-col">
 				<Navbar users={users} loggedInUser={user} />
 				<SearchCta />
-			</section>
+			</div>
 			{/* <BentoGridThirdDemo /> */}
 			<Timeline articles={timeline} parsedPapers={parsedPapers} />
 		</main>
