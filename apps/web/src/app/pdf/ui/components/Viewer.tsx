@@ -3,14 +3,12 @@ import { Worker } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 
 import ReadingViewer from "@/components/pdf/ReadingViewer";
-import { useAskHighlight } from "@src/context/ask-highlight-context";
-import { Highlight } from "@prisma/client";
 import {
 	AnnotatedPdfWithProfile,
 	HighlightWithRelations,
 } from "@src/lib/types";
 
-export default function PDFViewer2({
+export default function PDFViewer({
 	annotatedPdfId,
 	loadedSource,
 	userId,

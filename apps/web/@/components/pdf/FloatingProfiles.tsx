@@ -4,8 +4,12 @@
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
 
-import { AnnotatedPdfWithRelations } from "@src/lib/types";
+import {
+	AnnotatedPdfWithRelations,
+	HighlightWithRelations,
+} from "@src/lib/types";
 import { AnimatedTooltip } from "../../../src/app/pdf/ui/components/AnimatedTooltip";
+import { Dispatch, SetStateAction } from "react";
 
 interface AnnotatedPdfWithProfile extends AnnotatedPdfWithRelations {
 	userProfilePicture: string;
@@ -16,7 +20,7 @@ export default function FloatingProfiles({
 	setDisplayHighlights,
 	allHighlightsWithProfile,
 }: {
-	setDisplayHighlights: any;
+	setDisplayHighlights: Dispatch<SetStateAction<HighlightWithRelations[]>>;
 	allHighlightsWithProfile: AnnotatedPdfWithProfile[];
 }) {
 	const items = allHighlightsWithProfile.map((profile, index) => ({
