@@ -104,7 +104,7 @@ const Timeline = memo(
 				<TabsList className="w-full flex items-center justify-between bg-white">
 					<div className="flex items-center space-x-4">
 						<TabsTrigger value="explore"> Explore </TabsTrigger>
-						<TabsTrigger value="favorites"> Favorites </TabsTrigger>
+						{/* <TabsTrigger value="favorites"> Favorites </TabsTrigger> */}
 						{/* <TabsTrigger value="recentlyViewed"> Recently viewed </TabsTrigger> */}
 						{/**/}
 						{/* <div className="flex items-center space-x-2"> */}
@@ -156,15 +156,6 @@ const Timeline = memo(
 				{/* 		)} */}
 				{/* 	</Suspense> */}
 				{/* </TabsContent> */}
-				<TabsContent value="favorites">
-					<Suspense fallback={<h1>🌀 Loading...</h1>}>
-						{view === "galleryView" ? (
-							<ExploreGalleryView articles={[]} />
-						) : (
-							<ExploreListView articles={[]} />
-						)}
-					</Suspense>
-				</TabsContent>
 				<TabsContent value="explore">
 					<Suspense fallback={<h1>🌀 Loading...</h1>}>
 						{view === "galleryView" ? (
@@ -174,6 +165,15 @@ const Timeline = memo(
 						)}
 					</Suspense>
 				</TabsContent>
+				{/* <TabsContent value="favorites">
+					<Suspense fallback={<h1>🌀 Loading...</h1>}>
+						{view === "galleryView" ? (
+							<ExploreGalleryView articles={parsedPapers} />
+						) : (
+							<ExploreListView articles={parsedPapers} />
+						)}
+					</Suspense>
+				</TabsContent> */}
 			</Tabs>
 		);
 	},
