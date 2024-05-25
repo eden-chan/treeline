@@ -5,8 +5,7 @@ import Timeline from "./pdf/ui/components/Timeline";
 import { currentUser } from "@clerk/nextjs";
 import Navbar from "./pdf/ui/components/Navbar";
 import { AnnotatedPdf } from "@prisma/client";
-import { clerkClient } from '@clerk/nextjs/server';
-
+import { clerkClient } from "@clerk/nextjs/server";
 
 export default async function Page() {
 	const clerkUser = await currentUser();
@@ -24,7 +23,8 @@ export default async function Page() {
 		}
 	}
 
-	const users = await api.user.fetchUsersByEmails({ userEmailList: userEmails }) ?? [];
+	const users =
+		(await api.user.fetchUsersByEmails({ userEmailList: userEmails })) ?? [];
 
 	// Populate timeline with highlights of user and follows.
 	let timeline: AnnotatedPdf[] = [];
