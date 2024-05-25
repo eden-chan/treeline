@@ -49,10 +49,20 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 		return await props.createAskHighlight(highlightDraft);
 	};
 
-	const submitQuestion = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+	const submitQuestion = async (
+		e: React.KeyboardEvent<HTMLTextAreaElement>,
+	) => {
 		if (e.key === "Enter") {
 			if (props.inputRef.current && props.inputRef.current.value !== "") {
-				askQuestion(props.inputRef.current.value);
+				const highlight = await askQuestion(
+					`${props.inputRef.current.value} Here is some more context: ` +
+						props.selectedText,
+				);
+
+				if (highlight) {
+					props.setCurrentHighlight(highlight, true);
+					props.openForest(highlight);
+				}
 			}
 		}
 	};
