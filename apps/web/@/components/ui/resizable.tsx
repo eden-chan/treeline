@@ -23,9 +23,11 @@ const ResizablePanel = ResizablePrimitive.Panel;
 const ResizableHandle = ({
 	withHandle,
 	className,
+	handleClassName,
 }: {
 	withHandle?: boolean;
 	className?: string;
+	handleClassName?: string;
 }) => (
 	<ResizablePrimitive.PanelResizeHandle
 		className={cn(
@@ -34,12 +36,11 @@ const ResizableHandle = ({
 		)}
 	>
 		{withHandle && (
-			<div className="z-10 flex h-4 w-3 items-center justify-center rounded-sm border bg-border">
-				<GripVertical className="h-2.5 w-2.5" />
+			<div className={cn("z-10 relative flex h-4 w-4 lg:h-6 lg:w-6 items-center justify-center rounded-sm border bg-border", handleClassName)}>
+				<GripVertical className="h-4 w-4 lg:h-6 lg:w-6" />
 			</div>
 		)}
 	</ResizablePrimitive.PanelResizeHandle>
 );
 
 export { ResizablePanelGroup, ResizablePanel, ResizableHandle };
-

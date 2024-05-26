@@ -292,6 +292,7 @@ const ReadingViewer: React.FC<Props> = ({
 					className="relative"
 					defaultSize={80}
 					style={{ height: "100vh", overflow: "auto" }}
+					collapsible
 				>
 					<Viewer
 						fileUrl={loadedSource}
@@ -304,8 +305,8 @@ const ReadingViewer: React.FC<Props> = ({
 					{/* removes the trailing bottom whitespace */}
 					<div />
 				</ResizablePanel>
-				<ResizableHandle withHandle />
-				<ResizablePanel style={{ height: "100vh", overflow: "auto" }}>
+				<ResizableHandle withHandle handleClassName="bg-[#B2B2B2]" />
+				<ResizablePanel style={{ height: "100vh", overflow: "auto" }} collapsible>
 					{currentHighlight?.node ? (
 						<ReactFlowProvider>
 							<Forest
