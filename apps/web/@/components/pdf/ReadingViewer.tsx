@@ -306,7 +306,10 @@ const ReadingViewer: React.FC<Props> = ({
 					<div />
 				</ResizablePanel>
 				<ResizableHandle withHandle handleClassName="bg-[#B2B2B2]" />
-				<ResizablePanel style={{ height: "100vh", overflow: "auto" }} collapsible>
+				<ResizablePanel
+					style={{ height: "100vh", overflow: "auto" }}
+					collapsible
+				>
 					{currentHighlight?.node ? (
 						<ReactFlowProvider>
 							<Forest

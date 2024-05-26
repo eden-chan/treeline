@@ -47,10 +47,10 @@ export default function Highlight({ highlight, deleteHighlight, onHighlightClick
 			<div>
 				{highlight.node?.prompt && (
 					<div key={`${highlight.id}-prompt-${highlight.node.prompt}`} className="pr-12">
-						{highlight.node.prompt}
+						<p className="italic underline line-clamp-2">{highlight.node.prompt}</p>
 					</div>
 				)}
-				{highlight?.quote && <div>{highlight.quote}</div>}
+				{highlight?.quote && <p className="mt-1 line-clamp-2 font-bold">{highlight.quote}</p>}
 				{highlight.node?.response ? (
 					<blockquote className="mt-2">{`${highlight.node.response.slice(0, 90).trim()}…`}</blockquote>
 				) : null}
