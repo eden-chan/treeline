@@ -67,8 +67,6 @@ def extract_paper_metadata(pdf_url:str) -> PaperMetadata:
     paper = next(search.results())
     
      # Extract the title and authors from the arXiv metadata
-    title = paper.title
-    authors = ' '.join([author.name for author in paper.authors])
     paper_metadata = PaperMetadata(
         title=paper.title, 
         summary=paper.summary, 

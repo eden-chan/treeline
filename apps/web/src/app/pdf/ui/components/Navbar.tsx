@@ -9,7 +9,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SearchWithAutocomplete from "./SearchWithAutocomplete";
 import type { User } from "@prisma/client";
-import { ImportButton } from "@src/components/import-button";
+
 import { UserSearchResult } from "@src/lib/types";
 
 export default function Navbar({
@@ -51,7 +51,6 @@ export default function Navbar({
 							My bookshelf
 						</Link>
 						<UserButton />
-						<ImportButton />
 					</>
 				) : (
 					<SignUpButton />

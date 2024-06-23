@@ -5,6 +5,7 @@ import { highlightRouter } from "@src/server/api/routers/highlight";
 import { userRouter } from "@src/server/api/routers/user";
 import { createCallerFactory, createTRPCRouter } from "@src/server/api/trpc";
 import { curriculumNodeRouter } from "@src/server/api/routers/curriculum-node";
+import { sourceRouter } from './routers/source';
 
 /**
  * This is the primary router for your server.
@@ -18,6 +19,7 @@ export const appRouter = createTRPCRouter({
 	comment: commentRouter,
 	parsedPaper: parsedPaperRouter,
 	user: userRouter,
+	source: sourceRouter,
 });
 
 // export type definition of API

@@ -38,7 +38,7 @@ export default async function Page() {
 		timeline = (await api.annotatedPdf.fetchDefaultAnnotatedPdfs()) ?? [];
 	}
 	// Populate parsed papers
-	const parsedPapers = (await api.parsedPaper.fetchAllParsedPapers()) ?? [];
+	const sources = (await api.source.fetchAll()) ?? [];
 
 	return (
 		<main className="text-black flex flex-col gap-10 bg-slate-100">
@@ -47,7 +47,7 @@ export default async function Page() {
 				<SearchCta />
 			</div>
 			{/* <BentoGridThirdDemo /> */}
-			<Timeline articles={timeline} parsedPapers={parsedPapers} />
+			<Timeline sources={sources} />
 		</main>
 	);
 }

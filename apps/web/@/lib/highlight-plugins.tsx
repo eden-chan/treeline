@@ -31,6 +31,8 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 			quote: props.selectedText,
 		};
 
+		console.log({ highlightDraft });
+
 		props.createAskHighlight(highlightDraft);
 		props.cancel();
 	};
@@ -56,7 +58,7 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 			if (props.inputRef.current && props.inputRef.current.value !== "") {
 				const highlight = await askQuestion(
 					`${props.inputRef.current.value} Here is the context: ` +
-						props.selectedText,
+					props.selectedText,
 				);
 
 				if (highlight) {
@@ -72,7 +74,7 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 		e.stopPropagation();
 		const highlight = await askQuestion(
 			"Concisely define the following term and why it is important." +
-				props.selectedText,
+			props.selectedText,
 		);
 
 		if (highlight) {
@@ -188,7 +190,7 @@ export const renderHighlights = (props: MyRenderHighlightsProps) => {
 					const middleHeight =
 						topmostArea && bottommostArea
 							? (topmostArea.top + bottommostArea.top + bottommostArea.height) /
-								2
+							2
 							: undefined;
 
 					return (

@@ -90,6 +90,12 @@ model ParsedPaper {
   updated          DateTime              @db.Date
 }
 
+model Source {
+  id               String               @id @default(auto()) @map("_id") @db.ObjectId
+  uploadedAt        DateTime            @db.Date
+  source           String               @unique
+}
+
 type HighlightAreas {
   height    Float
   left      Float

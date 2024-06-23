@@ -10,30 +10,30 @@ import { AnnotatedPdfWithRelations } from "@src/lib/types";
 import { TabsTrigger, TabsList, Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { AlignJustify, LayoutGrid } from "lucide-react";
-import { AnnotatedPdf, ParsedPaper } from "@prisma/client";
+import { AnnotatedPdf, ParsedPaper, Source } from "@prisma/client";
 
 export type AnnotatedPdfWithRelationsWithTimestamp =
 	AnnotatedPdfWithRelations & {
 		timeAgoCalculation: string;
 	};
 
-const ExploreGalleryView = ({ articles }: { articles: ParsedPaper[] }) => {
+const ExploreGalleryView = ({ sources }: { sources: Source[] }) => {
 	const router = useRouter();
 
 	return (
 		<div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-			{articles.length > 0 ? (
-				articles.map((article, index) => {
+			{sources.length > 0 ? (
+				sources.map((source, index) => {
 					return (
 						<PaperCard
 							key={index}
-							description={article.abstract}
-							timeAgoCalculation={calculateTimeAgo(article.updated)} // set time
-							title={article.title}
+							description={source.source}
+							timeAgoCalculation={calculateTimeAgo(source.uploadedAt)} // set time
+							title={source.source}
 							highlightCount={1}
-							category={article.primary_category}
+							category={source.source}
 							onClick={() => {
-								const pdfUrl = article.source;
+								const pdfUrl = source.source;
 								router.push(`/pdf?url=${pdfUrl}`);
 							}}
 						/>
@@ -46,26 +46,26 @@ const ExploreGalleryView = ({ articles }: { articles: ParsedPaper[] }) => {
 	);
 };
 
-const ExploreListView = ({ articles }: { articles: ParsedPaper[] }) => {
+const ExploreListView = ({ sources }: { sources: Source[] }) => {
 	const router = useRouter();
 
 	return (
 		<div>
-			{articles.map((article, index) => {
+			{sources.map((source, index) => {
 				return (
 					<article
 						key={index}
 						className={`mb-6 hover:cursor-pointer`}
 						onClick={() => {
-							const pdfUrl = article.source;
+							const pdfUrl = source.source;
 							router.push(`/pdf?url=${pdfUrl}`);
 						}}
 					>
-						<h2 className="text-xl font-semibold mb-1">{article.title}</h2>
-						<p className="text-gray-600 mb-2">{article.primary_category}</p>
-						<p className="text-gray-500">{article.abstract}</p>
-						<p className="text-gray-400 text-sm mt-2">
-							{calculateTimeAgo(article.updated)}
+						<h2 className="text-xl font-semibold mb-1">{source.source}</h2>
+						<p className="text-gray-600 mb-2">{source.source}</p>
+						<p className="text-gray-500">{source.source}</p>
+						<p className="text-gray-4000 text-sm mt-2">
+							{calculateTimeAgo(source.uploadedAt)}
 						</p>
 					</article>
 				);
@@ -76,11 +76,9 @@ const ExploreListView = ({ articles }: { articles: ParsedPaper[] }) => {
 
 const Timeline = memo(
 	({
-		articles,
-		parsedPapers,
+		sources,
 	}: {
-		articles: AnnotatedPdf[];
-		parsedPapers: ParsedPaper[];
+		sources: Source[];
 	}) => {
 		// const memoizedArticles: AnnotatedPdfWithRelationsWithTimestamp[] = useMemo(
 		// 	() =>
@@ -159,9 +157,9 @@ const Timeline = memo(
 				<TabsContent value="explore">
 					<Suspense fallback={<h1>🌀 Loading...</h1>}>
 						{view === "galleryView" ? (
-							<ExploreGalleryView articles={parsedPapers} />
+							<ExploreGalleryView sources={sources} />
 						) : (
-							<ExploreListView articles={parsedPapers} />
+							<ExploreListView sources={sources} />
 						)}
 					</Suspense>
 				</TabsContent>

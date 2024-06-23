@@ -110,23 +110,12 @@ export const preprocessPaperAction = async (formData: FormData) => {
 		pdfUrl += ".pdf";
 	}
 
-	// upload to s3 if it doesn't exist already
-	const { didFileExist } = await uploadToS3(pdfUrl);
-
-	const doesPaperExist = await api.parsedPaper.fetchParsedPdf({
+	await api.source.create({
 		source: pdfUrl,
 	});
 
-	if (!doesPaperExist) {
-		api.parsedPaper.startParsingPDF({
-			source: pdfUrl,
-		});
-		redirect(`/pdf?url=${pdfUrl}`);
-	}
-
-	if (didFileExist) {
-		redirect(`/pdf?url=${pdfUrl}`);
-	}
+	redirect(`/pdf?url=${pdfUrl}`);
+	
 };
 // ESM
 const client = new ChromaClient({ path: process.env.CHROMA_URL });
