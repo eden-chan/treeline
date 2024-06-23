@@ -203,17 +203,17 @@ export const PastNote = ({
 	const parentRef = useRef<HTMLDivElement>(null);
 	return (
 		<span
-			className="absolute text-xl w-[20px] group z-20"
+			className="absolute text-xs w-[20px] group z-20 "
 			style={{
-				left: `${rightmostArea.left + rightmostArea.width}%`,
+				left: `${90}%`,
 				top: `${middleHeight ?? rightmostArea.top}%`,
 				transform: "translate(8px, -50%)",
 			}}
 		>
-			<div ref={parentRef} className="relative group-hover:w-[200px] bg-white">
+			<div ref={parentRef} className="relative group-hover:w-[200px]">
 				<span className="flex items-center">
-					<span className="select-none font-bold text-blue-500 inline">¶</span>
-					<div className="invisible group-hover:visible flex items-center">
+					<span className="select-none font-bold text-blue-500 inline hover:bg-blue-500 rounded-full hover:bg-opacity-20 transition duration-300 ease-in-out">⁂</span>
+					<div className="invisible group-hover:visible flex items-center bg-white">
 						<button
 							className="text-blue-500 hover:text-blue-700 p-0.5 rounded select-none ml-2"
 							onClick={handleTrash}

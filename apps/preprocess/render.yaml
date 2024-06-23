@@ -1,9 +1,0 @@
-services:
-  # A Docker web service
-  - type: web
-    name: myspace-preprocessor
-    runtime: python
-    plan: free
-    autoDeploy: false
-    buildCommand: poetry install && pip install -r linux-requirements.txt
-    startCommand: uvicorn pdf_parser_server:app --host 0.0.0.0 --port $PORT

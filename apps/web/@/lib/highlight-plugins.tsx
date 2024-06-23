@@ -30,9 +30,6 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 			highlightAreas: props.highlightAreas,
 			quote: props.selectedText,
 		};
-
-		console.log({ highlightDraft });
-
 		props.createAskHighlight(highlightDraft);
 		props.cancel();
 	};

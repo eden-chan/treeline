@@ -321,7 +321,7 @@ const ReadingViewer: React.FC<Props> = ({
 							/>
 						</ReactFlowProvider>
 					) : (
-						<div style={{ height: "100%", overflow: "auto" }}>
+						<div className="h-full overflow-auto">
 							<Sidebar
 								highlights={highlights ?? []}
 								deleteHighlight={deleteHighlight}
