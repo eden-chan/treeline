@@ -50,10 +50,10 @@ export default function Navbar({
 						>
 							My bookshelf
 						</Link>
-						<UserButton />
+						<UserButton afterSignOutUrl='/' />
 					</>
 				) : (
-					<SignUpButton />
+					<SignUpButton afterSignUpUrl='/' />
 				)}
 			</div>
 		</header>
