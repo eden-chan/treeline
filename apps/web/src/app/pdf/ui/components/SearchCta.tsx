@@ -1,6 +1,6 @@
 import { preprocessPaperAction } from "@src/app/actions";
 
-const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762.pdf";
+const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762";
 
 export default function SearchCta() {
 	// TODO: add form validation and error

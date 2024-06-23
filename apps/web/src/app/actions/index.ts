@@ -105,15 +105,9 @@ export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
 export const preprocessPaperAction = async (formData: FormData) => {
 	let pdfUrl = formData.get("research-topic") as string;
 
-	// Add .pdf extension if the URL does not end with .pdf
-	if (!pdfUrl.endsWith(".pdf")) {
-		pdfUrl += ".pdf";
-	}
-
 	await api.source.create({
 		source: pdfUrl,
 	});
-	// window.location.href = `/pdf?url=${pdfUrl}`;
 
 	redirect(`/pdf?url=${pdfUrl}`);
 	
