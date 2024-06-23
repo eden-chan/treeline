@@ -6,15 +6,14 @@
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import Link from "next/link";
 import Timeline from "./Timeline";
-import { ParsedPaper, User } from "@prisma/client";
+import { Source, User } from "@prisma/client";
 import FollowButton from "./FollowButton";
 
 import { useMemo } from "react";
-import { calculateTimeAgo } from "@src/lib/utils";
 import LearningActivityCalendar from "@src/components/activity-calendar";
 
 import { AnnotatedPdfWithRelations } from '@src/lib/types';
-import { BentoGridThirdDemo } from '@src/components/paper-card';
+
 
 export default async function Profile({
   users,
@@ -22,14 +21,14 @@ export default async function Profile({
   searchedUser,
   loggedInUser,
   searchedUserImageUrl,
-  parsedPapers,
+  sources,
 }: {
   users: User[];
   timeline: AnnotatedPdfWithRelations[];
   searchedUser: User;
   loggedInUser: User;
   searchedUserImageUrl: string;
-  parsedPapers: ParsedPaper[]
+  sources: Source[];
 }) {
   const userHighlights = useMemo(
     () =>
@@ -70,7 +69,7 @@ export default async function Profile({
         {RenderUserProfileSection()}
         <main className="w-3/5 p-6">
           <h2 className="text-lg font-semibold mb-4">Recent</h2>
-          <Timeline articles={timeline} parsedPapers={parsedPapers} />
+          <Timeline sources={sources} />
         </main>
         <aside className="w-1/5 p-6">
           <div className="mb-6">

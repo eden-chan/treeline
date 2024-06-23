@@ -58,7 +58,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     return null;
   }
 
-  const parsedPapers = (await api.parsedPaper.fetchAllParsedPapers()) ?? [];
+  const sources = (await api.source.fetchAll()) ?? [];
 
   return (
     <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">
@@ -69,7 +69,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         searchedUser={searchedUser}
         searchedUserImageUrl={searchedUserClerk.imageUrl}
         loggedInUser={loggedInUser}
-        parsedPapers={parsedPapers}
+        sources={sources}
       />
     </main>
   );
