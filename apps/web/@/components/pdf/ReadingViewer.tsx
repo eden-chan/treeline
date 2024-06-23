@@ -38,10 +38,12 @@ type Props = {
 	userId: string;
 	userHighlights: HighlightWithRelations[];
 	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
+	pdfBytes: number[];
 };
 
 const ReadingViewer: React.FC<Props> = ({
 	loadedSource,
+	pdfBytes,
 	userHighlights,
 	userId,
 	annotatedPdfId,
@@ -278,7 +280,26 @@ const ReadingViewer: React.FC<Props> = ({
 		}
 		selectHighlight(highlight);
 	};
+	// useEffect to load pdfBytes from loadedDataSource
+	// useEffect(() => {
+	// 	const fetchPDFBytes = async () => {
+	// 		try {
+	// 			const response = await fetch(`/api/pdf?url=${loadedSource}`);
+	// 			const { filename, data } = await response.json()
+	// 			console.log(filename, data)
+	// 			setPdfBytes(new Uint8Array(data));
 
+	// 		} catch (error) {
+	// 			console.error('Failed to load PDF:', error);
+	// 		}
+	// 	};
+
+	// 	fetchPDFBytes();
+	// }, [loadedSource]);
+	//  memoize the pdf bytes 
+	const pdfBytesMemoized = useMemo(() => {
+		return new Uint8Array(pdfBytes);
+	}, [pdfBytes]);
 	return (
 		<div>
 			<FloatingProfiles
@@ -294,15 +315,18 @@ const ReadingViewer: React.FC<Props> = ({
 					style={{ height: "100vh", overflow: "auto" }}
 					collapsible
 				>
+
 					<Viewer
-						fileUrl={loadedSource}
+						// for cors protected resource (arxiv) load in server side by bytes
+						// otherwise load in client side by url
+						fileUrl={pdfBytesMemoized.length > 0 ? pdfBytesMemoized : loadedSource}
 						plugins={[
 							highlightPluginInstance,
 							readingIndicatorPluginInstance,
 							defaultLayoutPluginInstance,
 						]}
 					/>
-					{/* removes the trailing bottom whitespace */}
+
 					<div />
 				</ResizablePanel>
 				<ResizableHandle withHandle handleClassName="bg-[#B2B2B2]" />

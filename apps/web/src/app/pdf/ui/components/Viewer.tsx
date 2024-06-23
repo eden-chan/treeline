@@ -14,16 +14,20 @@ export default function PDFViewer({
 	userId,
 	userHighlights,
 	annotatedPdfsWithProfile,
+	pdfBytes
 }: {
 	annotatedPdfId: string;
 	loadedSource: string;
 	userId: string;
 	userHighlights: HighlightWithRelations[];
 	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
+	pdfBytes: number[];
 }) {
+
 	return (
 		<Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
 			<ReadingViewer
+				pdfBytes={pdfBytes}
 				annotatedPdfId={annotatedPdfId}
 				loadedSource={loadedSource}
 				userId={userId}

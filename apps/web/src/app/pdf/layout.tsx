@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "Social Interactive PDF Annotator",
+  title: "Treeline",
 };
 
 export default function RootLayout({

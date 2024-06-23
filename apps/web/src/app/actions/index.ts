@@ -113,6 +113,7 @@ export const preprocessPaperAction = async (formData: FormData) => {
 	await api.source.create({
 		source: pdfUrl,
 	});
+	// window.location.href = `/pdf?url=${pdfUrl}`;
 
 	redirect(`/pdf?url=${pdfUrl}`);
 	

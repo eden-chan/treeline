@@ -21,7 +21,7 @@ const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
 // Removes box shadow
 import "./ui/style/pdf_viewer.css";
 
-
+const CORS_PROTECTED_BASE_URL = ["https://arxiv.org/pdf/"]
 
 export default async function Page() {
 	const headersList = headers();
@@ -30,15 +30,30 @@ export default async function Page() {
 	const urlParams = new URLSearchParams(header_url.split("?")[1]);
 	const defaultPdfURL = 'https://arxiv.org/pdf/1706.03762'
 	let pdfUrl: URL;
-	// let pdfUrl: URL;
+	let pdfBytes: number[] = [];
 
 	try {
 		// get the uploaded PDF id
 		pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
+		await api.source.create({
+			source: pdfUrl.href,
+		});
+
+		// only fetch pdf bytes serverside if it is cors-protected like arxiv 
+		// otherwise load in clientside
+		if (CORS_PROTECTED_BASE_URL.some(url => pdfUrl.href.startsWith(url))) {
+			const response = await fetch(pdfUrl.href);
+			const pdfBytes_ = await response.arrayBuffer();
+			pdfBytes = Array.from(new Uint8Array(pdfBytes_));
+		}
+
 	} catch (error) {
 		console.error(error);
 		return <div>Not a valid URL</div>;
 	}
+
+	// Make a fetch to the /api/pdf route to get the PDF data
+
 
 	const user: User | null = await currentUser();
 	const userEmail: string | undefined = user?.emailAddresses[0]?.emailAddress;
@@ -132,6 +147,7 @@ export default async function Page() {
 				userId={userId}
 				userHighlights={highlights}
 				annotatedPdfsWithProfile={annotatedPdfsWithProfile}
+				pdfBytes={pdfBytes}
 			/>
 		</AskHighlightProvider>
 	);

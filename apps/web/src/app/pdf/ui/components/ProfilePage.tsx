@@ -77,7 +77,7 @@ export default async function Profile({
               {friendsSection.title}
             </h2>
             <ul className="space-y-2">
-              {friendsSection.friends.map(({ clerk_id, handle, first_name, recentPaper }) => (
+              {friendsSection.friends.map(({ clerk_id, handle, first_name }) => (
                 <li key={clerk_id}>
                   <Link className="block" href={`/user/${handle}`}>
                     <span className="font-medium">{first_name}</span>
