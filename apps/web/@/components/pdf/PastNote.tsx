@@ -224,7 +224,6 @@ export const PastNote = ({
 					</div>
 				</span>
 				<div className="invisible group-hover:visible group-hover:z-30 absolute w-full bg-white z-50">
-
 					<div>
 						<Textarea
 							ref={inputRef}
