@@ -29,7 +29,7 @@ type Props = {
 	}) => void;
 	deleteHighlight: (highlightId: string) => void;
 	userId: string;
-	userProfilesMap: Map<string, UserProfile>;
+	userProfiles: UserProfile[];
 };
 
 export const PastNote = ({
@@ -38,7 +38,7 @@ export const PastNote = ({
 	middleHeight,
 	editHighlight,
 	deleteHighlight,
-	userId, userProfilesMap
+	userId, userProfiles
 
 }: Props) => {
 	if (!rightmostArea) return null;
@@ -111,7 +111,7 @@ export const PastNote = ({
 	const [isReplyDrafted, setIsReplyDrafted] = useState(false);
 	const isFirstCommentEditable = highlight.comments.length === 0
 
-	const userProfile = userProfilesMap.get(highlight?.comments?.[0]?.userId ?? '')
+	const userProfile = userProfiles.find(user => user.email === highlight?.comments?.[0]?.userId ?? '')
 
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [activeOption, setActiveOption] = useState('');
@@ -187,7 +187,7 @@ export const PastNote = ({
 
 	const handleOptionClick = (optionId: string) => {
 		console.log(optionId)
-		const selectedUserProfile = userProfilesMap.get(optionId);
+		const selectedUserProfile = userProfiles.find(user => user.email === optionId);
 		if (selectedUserProfile && inputRef.current) {
 			const currentValue = inputRef.current.value;
 			const atIndex = currentValue.lastIndexOf('@', inputRef.current.selectionStart - 1);
@@ -249,9 +249,9 @@ export const PastNote = ({
 								aria-label="Suggestions"
 								className="absolute bg-white border border-gray-300 rounded-md py-0.5 w-[200px]"
 							>
-								{Array.from(userProfilesMap.entries()).map(([userId, userProfile], index) => (
+								{userProfiles.map((userProfile, index) => (
 									<li
-										key={userId}
+										key={userProfile.email}
 										id={userId}
 										role="option"
 										className={`px-2 py-1 h-[20px] text-xs cursor-pointer ${activeOption === `suggestion${index + 1}` ? 'bg-gray-100' : ''}`}
@@ -266,7 +266,7 @@ export const PastNote = ({
 
 					<div className="pl-5">
 						{highlight.comments.slice(1).map((comment, index) => {
-							const userProfile = userProfilesMap.get(comment.userId)
+							const userProfile = userProfiles.find(user => user.email === comment.userId)
 							const timeAgo = calculateTimeAgo(comment.timestamp)
 							return (
 								<HighlightCommentTextarea

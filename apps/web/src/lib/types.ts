@@ -37,5 +37,6 @@ export type UserSearchResult = {
 export type UserProfile = {
 	firstName: string;
 	lastName: string;
-	profilePicture: string;
+	imageUrl: string;
+	email: string
 };

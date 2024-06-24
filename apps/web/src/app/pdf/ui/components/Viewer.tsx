@@ -6,7 +6,18 @@ import ReadingViewer from "@/components/pdf/ReadingViewer";
 import {
 	AnnotatedPdfWithProfile,
 	HighlightWithRelations,
+	UserProfile,
 } from "@src/lib/types";
+
+type Props = {
+	annotatedPdfId: string;
+	loadedSource: string;
+	userId: string;
+	userHighlights: HighlightWithRelations[];
+	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
+	pdfBytes: number[];
+	userProfiles: UserProfile[];
+}
 
 export default function PDFViewer({
 	annotatedPdfId,
@@ -14,15 +25,9 @@ export default function PDFViewer({
 	userId,
 	userHighlights,
 	annotatedPdfsWithProfile,
-	pdfBytes
-}: {
-	annotatedPdfId: string;
-	loadedSource: string;
-	userId: string;
-	userHighlights: HighlightWithRelations[];
-	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
-	pdfBytes: number[];
-}) {
+	pdfBytes,
+	userProfiles
+}: Props) {
 
 	return (
 		<Worker workerUrl="https://unpkg.com/pdfjs-dist@3.4.120/build/pdf.worker.min.js">
@@ -33,6 +38,7 @@ export default function PDFViewer({
 				userId={userId}
 				userHighlights={userHighlights}
 				annotatedPdfsWithProfile={annotatedPdfsWithProfile}
+				userProfiles={userProfiles}
 			/>
 		</Worker>
 	);

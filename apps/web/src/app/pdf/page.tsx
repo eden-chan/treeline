@@ -12,6 +12,7 @@ import { AskHighlightProvider } from "@src/context/ask-highlight-context";
 import {
 	AnnotatedPdfWithProfile,
 	HighlightWithRelations,
+	UserProfile,
 } from "@src/lib/types";
 
 const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
@@ -97,7 +98,7 @@ export default async function Page() {
 	const userEmails = users.map(
 		(user) => user.emailAddresses[0]?.emailAddress ?? "",
 	);
-	const userProfiles = users.map((user) => {
+	const userProfiles: UserProfile[] = users.map((user) => {
 		return {
 			email: user.emailAddresses[0]?.emailAddress ?? "",
 			imageUrl: user.imageUrl,
@@ -106,22 +107,26 @@ export default async function Page() {
 		};
 	});
 
-	const annotatedPdfs = await api.annotatedPdf.fetchAllAnnotatedPdfs({
+	const userAnnotations = await api.annotatedPdf.fetchAllAnnotatedPdfs({
 		source: pdfUrl.href,
 		userList: userEmails,
 	});
 
 	let annotatedPdfsWithProfile: AnnotatedPdfWithProfile[] = [];
-	if (annotatedPdfs) {
-		for (let annotatedPdf of annotatedPdfs) {
+
+	// Include users that have annotated the current pdf
+	if (userAnnotations) {
+		for (let annotation of userAnnotations) {
+			if (annotation.source != pdfUrl.href) continue;
+
 			const userProfile = userProfiles.find(
-				(user) => user.email === annotatedPdf.userId,
+				(user) => user.email === annotation.userId,
 			);
 
 			if (!userProfile) continue;
 
 			annotatedPdfsWithProfile.push({
-				...annotatedPdf,
+				...annotation,
 				userProfilePicture: userProfile.imageUrl,
 				firstName: userProfile.firstName || "",
 				lastName: userProfile.lastName || "",
@@ -148,6 +153,7 @@ export default async function Page() {
 				userHighlights={highlights}
 				annotatedPdfsWithProfile={annotatedPdfsWithProfile}
 				pdfBytes={pdfBytes}
+				userProfiles={userProfiles}
 			/>
 		</AskHighlightProvider>
 	);

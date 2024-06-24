@@ -39,6 +39,7 @@ type Props = {
 	userHighlights: HighlightWithRelations[];
 	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
 	pdfBytes: number[];
+	userProfiles: UserProfile[];
 };
 
 const ReadingViewer: React.FC<Props> = ({
@@ -48,22 +49,12 @@ const ReadingViewer: React.FC<Props> = ({
 	userId,
 	annotatedPdfId,
 	annotatedPdfsWithProfile,
+	userProfiles
 }) => {
 	const [friendHighlights, setFriendHighlights] = useState<
 		HighlightWithRelations[]
 	>([]);
 
-	const userProfilesMap = useMemo(() => {
-		const map = new Map<string, UserProfile>();
-		annotatedPdfsWithProfile.forEach((pdf) => {
-			map.set(pdf.userId, {
-				firstName: pdf.firstName,
-				lastName: pdf.lastName,
-				profilePicture: pdf.userProfilePicture,
-			});
-		});
-		return map;
-	}, [annotatedPdfsWithProfile]);
 
 	const {
 		currentHighlight,
@@ -154,7 +145,6 @@ const ReadingViewer: React.FC<Props> = ({
 
 					return {
 						...oldData,
-						highlights: [],
 					};
 				},
 			);
@@ -267,7 +257,7 @@ const ReadingViewer: React.FC<Props> = ({
 				editHighlight,
 				deleteHighlight,
 				userId,
-				userProfilesMap,
+				userProfiles,
 			}),
 	});
 

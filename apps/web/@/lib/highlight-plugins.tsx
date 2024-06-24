@@ -161,7 +161,7 @@ type MyRenderHighlightsProps = {
 	}) => void;
 	deleteHighlight: (highlightId: string) => void;
 	userId: string;
-	userProfilesMap: Map<string, UserProfile>;
+	userProfiles: UserProfile[];
 	openForest: (highlight: HighlightWithRelations) => void;
 } & RenderHighlightsProps;
 
@@ -211,7 +211,7 @@ export const renderHighlights = (props: MyRenderHighlightsProps) => {
 								rightmostArea={rightmostArea}
 								editHighlight={props.editHighlight}
 								deleteHighlight={props.deleteHighlight}
-								userProfilesMap={props.userProfilesMap}
+								userProfiles={props.userProfiles}
 							/>
 						</div>
 					);
