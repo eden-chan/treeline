@@ -113,8 +113,6 @@ export const PastNote = ({
 
 	const userProfile = userProfiles.find(user => user.email === highlight?.comments?.[0]?.userId ?? '')
 
-	const [isExpanded, setIsExpanded] = useState(false);
-	const [activeOption, setActiveOption] = useState('');
 
 
 	const listboxRef = useRef<HTMLUListElement>(null);
@@ -152,13 +150,15 @@ export const PastNote = ({
 		const selectionStart = event.target.selectionStart;
 		const textarea = event.target;
 
+		console.log({ event })
+
 		const mostRecentAtIndex = value.lastIndexOf('@', selectionStart - 1);
 
 		if (mostRecentAtIndex !== -1) {
-			setIsExpanded(true);
 			const caretPosition = getCaretPosition();
 
 			if (listboxRef.current) {
+
 				const parentElement = parentRef.current;
 				const parentRect = parentElement?.getBoundingClientRect();
 				const parentOffset = {
@@ -168,7 +168,7 @@ export const PastNote = ({
 
 				console.log(`Caret Position X: ${caretPosition.x}, Parent Offset Left: ${parentOffset.left}`);
 				const leftPosition = `${(caretPosition.x - parentOffset.left) * 1.1}px`;
-				const topPosition = `${textarea.scrollHeight - 20}px`;
+				const topPosition = `${textarea.scrollHeight}px`;
 
 				const listboxWidth = listboxRef.current.clientWidth;
 				console.log(`listboxRef current width: ${listboxWidth}px`);
@@ -177,26 +177,24 @@ export const PastNote = ({
 
 				listboxRef.current.style.left = parsedLeftPosition;
 				listboxRef.current.style.top = topPosition;
-				console.log({ leftPosition, parsedLeftPosition, topPosition, 'height': textarea.clientHeight }, 'height', listboxRef.current.style.top, `textarea.style.height = ${textarea.scrollHeight}px`);
+
+				listboxRef.current.style.visibility = 'visible'
 			}
-		} else {
-			setIsExpanded(false);
 		}
 		// Perform any additional logic here, such as filtering suggestions based on the entered value
 	};
 
 	const handleOptionClick = (optionId: string) => {
-		console.log(optionId)
+
 		const selectedUserProfile = userProfiles.find(user => user.email === optionId);
-		if (selectedUserProfile && inputRef.current) {
+		if (selectedUserProfile && inputRef.current && listboxRef.current) {
 			const currentValue = inputRef.current.value;
 			const atIndex = currentValue.lastIndexOf('@', inputRef.current.selectionStart - 1);
 			const newValue = `${currentValue.substring(0, atIndex + 1)}${selectedUserProfile.firstName} ${selectedUserProfile.lastName} `;
 			inputRef.current.value = newValue;
 			console.log(atIndex)
+			// listboxRef.current.style.visibility = 'hidden'
 		}
-		setActiveOption(optionId);
-		setIsExpanded(false);
 		// Perform any additional logic here, such as updating the textarea value or triggering an action
 	};
 
@@ -210,7 +208,7 @@ export const PastNote = ({
 				transform: "translate(8px, -50%)",
 			}}
 		>
-			<div ref={parentRef} className="relative group-hover:w-[200px]">
+			<div ref={parentRef} onMouseLeave={() => { if (listboxRef.current) listboxRef.current.style.visibility = 'hidden' }} className="relative group-hover:w-[200px]">
 				<span className="flex items-center">
 					<span className="select-none font-bold text-blue-500 inline hover:bg-blue-500 rounded-full hover:bg-opacity-20 transition duration-300 ease-in-out">⁂</span>
 					<div className="invisible group-hover:visible flex items-center bg-white">
@@ -237,25 +235,22 @@ export const PastNote = ({
 							role="combobox"
 							aria-controls="suggestions"
 							aria-autocomplete="list"
-							aria-expanded={isExpanded}
-							aria-activedescendant={activeOption}
 							className="w-full"
 						/>
-						{isExpanded && (
+						{(
 							<ul
 								id="suggestions"
 								ref={listboxRef}
 								role="listbox"
 								aria-label="Suggestions"
-								className="absolute bg-white border border-gray-300 rounded-md py-0.5 w-[200px]"
+								className="invisible absolute z-30 bg-white border border-gray-300 rounded-md w-[200px]"
 							>
-								{userProfiles.map((userProfile, index) => (
+								{userProfiles.map((userProfile) => (
 									<li
 										key={userProfile.email}
-										id={userId}
 										role="option"
-										className={`px-2 py-1 h-[20px] text-xs cursor-pointer ${activeOption === `suggestion${index + 1}` ? 'bg-gray-100' : ''}`}
-										onClick={() => handleOptionClick(userId)}
+										className={`px-2 py-1 h-[20px] text-xs cursor-pointer hover:bg-gray-200`}
+										onClick={() => handleOptionClick(userProfile.email)}
 									>
 										{userProfile.firstName} {userProfile.lastName}
 									</li>
