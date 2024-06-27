@@ -59,6 +59,7 @@ export default async function Page({ params }: { params: { id: string } }) {
   }
 
   const sources = (await api.source.fetchAllSources()) ?? [];
+  const sourceGroups = (await api.source.fetchAllSourceGroups()) ?? [];
 
   return (
     <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">
@@ -70,6 +71,7 @@ export default async function Page({ params }: { params: { id: string } }) {
         searchedUserImageUrl={searchedUserClerk.imageUrl}
         loggedInUser={loggedInUser}
         sources={sources}
+        sourceGroups={sourceGroups}
       />
     </main>
   );

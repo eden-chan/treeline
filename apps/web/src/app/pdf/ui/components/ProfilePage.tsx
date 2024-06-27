@@ -6,7 +6,7 @@
 import { AvatarImage, AvatarFallback, Avatar } from "@/components/ui/avatar";
 import Link from "next/link";
 import Timeline from "./Timeline";
-import { Source, User } from "@prisma/client";
+import { Source, SourceGroup, User } from "@prisma/client";
 import FollowButton from "./FollowButton";
 
 import { useMemo } from "react";
@@ -15,6 +15,15 @@ import LearningActivityCalendar from "@src/components/activity-calendar";
 import { AnnotatedPdfWithRelations } from '@src/lib/types';
 
 
+type Props = {
+  users: User[];
+  timeline: AnnotatedPdfWithRelations[];
+  searchedUser: User;
+  loggedInUser: User;
+  searchedUserImageUrl: string;
+  sources: Source[];
+  sourceGroups: SourceGroup[];
+}
 export default async function Profile({
   users,
   timeline,
@@ -22,14 +31,8 @@ export default async function Profile({
   loggedInUser,
   searchedUserImageUrl,
   sources,
-}: {
-  users: User[];
-  timeline: AnnotatedPdfWithRelations[];
-  searchedUser: User;
-  loggedInUser: User;
-  searchedUserImageUrl: string;
-  sources: Source[];
-}) {
+  sourceGroups,
+}: Props) {
   const userHighlights = useMemo(
     () =>
       users.map((user) => {
@@ -69,7 +72,7 @@ export default async function Profile({
         {RenderUserProfileSection()}
         <main className="w-3/5 p-6">
           <h2 className="text-lg font-semibold mb-4">Recent</h2>
-          <Timeline sources={sources} />
+          <Timeline sources={sources} sourceGroups={sourceGroups} />
         </main>
         <aside className="w-1/5 p-6">
           <div className="mb-6">
