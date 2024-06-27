@@ -36,7 +36,7 @@ export default async function Page() {
 	try {
 		// get the uploaded PDF id
 		pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
-		await api.source.create({
+		await api.source.createSource({
 			source: pdfUrl.href,
 		});
 
@@ -102,8 +102,8 @@ export default async function Page() {
 		return {
 			email: user.emailAddresses[0]?.emailAddress ?? "",
 			imageUrl: user.imageUrl,
-			firstName: user.firstName,
-			lastName: user.lastName,
+			firstName: user.firstName ?? "",
+			lastName: user.lastName ?? "",
 		};
 	});
 

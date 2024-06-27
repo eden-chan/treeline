@@ -1,4 +1,4 @@
-import { preprocessPaperAction } from "@src/app/actions";
+import { preprocessPaperAction as retrievePaper } from "@src/app/actions";
 
 const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762";
 
@@ -18,7 +18,7 @@ export default function SearchCta() {
 				</div>
 				<form
 					className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800"
-					action={preprocessPaperAction}
+					action={retrievePaper}
 				>
 					<div className="space-y-6">
 						<div>

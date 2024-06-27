@@ -38,7 +38,7 @@ export default async function Page() {
 		timeline = (await api.annotatedPdf.fetchDefaultAnnotatedPdfs()) ?? [];
 	}
 	// Populate parsed papers
-	const sources = (await api.source.fetchAll()) ?? [];
+	const sources = (await api.source.fetchAllSources()) ?? [];
 
 	return (
 		<main className="text-black flex flex-col gap-10 bg-slate-100">

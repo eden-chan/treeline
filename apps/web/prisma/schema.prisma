@@ -91,9 +91,21 @@ model ParsedPaper {
 }
 
 model Source {
-  id               String               @id @default(auto()) @map("_id") @db.ObjectId
-  uploadedAt        DateTime            @db.Date
-  source           String               @unique
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  uploadedAt    DateTime      @db.Date
+  title         String
+  description   String
+  source        String        @unique
+  sourceGroupIDs String[]     @db.ObjectId
+  sourceGroups  SourceGroup[] @relation(fields: [sourceGroupIDs], references: [id])
+}
+
+model SourceGroup {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String    @unique
+  description String
+  sourceIDs   String[]  @db.ObjectId
+  sources     Source[]  @relation(fields: [sourceIDs], references: [id])
 }
 
 type HighlightAreas {

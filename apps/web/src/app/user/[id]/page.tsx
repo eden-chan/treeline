@@ -58,7 +58,7 @@ export default async function Page({ params }: { params: { id: string } }) {
     return null;
   }
 
-  const sources = (await api.source.fetchAll()) ?? [];
+  const sources = (await api.source.fetchAllSources()) ?? [];
 
   return (
     <main className="h-screen w-screen gap-0 bg-[##f8f7f6] py-8 px-4">

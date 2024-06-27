@@ -104,8 +104,10 @@ export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
 //  preprocess the PDF if it is not uploaded to S3. If the PDF already exists in S3, no preprocessing will occur.
 export const preprocessPaperAction = async (formData: FormData) => {
 	let pdfUrl = formData.get("research-topic") as string;
+	// TODO: get metadata from semantic scholar
 
-	await api.source.create({
+
+	await api.source.createSource({
 		source: pdfUrl,
 	});
 
