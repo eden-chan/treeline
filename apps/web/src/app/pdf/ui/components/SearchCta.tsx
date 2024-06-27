@@ -1,9 +1,29 @@
-import { preprocessPaperAction as retrievePaper } from "@src/app/actions";
+'use client'
+import { createSourceAction } from "@src/app/actions";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762";
 
 export default function SearchCta() {
-	// TODO: add form validation and error
+	const router = useRouter();
+	const [sourceUrl, setSourceUrl] = useState(DEFAULT_PDF_URL);
+
+	const handleCreateSource = async (event: React.FormEvent<HTMLFormElement>) => {
+		event.preventDefault();
+		try {
+			await createSourceAction(sourceUrl);
+			router.refresh();
+			// Optionally, you can clear the input or show a success message
+			setSourceUrl('');
+			// You might want to navigate to a different page after creating the source
+			// router.push('/sources');
+		} catch (error) {
+			console.error("Failed to create source:", error);
+			// Handle error (e.g., show an error message to the user)
+		}
+	};
+
 	return (
 		<section className="flex grow flex-col items-center justify-center bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] p-4">
 			<div className="mx-auto w-full max-w-md space-y-6">
@@ -18,7 +38,7 @@ export default function SearchCta() {
 				</div>
 				<form
 					className="rounded-lg bg-white p-8 shadow-lg dark:bg-gray-800"
-					action={retrievePaper}
+					onSubmit={handleCreateSource}
 				>
 					<div className="space-y-6">
 						<div>
@@ -26,7 +46,7 @@ export default function SearchCta() {
 								className="block text-sm font-medium text-gray-700 dark:text-gray-300"
 								htmlFor="research-link"
 							>
-								What are you curious about?
+								Enter a PDF URL (e.g., arXiv paper)
 							</label>
 							<div className="mt-3">
 								<input
@@ -35,7 +55,9 @@ export default function SearchCta() {
 									name="research-topic"
 									placeholder={DEFAULT_PDF_URL}
 									required
-									type="text"
+									type="url"
+									value={sourceUrl}
+									onChange={(e) => setSourceUrl(e.target.value)}
 								/>
 							</div>
 						</div>
@@ -45,7 +67,7 @@ export default function SearchCta() {
 							className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#6366F1] py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-offset-2 dark:bg-[#6366F1] dark:hover:bg-[#4F46E5] dark:focus:ring-[#6366F1]"
 							type="submit"
 						>
-							Discover Personalized Learning
+							Create Source
 						</button>
 					</div>
 				</form>
@@ -53,4 +75,3 @@ export default function SearchCta() {
 		</section>
 	);
 }
-

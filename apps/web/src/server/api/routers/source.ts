@@ -115,6 +115,8 @@ export const sourceRouter = createTRPCRouter({
       }
     }),
 
+    
+  
   updateSource: publicProcedure
     .input(
       z.object({
@@ -147,31 +149,49 @@ export const sourceRouter = createTRPCRouter({
     }),
 
   createSourceGroup: publicProcedure
-    .input(
-      z.object({
-        name: z.string(),
-        description: z.string(),
-      }),
-    )
-    .mutation<SourceGroup | null>(async ({ input }) => {
-      try {
-        return await db.sourceGroup.create({
-          data: {
-            name: input.name,
-            description: input.description,
-          },
-        });
-      } catch (error) {
-        console.error("Failed to create source group:", error);
-        return null;
-      }
+  .input(
+    z.object({
+      title: z.string(),
+      description: z.string(),
+      sourceIds: z.array(z.string()),
     }),
+  )
+  .mutation<SourceGroup | null>(async ({ input }) => {
+    try {
+      const sourceGroup = await db.sourceGroup.create({
+        data: {
+          title: input.title,
+          description: input.description,
+          sources: {
+            connect: input.sourceIds.map(id => ({ id })),
+          },
+        },
+        include: {
+          sources: true,
+        },
+      });
+
+      // Update sourceGroupIDs for each source
+      await db.source.updateMany({
+        where: { id: { in: input.sourceIds } },
+        data: {
+          sourceGroupIDs: {
+            push: sourceGroup.id,
+          },
+        },
+      });
+      return sourceGroup;
+    } catch (error) {
+      console.error("Failed to create source group:", error);
+      return null;
+    }
+  }),
 
   updateSourceGroup: publicProcedure
     .input(
       z.object({
         id: z.string(),
-        name: z.string().optional(),
+        title: z.string().optional(),
         description: z.string().optional(),
       }),
     )
@@ -180,13 +200,49 @@ export const sourceRouter = createTRPCRouter({
         return await db.sourceGroup.update({
           where: { id: input.id },
           data: {
-            name: input.name,
+            title: input.title,
             description: input.description,
           },
         });
       } catch (error) {
         console.error("Failed to update source group:", error);
         return null;
+      }
+    }),
+
+ deleteSource: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation<{ success: boolean }>(async ({ input }) => {
+      try {
+        await db.source.delete({
+          where: { id: input.id },
+        });
+        return { success: true };
+      } catch (error) {
+        console.error("Failed to delete source:", error);
+        return { success: false };
+      }
+    }),
+
+  deleteSourceGroup: publicProcedure
+    .input(
+      z.object({
+        id: z.string(),
+      }),
+    )
+    .mutation<{ success: boolean }>(async ({ input }) => {
+      try {
+        await db.sourceGroup.delete({
+          where: { id: input.id },
+        });
+        return { success: true };
+      } catch (error) {
+        console.error("Failed to delete source group:", error);
+        return { success: false };
       }
     }),
 
@@ -199,7 +255,7 @@ export const sourceRouter = createTRPCRouter({
     )
     .mutation<Source | null>(async ({ input }) => {
       try {
-        return await db.source.update({
+        const updatedSource = await db.source.update({
           where: { id: input.sourceId },
           data: {
             sourceGroupIDs: {
@@ -210,6 +266,20 @@ export const sourceRouter = createTRPCRouter({
             },
           },
         });
+
+        await db.sourceGroup.update({
+          where: { id: input.groupId },
+          data: {
+            sourceIDs: {
+              push: input.sourceId,
+            },
+            sources: {
+              connect: { id: input.sourceId },
+            },
+          },
+        });
+
+        return updatedSource;
       } catch (error) {
         console.error("Failed to add source to group:", error);
         return null;
@@ -264,8 +334,8 @@ export const sourceRouter = createTRPCRouter({
         }
 
         const updatedGroupIds = source.sourceGroupIDs.filter(id => id !== input.groupId);
-
-        return await db.source.update({
+        
+        await db.source.update({
           where: { id: input.sourceId },
           data: {
             sourceGroupIDs: updatedGroupIds,
@@ -274,6 +344,18 @@ export const sourceRouter = createTRPCRouter({
             },
           },
         });
+
+        await db.sourceGroup.update({
+          where: { id: input.groupId },
+          data: {
+            sources: {
+              disconnect: { id: input.sourceId },
+            },
+          },
+        });
+
+
+        return source;
       } catch (error) {
         console.error("Failed to remove source from group:", error);
         return null;
@@ -291,7 +373,7 @@ export const sourceRouter = createTRPCRouter({
         where: {
           sourceGroups: {
             some: {
-              name: {
+              title: {
                 contains: input.groupName,
               },
             },

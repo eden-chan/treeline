@@ -97,15 +97,15 @@ model Source {
   description   String
   source        String        @unique
   sourceGroupIDs String[]     @db.ObjectId
-  sourceGroups  SourceGroup[] @relation(fields: [sourceGroupIDs], references: [id])
+  sourceGroups  SourceGroup[] @relation(fields: [sourceGroupIDs], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 model SourceGroup {
   id        String    @id @default(auto()) @map("_id") @db.ObjectId
-  name        String    @unique
+  title        String    @unique
   description String
   sourceIDs   String[]  @db.ObjectId
-  sources     Source[]  @relation(fields: [sourceIDs], references: [id])
+  sources     Source[]  @relation(fields: [sourceIDs], references: [id], onDelete: Cascade, onUpdate: Cascade)
 }
 
 type HighlightAreas {

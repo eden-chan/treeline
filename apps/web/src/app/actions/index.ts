@@ -1,6 +1,6 @@
 "use server";
 
-import { ParsedPaper, ParsedPaperFacts, User } from "@prisma/client";
+import { ParsedPaper, ParsedPaperFacts, User, SourceGroup, Source } from "@prisma/client";
 import { EMBEDDING_TYPE } from "@src/lib/types";
 import { TitleSourcePair } from "@src/server/api/routers/parsed-pdf";
 
@@ -102,8 +102,7 @@ export const getAllParsedPaperAction = async (): Promise<TitleSourcePair[]> => {
 };
 
 //  preprocess the PDF if it is not uploaded to S3. If the PDF already exists in S3, no preprocessing will occur.
-export const preprocessPaperAction = async (formData: FormData) => {
-	let pdfUrl = formData.get("research-topic") as string;
+export const createSourceAction = async (pdfUrl: string) => {
 	// TODO: get metadata from semantic scholar
 
 
@@ -111,9 +110,113 @@ export const preprocessPaperAction = async (formData: FormData) => {
 		source: pdfUrl,
 	});
 
-	redirect(`/pdf?url=${pdfUrl}`);
+	// redirect(`/pdf?url=${pdfUrl}`);
 	
 };
+
+export async function createSourceGroupAction(title: string, description: string, sourceIds: string[]) {
+    try {
+		console.log({title,description,sourceIds})
+        const result = await api.source.createSourceGroup({
+            title,
+            description,
+            sourceIds,
+        });
+
+        if (!result) {
+            throw new Error("Failed to create source group");
+        }
+
+        return result;
+    } catch (error) {
+        console.error("Error in createSourceGroupAction:", error);
+        throw error;
+    }
+}
+
+export async function updateSourceAction(id: string, title: string, description: string) {
+  try {
+    return await api.source.updateSource({
+      id,
+      title,
+      description,
+    });
+  } catch (error) {
+    console.error("Error in updateSourceAction:", error);
+    throw error;
+  }
+}
+
+export async function updateSourceGroupAction(id: string, title: string, description: string) {
+  try {
+    return await api.source.updateSourceGroup({
+      id,
+      title,
+      description,
+    });
+  } catch (error) {
+    console.error("Error in updateSourceGroupAction:", error);
+    throw error;
+  }
+}
+
+
+export async function deleteSourceAction(id: string) {
+  try {	
+    const result = await api.source.deleteSource({ id });
+    if (!result.success) {
+      throw new Error("Failed to delete source");
+    }
+    return result;
+  } catch (error) {
+    console.error("Error in deleteSourceAction:", error);
+    throw error;
+  }
+}
+
+export async function deleteSourceGroupAction(id: string) {
+  try {
+    const result = await api.source.deleteSourceGroup({ id });
+    if (!result.success) {
+      throw new Error("Failed to delete source group");
+    }
+    return result;
+  } catch (error) {
+    console.error("Error in deleteSourceGroupAction:", error);
+    throw error;
+  }
+}
+
+export async function removeSourceFromGroupAction(sourceId: string, groupId: string) {
+  try {
+    const result = await api.source.removeSourceFromGroup({ sourceId, groupId });
+	console.log({result})
+    if (!result) {
+      throw new Error("Failed to remove source from group");
+    }
+    return result;
+  } catch (error) {
+    console.error("Error in deleteSourceGroupAction:", error);
+    throw error;
+  }
+}
+
+export async function addSourceToGroupAction(sourceId: string, groupId: string) {
+  try {
+    const result = await api.source.addSourceToGroup({ sourceId, groupId });
+	console.log({result})
+    if (!result) {
+      throw new Error("Failed to add source to group");
+    }
+    return result;
+  } catch (error) {
+    console.error("Error in addSourceToGroupAction:", error);
+    throw error;
+  }
+}
+
+
+
 // ESM
 const client = new ChromaClient({ path: process.env.CHROMA_URL });
 

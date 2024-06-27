@@ -39,6 +39,7 @@ export default async function Page() {
 	}
 	// Populate parsed papers
 	const sources = (await api.source.fetchAllSources()) ?? [];
+	const sourceGroups = (await api.source.fetchAllSourceGroups()) ?? [];
 
 	return (
 		<main className="text-black flex flex-col gap-10 bg-slate-100">
@@ -47,7 +48,7 @@ export default async function Page() {
 				<SearchCta />
 			</div>
 			{/* <BentoGridThirdDemo /> */}
-			<Timeline sources={sources} />
+			<Timeline sources={sources} sourceGroups={sourceGroups} />
 		</main>
 	);
 }
