@@ -1,4 +1,4 @@
-import { MutableRefObject } from "react";
+import { MutableRefObject, useState } from "react";
 import {
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
@@ -9,6 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { HighlightWithRelations, UserProfile } from "@src/lib/types";
 import { HighlightedArea } from "@/components/pdf/HighlightedArea";
 import { PastNote } from "@/components/pdf/PastNote";
+import { MiniChatWindow } from '@/components/pdf/MiniChatWindow';
 
 type MyRenderHighlightTargetProps = {
 	annotatedPdfId: string;
@@ -23,7 +24,11 @@ type MyRenderHighlightTargetProps = {
 	openForest: (highlight: HighlightWithRelations) => void;
 } & RenderHighlightTargetProps;
 
+
+
 export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
+	const [showMiniChat, setShowMiniChat] = useState(false);
+
 	const saveHighlight = () => {
 		const highlightDraft: NewHighlightWithRelationsInput = {
 			annotatedPdfId: props.annotatedPdfId,
@@ -34,116 +39,35 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 		props.cancel();
 	};
 
-	const askQuestion = async (prompt: string) => {
-		const highlightDraft: NewHighlightWithRelationsInput = {
-			annotatedPdfId: props.annotatedPdfId,
-			highlightAreas: props.highlightAreas,
-			quote: props.selectedText,
-			node: {
-				prompt,
-				response: null,
-				timestamp: new Date(),
-			},
-		};
-		return await props.createAskHighlight(highlightDraft);
-	};
-
-	const submitQuestion = async (
-		e: React.KeyboardEvent<HTMLTextAreaElement>,
-	) => {
-		if (e.key === "Enter") {
-			if (props.inputRef.current && props.inputRef.current.value !== "") {
-				const highlight = await askQuestion(
-					`${props.inputRef.current.value} Here is the context: ` +
-					props.selectedText,
-				);
-
-				if (highlight) {
-					props.setCurrentHighlight(highlight, true);
-					props.openForest(highlight);
-				}
-			}
-		}
-	};
-
-	// maybe this can be used for flashcards?
-	const define = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
-		e.stopPropagation();
-		const highlight = await askQuestion(
-			"Concisely define the following term and why it is important." +
-			props.selectedText,
-		);
-
-		if (highlight) {
-			props.setCurrentHighlight(highlight, true);
-			props.openForest(highlight);
-		}
-	};
-
-	// guides the direction of the tree
-	// TODO: revise the prompt
-	const explain = async (
-		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
-	) => {
-		e.stopPropagation();
-		const highlight = await askQuestion(
-			"Concisely explain why this is important: " + props.selectedText,
-		);
-
-		if (highlight) {
-			props.setCurrentHighlight(highlight, true);
-			props.openForest(highlight);
-		}
-	};
-
 	return (
 		<div
-			className="relative flex space-x-2"
+			className="absolute flex flex-col space-y-2"
 			style={{
-				position: "absolute",
-				left: `${props.selectionRegion.left + props.selectionRegion.width}%`,
+				left: '90%',
 				top: `${props.selectionRegion.top}%`,
-				transform: "translate(0, 8px)",
+				transform: 'translateX(-100%)',
 				zIndex: 1,
 			}}
 		>
 			<button
 				onClick={saveHighlight}
-				className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600"
+				className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600 text-xs"
 			>
 				Save
 			</button>
-			<div
-				className="group"
-				onMouseEnter={() => props.inputRef.current?.focus()}
-				onMouseLeave={() => props.inputRef.current?.blur()}
-			>
-				<button className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600">
-					Ask
+			{/* <div className="relative">
+				<button
+					onClick={() => setShowMiniChat(!showMiniChat)}
+					className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600 text-xs"
+				>
+					{showMiniChat ? 'Close' : 'Ask AI'}
 				</button>
-				<div className="absolute w-48 bg-white rounded-md shadow-xl z-20 invisible group-hover:visible text-xs">
-					<Textarea
-						placeholder="Ask a question or @ someone"
-						onClick={(e) => {
-							e.stopPropagation();
-						}}
-						onKeyDown={submitQuestion}
-						ref={props.inputRef}
-					/>
-					<button
-						onClick={define}
-						className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible"
-					>
-						Define
-					</button>
-					<button
-						onClick={explain}
-						className="block px-4 py-2 text-gray-800 hover:bg-gray-100 w-full text-left group-hover:visible"
-					>
-						Summarize
-					</button>
-				</div>
-			</div>
+				{showMiniChat && (
+					<div>
+						<MiniChatWindow selectedText={props.selectedText} />
+					</div>
+				)}
+			</div> */}
 		</div>
 	);
 };

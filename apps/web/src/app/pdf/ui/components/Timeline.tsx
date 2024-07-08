@@ -75,7 +75,7 @@ const UpdateGroupDialog = ({ group, onClose }: { group: SourceGroup, onClose: ()
 	return (
 		<DialogContent>
 			<DialogHeader>
-				<DialogTitle>Update Group</DialogTitle>
+				<DialogTitle>Update Forest</DialogTitle>
 			</DialogHeader>
 			<form action={async (formData: FormData) => {
 				const title = formData.get('title') as string;
@@ -85,7 +85,7 @@ const UpdateGroupDialog = ({ group, onClose }: { group: SourceGroup, onClose: ()
 			}}>
 				<Input name="title" placeholder="Title" defaultValue={group.title} required />
 				<Textarea name="description" placeholder="Description" defaultValue={group.description} required />
-				<Button type="submit">Update Group</Button>
+				<Button type="submit">Update Forest</Button>
 			</form>
 		</DialogContent>
 	);

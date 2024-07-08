@@ -297,34 +297,34 @@ const ReadingViewer: React.FC<Props> = ({
 				allHighlightsWithProfile={annotatedPdfsWithProfile}
 			/>
 
-			{/* <PanelGroup className="w-full" direction="horizontal" ref={panelGroupRef}>
+			<PanelGroup className="w-full" direction="horizontal" ref={panelGroupRef}>
 				<ResizablePanel
 					{...pdfViewerMouseEvents}
 					className="relative"
 					defaultSize={80}
 					style={{ height: "100vh", overflow: "auto" }}
 					collapsible
-				> */}
+				>
 
-			<Viewer
-				// for cors protected resource (arxiv) load in server side by bytes
-				// otherwise load in client side by url
-				fileUrl={pdfBytesMemoized.length > 0 ? pdfBytesMemoized : loadedSource}
-				plugins={[
-					highlightPluginInstance,
-					readingIndicatorPluginInstance,
-					defaultLayoutPluginInstance,
-				]}
-			/>
+					<Viewer
+						// for cors protected resource (arxiv) load in server side by bytes
+						// otherwise load in client side by url
+						fileUrl={pdfBytesMemoized.length > 0 ? pdfBytesMemoized : loadedSource}
+						plugins={[
+							highlightPluginInstance,
+							readingIndicatorPluginInstance,
+							defaultLayoutPluginInstance,
+						]}
+					/>
 
-			<div />
-			{/* </ResizablePanel> */}
-			{/* <ResizableHandle withHandle handleClassName="bg-[#B2B2B2]" /> */}
-			{/* <ResizablePanel
+					<div />
+				</ResizablePanel>
+				<ResizableHandle withHandle handleClassName="bg-[#B2B2B2]" />
+				<ResizablePanel
 					style={{ height: "100vh", overflow: "auto" }}
 					collapsible
 				>
-					{currentHighlight?.node ? (
+					{/* {currentHighlight?.node ? (
 						<ReactFlowProvider>
 							<Forest
 								node={currentHighlight.node}
@@ -335,17 +335,18 @@ const ReadingViewer: React.FC<Props> = ({
 							/>
 						</ReactFlowProvider>
 					) : (
-						<div className="h-full overflow-auto">
-							<Sidebar
-								highlights={highlights ?? []}
-								deleteHighlight={deleteHighlight}
-								resetHighlights={resetHighlights}
-								onHighlightClick={onHighlightClick}
-							/>
-						</div>
-					)}
-				</ResizablePanel> */}
-			{/* </PanelGroup> */}
+					
+					)} */}
+					<div className="h-full overflow-auto">
+						<Sidebar
+							highlights={highlights ?? []}
+							deleteHighlight={deleteHighlight}
+							resetHighlights={resetHighlights}
+							onHighlightClick={onHighlightClick}
+						/>
+					</div>
+				</ResizablePanel>
+			</PanelGroup>
 		</div >
 	);
 };

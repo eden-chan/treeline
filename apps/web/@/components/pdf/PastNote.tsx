@@ -208,7 +208,7 @@ export const PastNote = ({
 				transform: "translate(8px, -50%)",
 			}}
 		>
-			<div ref={parentRef} onMouseLeave={() => { if (listboxRef.current) listboxRef.current.style.visibility = 'hidden' }} className="relative group-hover:w-[200px] py-60">
+			<div ref={parentRef} onMouseLeave={() => { if (listboxRef.current) listboxRef.current.style.visibility = 'hidden' }} className="relative group-hover:w-[200px] pt-10 pb-20 pl-5">
 				<span className="flex items-center">
 					<span className="select-none font-bold text-blue-500 inline hover:bg-blue-500 rounded-full hover:bg-opacity-20 transition duration-300 ease-in-out">⁂</span>
 					<div className="invisible group-hover:visible flex items-center bg-white">
