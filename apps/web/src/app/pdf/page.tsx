@@ -21,6 +21,7 @@ const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
 
 // Removes box shadow
 import "./ui/style/pdf_viewer.css";
+import CommandK from './ui/components/CommandK';
 
 const CORS_PROTECTED_BASE_URL = ["https://arxiv.org/pdf/"]
 
@@ -157,6 +158,7 @@ export default async function Page() {
 					userProfiles={userProfiles}
 				/>
 			</Suspense>
+
 		</AskHighlightProvider>
 	);
 }

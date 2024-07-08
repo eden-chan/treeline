@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { HighlightWithRelations } from "@src/lib/types";
 import { cn } from "@/lib/utils";
+import { useMemo } from 'react';
 
 const updateHash = (highlight: HighlightWithRelations) => {
 	document.location.hash = `highlight-${highlight.id}`;
@@ -13,6 +14,14 @@ type Props = {
 };
 
 export default function Highlight({ highlight, deleteHighlight, onHighlightClick }: Props) {
+
+
+	//  calculate the page number from the highlightAreas and increment it by 1 meomized
+	// in the case that pageIndex is 0 add 1 to it
+	const pageNumber = useMemo(() => {
+		const pageIndex = highlight.highlightAreas[0]?.pageIndex;
+		return pageIndex !== undefined ? pageIndex + 1 : 'Unknown';
+	}, [highlight.highlightAreas]);
 	return (
 		<li
 			id={`highlight-${highlight.id}`}
@@ -54,6 +63,14 @@ export default function Highlight({ highlight, deleteHighlight, onHighlightClick
 				{highlight.node?.response ? (
 					<blockquote className="mt-2">{`${highlight.node.response.slice(0, 90).trim()}…`}</blockquote>
 				) : null}
+				{highlight.comments && highlight.comments.length > 0 && (
+					<div className="mt-2">
+						{highlight.comments.map((comment) => <p key={comment.id}>{comment.text}</p>)}
+					</div>
+				)}
+				<div className="mt-2">
+					<p>Page {pageNumber}</p>
+				</div>
 				{/* {highlight.content.image ? (
           <div className="mt-2 overflow-auto max-w-xs border-dashed border">
             <img src={highlight.content.image} alt={"Screenshot"} />

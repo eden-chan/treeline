@@ -40,6 +40,7 @@ export default function PDFViewer({
 				annotatedPdfsWithProfile={annotatedPdfsWithProfile}
 				userProfiles={userProfiles}
 			/>
+
 		</Worker>
 	);
 }

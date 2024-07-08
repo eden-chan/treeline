@@ -3,19 +3,10 @@ import {
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
-import {
-	defaultLayoutPlugin,
-	ToolbarProps,
-} from "@react-pdf-viewer/default-layout";
 import { Viewer } from "@react-pdf-viewer/core";
-import { ImperativePanelGroupHandle, PanelGroup } from "react-resizable-panels";
-import { ReactFlowProvider } from "reactflow";
 
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
-import { Sidebar } from "@/components/pdf/Sidebar";
-import { Forest } from "@/components/pdf/Forest";
-import { ResizableHandle, ResizablePanel } from "@/components/ui/resizable";
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
 import {
 	renderHighlightTarget,
@@ -28,8 +19,13 @@ import {
 	UserProfile,
 } from "@src/lib/types";
 import { clientApi } from "@src/trpc/react";
-import readingIndicatorPlugin from "./ReadingIndicator";
-import useClickWithoutDrag from "@/lib/use-click-without-drag";
+import { CommandDialogDemo } from '@src/app/pdf/ui/components/CommandK';
+import { ResizableHandle, ResizablePanel } from '../ui/resizable';
+import { PanelGroup } from 'react-resizable-panels';
+import { Sidebar } from './Sidebar';
+
+
+
 const highlightPlugin = require("./highlight.js").highlightPlugin;
 
 type Props = {
@@ -193,50 +189,20 @@ const ReadingViewer: React.FC<Props> = ({
 	};
 
 	const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
-	const setPDFViewerWidthPercentage = (pdfViewerWidth: number = 50) => {
+	const setPDFViewerWidthPercentage = (pdfViewerWidth: number = 20) => {
 		const panelGroup = panelGroupRef.current;
 		if (panelGroup) {
 			panelGroup.setLayout([pdfViewerWidth, 100 - pdfViewerWidth]);
 		}
 	};
-	const pdfViewerMouseEvents = useClickWithoutDrag(() =>
-		setPDFViewerWidthPercentage(100),
-	);
-
-	const readingIndicatorPluginInstance = readingIndicatorPlugin();
-	const { ReadingIndicator } = readingIndicatorPluginInstance;
-
-	const renderToolbar = useCallback(
-		(Toolbar: (props: ToolbarProps) => React.ReactElement) => (
-			<>
-				<Toolbar />
-				<div
-					style={{
-						bottom: "-0.25rem",
-						position: "absolute",
-						left: 0,
-						// Take the full width of toolbar
-						width: "100%",
-					}}
-				>
-					<ReadingIndicator />
-				</div>
-			</>
-		),
-		[],
-	);
-
-	const defaultLayoutPluginInstance = defaultLayoutPlugin({
-		renderToolbar,
-	});
 
 	const inputRef = useRef<HTMLTextAreaElement | null>(null);
 	const openForest = (highlight: HighlightWithRelations) => {
 		setCurrentHighlight(highlight);
-		const panelGroup = panelGroupRef.current;
-		if (panelGroup) {
-			setPDFViewerWidthPercentage(50);
-		}
+		// const panelGroup = panelGroupRef.current;
+		// if (panelGroup) {
+		// 	setPDFViewerWidthPercentage(50);
+		// }
 	};
 
 	const highlightPluginInstance = highlightPlugin({
@@ -269,7 +235,11 @@ const ReadingViewer: React.FC<Props> = ({
 			jumpToHighlightArea(area);
 		}
 		selectHighlight(highlight);
+
 	};
+
+
+
 	// useEffect to load pdfBytes from loadedDataSource
 	// useEffect(() => {
 	// 	const fetchPDFBytes = async () => {
@@ -290,16 +260,18 @@ const ReadingViewer: React.FC<Props> = ({
 	const pdfBytesMemoized = useMemo(() => {
 		return new Uint8Array(pdfBytes);
 	}, [pdfBytes]);
+
+
 	return (
 		<div>
 			<FloatingProfiles
 				setDisplayHighlights={setFriendHighlights}
 				allHighlightsWithProfile={annotatedPdfsWithProfile}
 			/>
-
+			<CommandDialogDemo />
 			<PanelGroup className="w-full" direction="horizontal" ref={panelGroupRef}>
 				<ResizablePanel
-					{...pdfViewerMouseEvents}
+
 					className="relative"
 					defaultSize={80}
 					style={{ height: "100vh", overflow: "auto" }}
@@ -312,8 +284,6 @@ const ReadingViewer: React.FC<Props> = ({
 						fileUrl={pdfBytesMemoized.length > 0 ? pdfBytesMemoized : loadedSource}
 						plugins={[
 							highlightPluginInstance,
-							readingIndicatorPluginInstance,
-							defaultLayoutPluginInstance,
 						]}
 					/>
 

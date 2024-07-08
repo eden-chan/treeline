@@ -27,8 +27,6 @@ type MyRenderHighlightTargetProps = {
 
 
 export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
-	const [showMiniChat, setShowMiniChat] = useState(false);
-
 	const saveHighlight = () => {
 		const highlightDraft: NewHighlightWithRelationsInput = {
 			annotatedPdfId: props.annotatedPdfId,
@@ -55,19 +53,6 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 			>
 				Save
 			</button>
-			{/* <div className="relative">
-				<button
-					onClick={() => setShowMiniChat(!showMiniChat)}
-					className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600 text-xs"
-				>
-					{showMiniChat ? 'Close' : 'Ask AI'}
-				</button>
-				{showMiniChat && (
-					<div>
-						<MiniChatWindow selectedText={props.selectedText} />
-					</div>
-				)}
-			</div> */}
 		</div>
 	);
 };
