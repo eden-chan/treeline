@@ -1,35 +1,28 @@
 import { Button } from "@/components/ui/button";
 import { HighlightWithRelations } from "@src/lib/types";
-import { cn } from "@/lib/utils";
 import { useMemo } from 'react';
 
-const updateHash = (highlight: HighlightWithRelations) => {
-	document.location.hash = `highlight-${highlight.id}`;
+const updateHash = (id: string) => {
+	document.location.hash = `highlight-${id}`;
 };
 
-type Props = {
+export default function Highlight({ highlight, deleteHighlight, onHighlightClick }: {
 	highlight: HighlightWithRelations;
 	deleteHighlight: (highlightId: string) => void;
 	onHighlightClick: (highlight: HighlightWithRelations) => void;
-};
+}) {
+	const pageNumber = useMemo(() =>
+		(highlight.highlightAreas[0]?.pageIndex ?? -1) + 1,
+		[highlight.highlightAreas]
+	);
 
-export default function Highlight({ highlight, deleteHighlight, onHighlightClick }: Props) {
-
-
-	//  calculate the page number from the highlightAreas and increment it by 1 meomized
-	// in the case that pageIndex is 0 add 1 to it
-	const pageNumber = useMemo(() => {
-		const pageIndex = highlight.highlightAreas[0]?.pageIndex;
-		return pageIndex !== undefined ? pageIndex + 1 : 'Unknown';
-	}, [highlight.highlightAreas]);
 	return (
 		<li
 			id={`highlight-${highlight.id}`}
-			key={highlight.id}
 			className="relative p-4 cursor-pointer transition-colors duration-140 ease-in border-b border-gray-500 bg-gray-100 hover:bg-gray-200"
 			onClick={() => {
-				updateHash(highlight);
-				if (highlight.highlightAreas.length > 0 && highlight.highlightAreas[0]) {
+				updateHash(highlight.id);
+				if (highlight.highlightAreas.length > 0) {
 					onHighlightClick(highlight);
 				}
 			}}
@@ -55,30 +48,18 @@ export default function Highlight({ highlight, deleteHighlight, onHighlightClick
 			</Button>
 			<div>
 				{highlight.node?.prompt && (
-					<div key={`${highlight.id}-prompt-${highlight.node.prompt}`} className="pr-12">
-						<p className="italic underline line-clamp-2">{highlight.node.prompt}</p>
-					</div>
+					<p className="italic underline line-clamp-2 pr-12">{highlight.node.prompt}</p>
 				)}
 				{highlight?.quote && <p className="mt-1 line-clamp-2 font-bold">{highlight.quote}</p>}
-				{highlight.node?.response ? (
+				{highlight.node?.response && (
 					<blockquote className="mt-2">{`${highlight.node.response.slice(0, 90).trim()}…`}</blockquote>
-				) : null}
-				{highlight.comments && highlight.comments.length > 0 && (
+				)}
+				{highlight.comments?.length > 0 && (
 					<div className="mt-2">
 						{highlight.comments.map((comment) => <p key={comment.id}>{comment.text}</p>)}
 					</div>
 				)}
-				<div className="mt-2">
-					<p>Page {pageNumber}</p>
-				</div>
-				{/* {highlight.content.image ? (
-          <div className="mt-2 overflow-auto max-w-xs border-dashed border">
-            <img src={highlight.content.image} alt={"Screenshot"} />
-          </div>
-        ) : null} */}
-			</div>
-			<div className="mt-2 text-right text-xs">
-				{/* Page {highlight.highlightAreas.} */}
+				<p className="mt-2">Page {pageNumber}</p>
 			</div>
 		</li>
 	);

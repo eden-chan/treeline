@@ -1,40 +1,27 @@
-import { useCallback, useRef, useState, useMemo, useEffect } from "react";
-import {
-	RenderHighlightsProps,
-	RenderHighlightTargetProps,
-} from "@react-pdf-viewer/highlight";
+import React, { useRef, useState, useMemo } from "react";
 import { Viewer } from "@react-pdf-viewer/core";
-
+import { RenderHighlightsProps, RenderHighlightTargetProps } from "@react-pdf-viewer/highlight";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
-import {
-	renderHighlightTarget,
-	renderHighlights,
-} from "@/lib/highlight-plugins";
+import { renderHighlightTarget, renderHighlights } from "@/lib/highlight-plugins";
 import { useAskHighlight } from "@src/context/ask-highlight-context";
-import {
-	AnnotatedPdfWithProfile,
-	HighlightWithRelations,
-	UserProfile,
-} from "@src/lib/types";
+import { AnnotatedPdfWithProfile, HighlightWithRelations, UserProfile } from "@src/lib/types";
 import { clientApi } from "@src/trpc/react";
 import { CommandDialogDemo } from '@src/app/pdf/ui/components/CommandK';
 import { ResizableHandle, ResizablePanel } from '../ui/resizable';
 import { PanelGroup } from 'react-resizable-panels';
-import { Sidebar } from './Sidebar';
-
-
+import Sidebar from './Sidebar';
 
 const highlightPlugin = require("./highlight.js").highlightPlugin;
 
 type Props = {
-	annotatedPdfId: string;
 	loadedSource: string;
-	userId: string;
-	userHighlights: HighlightWithRelations[];
-	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
 	pdfBytes: number[];
+	userHighlights: HighlightWithRelations[];
+	userId: string;
+	annotatedPdfId: string;
+	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
 	userProfiles: UserProfile[];
 };
 
@@ -47,277 +34,77 @@ const ReadingViewer: React.FC<Props> = ({
 	annotatedPdfsWithProfile,
 	userProfiles
 }) => {
-	const [friendHighlights, setFriendHighlights] = useState<
-		HighlightWithRelations[]
-	>([]);
-
-
-	const {
-		currentHighlight,
-		selectHighlight,
-		createAskHighlight,
-		clearSelectedHighlight,
-		setCurrentHighlight,
-	} = useAskHighlight();
-
+	const [friendHighlights, setFriendHighlights] = useState<HighlightWithRelations[]>([]);
+	const { currentHighlight, selectHighlight, createAskHighlight, setCurrentHighlight } = useAskHighlight();
 	const utils = clientApi.useUtils();
+	const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
-	const annotatedPdfResetHighlightsMutation =
-		clientApi.annotatedPdf.resetHighlights.useMutation({
-			onMutate: async () => {
-				await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
-					userId: userId,
-					source: loadedSource,
-				});
-
-				utils.annotatedPdf.fetchAnnotatedPdf.setData(
-					{
-						userId: userId,
-						source: loadedSource,
-					},
-					(oldData) => {
-						if (!oldData) return oldData;
-						return {
-							...oldData,
-							highlights: [],
-						};
-					},
-				);
-			},
-			onSuccess: (input) => {
-				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
-					userId: userId,
-					source: loadedSource,
-				});
-			},
-		});
-
-	const deleteHighlightMutation =
-		clientApi.highlight.deleteHighlight.useMutation({
-			onMutate: async (newData) => {
-				await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
-					userId: userId,
-					source: loadedSource,
-				});
-
-				utils.annotatedPdf.fetchAnnotatedPdf.setData(
-					{
-						userId: userId,
-						source: loadedSource,
-					},
-					(oldData) => {
-						if (!oldData) return oldData;
-						return {
-							...oldData,
-							highlights: highlights.filter(
-								(highlight) => highlight.id != newData.highlightId,
-							),
-						};
-					},
-				);
-			},
-			onSuccess: (input) => {
-				utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
-					userId: userId,
-					source: loadedSource,
-				});
-			},
-		});
-
-	const editHighlightMutation = clientApi.comment.upsertComment.useMutation({
-		onMutate: async (input) => {
-			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({
-				userId: userId,
-				source: loadedSource,
-			});
-
-			utils.annotatedPdf.fetchAnnotatedPdf.setData(
-				{
-					userId: userId,
-					source: loadedSource,
-				},
-				(oldData) => {
-					if (!oldData) return oldData;
-
-					return {
-						...oldData,
-					};
-				},
-			);
+	const annotatedPdfResetHighlightsMutation = clientApi.annotatedPdf.resetHighlights.useMutation({
+		onMutate: async () => {
+			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId, source: loadedSource });
+			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId, source: loadedSource },
+				oldData => oldData ? { ...oldData, highlights: [] } : oldData);
 		},
-		onSuccess: (input) => {
-			utils.annotatedPdf.fetchAnnotatedPdf.invalidate({
-				userId: userId,
-				source: loadedSource,
-			});
-		},
+		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId, source: loadedSource }),
 	});
 
-	const highlights =
-		clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({
-			userId: userId,
-			source: loadedSource,
-		}).data?.highlights || userHighlights;
+	const deleteHighlightMutation = clientApi.highlight.deleteHighlight.useMutation({
+		onMutate: async (newData) => {
+			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId, source: loadedSource });
+			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId, source: loadedSource },
+				oldData => oldData ? { ...oldData, highlights: highlights.filter(h => h.id !== newData.highlightId) } : oldData);
+		},
+		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId, source: loadedSource }),
+	});
 
-	const deleteHighlight = (highlightId: string) => {
-		deleteHighlightMutation.mutate({ highlightId });
-	};
+	const editHighlightMutation = clientApi.comment.upsertComment.useMutation({
+		onMutate: async () => {
+			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId, source: loadedSource });
+			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId, source: loadedSource }, oldData => oldData);
+		},
+		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId, source: loadedSource }),
+	});
 
-	const editHighlight = async ({
-		id,
-		highlightId,
-		text,
-	}: {
-		id?: string;
-		highlightId: string;
-		text: string;
-	}) => {
-		const response = editHighlightMutation.mutate({
-			id,
-			highlightId,
-			text,
-			userId,
-		});
+	const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({ userId, source: loadedSource }).data?.highlights || userHighlights;
 
-		return response;
-	};
+	const deleteHighlight = (highlightId: string) => deleteHighlightMutation.mutate({ highlightId });
+	const editHighlight = async ({ id, highlightId, text }: { id?: string; highlightId: string; text: string }) =>
+		editHighlightMutation.mutate({ id, highlightId, text, userId });
+	const resetHighlights = () => annotatedPdfResetHighlightsMutation.mutate({ id: annotatedPdfId });
 
-	const resetHighlights = () => {
-		annotatedPdfResetHighlightsMutation.mutate({
-			id: annotatedPdfId,
-		});
-	};
-
-	const panelGroupRef = useRef<ImperativePanelGroupHandle>(null);
-	const setPDFViewerWidthPercentage = (pdfViewerWidth: number = 20) => {
-		const panelGroup = panelGroupRef.current;
-		if (panelGroup) {
-			panelGroup.setLayout([pdfViewerWidth, 100 - pdfViewerWidth]);
-		}
-	};
-
-	const inputRef = useRef<HTMLTextAreaElement | null>(null);
-	const openForest = (highlight: HighlightWithRelations) => {
-		setCurrentHighlight(highlight);
-		// const panelGroup = panelGroupRef.current;
-		// if (panelGroup) {
-		// 	setPDFViewerWidthPercentage(50);
-		// }
-	};
+	const openForest = (highlight: HighlightWithRelations) => setCurrentHighlight(highlight);
 
 	const highlightPluginInstance = highlightPlugin({
 		renderHighlightTarget: (props: RenderHighlightTargetProps) =>
-			renderHighlightTarget({
-				...props,
-				openForest,
-				annotatedPdfId,
-				createAskHighlight,
-				setCurrentHighlight,
-				inputRef,
-			}),
+			renderHighlightTarget({ ...props, openForest, annotatedPdfId, createAskHighlight, setCurrentHighlight, inputRef }),
 		renderHighlights: (props: RenderHighlightsProps) =>
-			renderHighlights({
-				...props,
-				highlights,
-				openForest,
-				editHighlight,
-				deleteHighlight,
-				userId,
-				userProfiles,
-			}),
+			renderHighlights({ ...props, highlights, openForest, editHighlight, deleteHighlight, userId, userProfiles }),
 	});
-
-	const { jumpToHighlightArea } = highlightPluginInstance;
 
 	const onHighlightClick = (highlight: HighlightWithRelations) => {
 		const area = highlight.highlightAreas[0];
-		if (area) {
-			jumpToHighlightArea(area);
-		}
+		if (area) highlightPluginInstance.jumpToHighlightArea(area);
 		selectHighlight(highlight);
-
 	};
 
-
-
-	// useEffect to load pdfBytes from loadedDataSource
-	// useEffect(() => {
-	// 	const fetchPDFBytes = async () => {
-	// 		try {
-	// 			const response = await fetch(`/api/pdf?url=${loadedSource}`);
-	// 			const { filename, data } = await response.json()
-	// 			console.log(filename, data)
-	// 			setPdfBytes(new Uint8Array(data));
-
-	// 		} catch (error) {
-	// 			console.error('Failed to load PDF:', error);
-	// 		}
-	// 	};
-
-	// 	fetchPDFBytes();
-	// }, [loadedSource]);
-	//  memoize the pdf bytes 
-	const pdfBytesMemoized = useMemo(() => {
-		return new Uint8Array(pdfBytes);
-	}, [pdfBytes]);
-
+	const pdfBytesMemoized = useMemo(() => new Uint8Array(pdfBytes), [pdfBytes]);
 
 	return (
 		<div>
-			<FloatingProfiles
-				setDisplayHighlights={setFriendHighlights}
-				allHighlightsWithProfile={annotatedPdfsWithProfile}
-			/>
+			<FloatingProfiles setDisplayHighlights={setFriendHighlights} allHighlightsWithProfile={annotatedPdfsWithProfile} />
 			<CommandDialogDemo />
-			<PanelGroup className="w-full" direction="horizontal" ref={panelGroupRef}>
-				<ResizablePanel
-
-					className="relative"
-					defaultSize={80}
-					style={{ height: "100vh", overflow: "auto" }}
-					collapsible
-				>
-
-					<Viewer
-						// for cors protected resource (arxiv) load in server side by bytes
-						// otherwise load in client side by url
-						fileUrl={pdfBytesMemoized.length > 0 ? pdfBytesMemoized : loadedSource}
-						plugins={[
-							highlightPluginInstance,
-						]}
-					/>
-
-					<div />
+			<PanelGroup className="w-full" direction="horizontal">
+				<ResizablePanel className="relative" defaultSize={80} style={{ height: "100vh", overflow: "auto" }} collapsible>
+					<Viewer fileUrl={pdfBytesMemoized.length > 0 ? pdfBytesMemoized : loadedSource} plugins={[highlightPluginInstance]} />
 				</ResizablePanel>
 				<ResizableHandle withHandle handleClassName="bg-[#B2B2B2]" />
-				<ResizablePanel
-					style={{ height: "100vh", overflow: "auto" }}
-					collapsible
-				>
-					{/* {currentHighlight?.node ? (
-						<ReactFlowProvider>
-							<Forest
-								node={currentHighlight.node}
-								returnHome={() => {
-									document.location.hash = "";
-									clearSelectedHighlight();
-								}}
-							/>
-						</ReactFlowProvider>
-					) : (
-					
-					)} */}
+				<ResizablePanel style={{ height: "100vh", overflow: "auto" }} collapsible>
 					<div className="h-full overflow-auto">
-						<Sidebar
-							highlights={highlights ?? []}
-							deleteHighlight={deleteHighlight}
-							resetHighlights={resetHighlights}
-							onHighlightClick={onHighlightClick}
-						/>
+						<Sidebar highlights={highlights ?? []} deleteHighlight={deleteHighlight} resetHighlights={resetHighlights} onHighlightClick={onHighlightClick} />
 					</div>
 				</ResizablePanel>
 			</PanelGroup>
-		</div >
+		</div>
 	);
 };
 
