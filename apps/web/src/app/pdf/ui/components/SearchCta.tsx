@@ -25,15 +25,14 @@ export default function SearchCta() {
 	};
 
 	return (
-		<section className="flex grow flex-col items-center justify-center bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] p-4">
+		<section className="flex grow flex-col items-center justify-center bg-gradient-to-br from-green-700 to-green-500 p-4">
 			<div className="mx-auto w-full max-w-md space-y-6">
 				<div className="text-center">
-					<h1 className="text-4xl font-bold tracking-tight text-white sm:text-5xl">
-						Accelerate Your Learning
+					<h1 className="text-4xl font-bold tracking-tight text-white sm:text-4xl">
+						Cultivate knowledge, harvest insights
 					</h1>
 					<p className="mt-3 text-gray-200 sm:text-lg">
-						Discover what you're curious about and uncover the gaps in your
-						knowledge.
+						Plant your research, let ideas flourish, and see connections bloom.
 					</p>
 				</div>
 				<form
@@ -67,7 +66,7 @@ export default function SearchCta() {
 							className="inline-flex w-full justify-center rounded-md border border-transparent bg-[#6366F1] py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-[#4F46E5] focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:ring-offset-2 dark:bg-[#6366F1] dark:hover:bg-[#4F46E5] dark:focus:ring-[#6366F1]"
 							type="submit"
 						>
-							Create Source
+							Plant Tree
 						</button>
 					</div>
 				</form>

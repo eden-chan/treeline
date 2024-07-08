@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Suspense } from "react";
 
 import { User, clerkClient, currentUser } from "@clerk/nextjs/server";
 import { AnnotatedPdf } from "@prisma/client";
@@ -146,15 +146,17 @@ export default async function Page() {
 			loadedSource={source}
 			parsedPaper={parsedPaper}
 		>
-			<PDFViewer
-				annotatedPdfId={id}
-				loadedSource={source}
-				userId={userId}
-				userHighlights={highlights}
-				annotatedPdfsWithProfile={annotatedPdfsWithProfile}
-				pdfBytes={pdfBytes}
-				userProfiles={userProfiles}
-			/>
+			<Suspense fallback={<div>Loading...</div>}>
+				<PDFViewer
+					annotatedPdfId={id}
+					loadedSource={source}
+					userId={userId}
+					userHighlights={highlights}
+					annotatedPdfsWithProfile={annotatedPdfsWithProfile}
+					pdfBytes={pdfBytes}
+					userProfiles={userProfiles}
+				/>
+			</Suspense>
 		</AskHighlightProvider>
 	);
 }

@@ -252,7 +252,7 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 							<Button onClick={() => setUpdatingGroup(group)}><Edit size={16} /></Button>
 							<Button onClick={() => handleDeleteGroup(group.id)}><Trash size={16} /></Button>
 						</div>
-						<h3 className="text-lg font-medium mb-2">Sources in this group:</h3>
+						<h3 className="text-lg font-medium mb-2">Trees in this Forest:</h3>
 						<ul>
 							{sources.filter(source => group.sourceIDs.includes(source.id)).map((source) => (
 								<li key={source.id} className="flex justify-between items-center mb-2">
@@ -262,7 +262,7 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 							))}
 						</ul>
 						<div className="mt-4">
-							<h4 className="text-md font-medium mb-2">Add sources to group:</h4>
+							<h4 className="text-md font-medium mb-2">Add Trees to Forest:</h4>
 							<div className="max-h-40 overflow-y-auto border rounded p-2">
 								{sources.filter(source => !group.sourceIDs.includes(source.id)).map((source) => (
 									<div key={source.id} className="flex items-center space-x-2 mb-2">
@@ -296,7 +296,7 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 					onClick={() => setIsCreatingGroup(true)}
 					disabled={selectedSources.length === 0}
 				>
-					<Plus className="mr-2 h-4 w-4" /> Create Group
+					<Plus className="mr-2 h-4 w-4" /> Create Forest
 				</Button>
 				<div className="flex space-x-2">
 					<Button
@@ -316,7 +316,7 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 				</div>
 			</div>
 			{renderSources()}
-			<h2 className="text-2xl font-bold mt-8 mb-4">Source Groups</h2>
+			<h2 className="text-2xl font-bold mt-8 mb-4">Forests</h2>
 			{renderGroups()}
 			<Dialog open={isCreatingGroup} onOpenChange={setIsCreatingGroup}>
 				<CreateGroupDialog

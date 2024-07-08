@@ -40,3 +40,4 @@ export type UserProfile = {
 	imageUrl: string;
 	email: string
 };
+
