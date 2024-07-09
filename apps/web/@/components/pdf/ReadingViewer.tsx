@@ -87,7 +87,7 @@ const ReadingViewer: React.FC<Props> = ({
 				annotatedPdfId,
 				createAskHighlight,
 				setCurrentHighlight,
-				inputRef,
+				inputRef, lastSelectedRef
 			});
 		},
 		renderHighlights: (props: RenderHighlightsProps) =>

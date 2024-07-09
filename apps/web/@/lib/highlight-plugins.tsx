@@ -19,6 +19,7 @@ type MyRenderHighlightTargetProps = {
 	setCurrentHighlight: (highlight: HighlightWithRelations | null, forceRerender?: boolean | undefined) => void;
 	inputRef: MutableRefObject<HTMLTextAreaElement | null>;
 	openForest: (highlight: HighlightWithRelations) => void;
+	lastSelectedRef: MutableRefObject<LastSelectedArea | null>;
 
 } & RenderHighlightTargetProps;
 
@@ -34,7 +35,16 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 		};
 		props.createAskHighlight(highlightDraft);
 		props.cancel();
+		// Don't double highlight when saving highlight
+		props.lastSelectedRef.current = null;
+
 	};
+
+	const cursorPosition = {
+		x: window.getSelection()?.getRangeAt(0).getBoundingClientRect().right ?? 0,
+		y: window.getSelection()?.getRangeAt(0).getBoundingClientRect().top ?? 0
+	};
+
 	return (
 		<div
 			className="absolute flex flex-col space-y-2"
@@ -45,13 +55,7 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 				zIndex: 1,
 			}}
 		>
-			<button
-				onClick={saveHighlight}
-				className="px-2 py-1 bg-blue-500 text-white rounded shadow-md focus:outline-none hover:bg-blue-600 text-xs"
-			>
-				Save
-			</button>
-			<MiniChatWindow selectedText={props.selectedText} position={props.selectionRegion} />
+			<MiniChatWindow saveHighlight={saveHighlight} selectedText={props.selectedText} cursorPosition={cursorPosition} />
 		</div>
 	);
 };
@@ -117,7 +121,7 @@ export const renderHighlights = (props: MyRenderHighlightsProps) => {
 
 										<HighlightedArea
 											openForest={() => props.openForest(highlight)}
-											className="bg-[#8080FF] bg-opacity-40  cursor-pointer"
+											className="bg-yellow-400 bg-opacity-10 cursor-pointer"
 											area={area}
 											props={props}
 										/>

@@ -21,7 +21,7 @@ export const HighlightedArea = ({ area, props, className, openForest }: Props) =
 		key={uuidv4()}
 		onClick={(e) => {
 			e.stopPropagation()
-			openForest()
+			// openForest()
 		}}
 		className={cn("z-10", className)}
 		style={Object.assign(
