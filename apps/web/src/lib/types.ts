@@ -5,6 +5,10 @@ import {
 	CurriculumNode,
 } from "@prisma/client";
 
+export enum EMBEDDING_TYPE {
+	FactDescriptor = "FACT_DESCRIPTOR",
+	SourceText = "SOURCE_TEXT",
+}
 
 export type CurriculumNodeWithRelations = CurriculumNode & {
 	children?: CurriculumNodeWithRelations[];
