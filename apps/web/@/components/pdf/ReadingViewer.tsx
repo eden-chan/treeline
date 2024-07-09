@@ -21,7 +21,7 @@ type Props = {
 	pdfBytes: number[];
 	loggedInUserHighlights: HighlightWithRelations[];
 	otherUserHighlights: HighlightWithRelations[];
-	userId: string;
+	loggedInUserId: string;
 	annotatedPdfId: string;
 	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
 	userProfiles: UserProfile[];
@@ -32,13 +32,13 @@ const ReadingViewer: React.FC<Props> = ({
 	pdfBytes,
 	loggedInUserHighlights,
 	otherUserHighlights,
-	userId,
+	loggedInUserId,
 	annotatedPdfId,
 	annotatedPdfsWithProfile,
 	userProfiles
 }) => {
 	const { currentHighlight, selectHighlight, createAskHighlight, setCurrentHighlight } = useAskHighlight();
-	const [selectedHighlights, setSelectedHighlights] = useState<HighlightWithRelations[]>(otherUserHighlights);
+	const [selectedHighlights, setSelectedHighlights] = useState<AnnotatedPdfWithProfile[]>(annotatedPdfsWithProfile);
 	const utils = clientApi.useUtils();
 	const inputRef = useRef<HTMLTextAreaElement | null>(null);
 	const lastSelectedRef = useRef<LastSelectedArea | null>(null);
@@ -46,35 +46,35 @@ const ReadingViewer: React.FC<Props> = ({
 
 	const annotatedPdfResetHighlightsMutation = clientApi.annotatedPdf.resetHighlights.useMutation({
 		onMutate: async () => {
-			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId, source: loadedSource });
-			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId, source: loadedSource },
+			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId: loggedInUserId, source: loadedSource });
+			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId: loggedInUserId, source: loadedSource },
 				oldData => oldData ? { ...oldData, highlights: [] } : oldData);
 		},
-		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId, source: loadedSource }),
+		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId: loggedInUserId, source: loadedSource }),
 	});
 
 	const deleteHighlightMutation = clientApi.highlight.deleteHighlight.useMutation({
 		onMutate: async (newData) => {
-			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId, source: loadedSource });
-			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId, source: loadedSource },
+			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId: loggedInUserId, source: loadedSource });
+			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId: loggedInUserId, source: loadedSource },
 				oldData => oldData ? { ...oldData, highlights: highlights.filter(h => h.id !== newData.highlightId) } : oldData);
 		},
-		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId, source: loadedSource }),
+		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId: loggedInUserId, source: loadedSource }),
 	});
 
 	const editHighlightMutation = clientApi.comment.upsertComment.useMutation({
 		onMutate: async () => {
-			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId, source: loadedSource });
-			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId, source: loadedSource }, oldData => oldData);
+			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId: loggedInUserId, source: loadedSource });
+			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId: loggedInUserId, source: loadedSource }, oldData => oldData);
 		},
-		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId, source: loadedSource }),
+		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId: loggedInUserId, source: loadedSource }),
 	});
 
-	const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({ userId, source: loadedSource }).data?.highlights || loggedInUserHighlights;
+	const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({ userId: loggedInUserId, source: loadedSource }).data?.highlights || loggedInUserHighlights;
 
 	const deleteHighlight = (highlightId: string) => deleteHighlightMutation.mutate({ highlightId });
 	const editHighlight = async ({ id, highlightId, text }: { id?: string; highlightId: string; text: string }) =>
-		editHighlightMutation.mutate({ id, highlightId, text, userId });
+		editHighlightMutation.mutate({ id, highlightId, text, userId: loggedInUserId });
 	const resetHighlights = () => annotatedPdfResetHighlightsMutation.mutate({ id: annotatedPdfId });
 
 	const openForest = (highlight: HighlightWithRelations) => setCurrentHighlight(highlight);
@@ -94,7 +94,7 @@ const ReadingViewer: React.FC<Props> = ({
 		},
 		renderHighlights: (props: RenderHighlightsProps) => {
 			console.log("selectedHighlights", selectedHighlights);
-			return renderHighlights({ ...props, highlights, selectedHighlights, openForest, editHighlight, deleteHighlight, userId, userProfiles, lastSelectedRef })
+			return renderHighlights({ ...props, highlights, selectedHighlights, openForest, editHighlight, deleteHighlight, loggedInUserId: loggedInUserId, userProfiles, lastSelectedRef })
 		},
 	});
 

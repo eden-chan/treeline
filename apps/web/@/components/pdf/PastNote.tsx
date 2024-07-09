@@ -38,7 +38,8 @@ export const PastNote = ({
 	middleHeight,
 	editHighlight,
 	deleteHighlight,
-	userId, userProfiles
+	userId,
+	userProfiles
 
 }: Props) => {
 	if (!rightmostArea) return null;
@@ -111,7 +112,9 @@ export const PastNote = ({
 	const [isReplyDrafted, setIsReplyDrafted] = useState(false);
 	const isFirstCommentEditable = highlight.comments.length === 0
 
-	const userProfile = userProfiles.find(user => user.email === highlight?.comments?.[0]?.userId ?? '')
+
+	// I want to get the author of each highlight as well as the time ago
+	const userProfile = userProfiles.find(user => user.email === userId)
 
 
 
@@ -150,8 +153,6 @@ export const PastNote = ({
 		const selectionStart = event.target.selectionStart;
 		const textarea = event.target;
 
-		console.log({ event })
-
 		const mostRecentAtIndex = value.lastIndexOf('@', selectionStart - 1);
 
 		if (mostRecentAtIndex !== -1) {
@@ -166,13 +167,8 @@ export const PastNote = ({
 					top: parentRect?.top || 0,
 				};
 
-				console.log(`Caret Position X: ${caretPosition.x}, Parent Offset Left: ${parentOffset.left}`);
 				const leftPosition = `${(caretPosition.x - parentOffset.left) * 1.1}px`;
 				const topPosition = `${textarea.scrollHeight}px`;
-
-				const listboxWidth = listboxRef.current.clientWidth;
-				console.log(`listboxRef current width: ${listboxWidth}px`);
-				console.log(`textarea width: ${200}px`);
 				const parsedLeftPosition = `${(parseFloat(leftPosition) % (152))}px`;
 
 				listboxRef.current.style.left = parsedLeftPosition;
@@ -217,9 +213,7 @@ export const PastNote = ({
 						>
 							<Trash2 className="cursor-pointer" size={16} />
 						</button>
-						{highlight.comments.length > 0 && (
-							<span className="text-xs ml-1 select-none self-end">{userProfile?.firstName} {userProfile?.lastName} {memoizedTimeAgo} </span>
-						)}
+						<span className="text-xs ml-1 select-none text-black self-end">{userProfile?.firstName ?? 'Anonymous'} {userProfile?.lastName ?? ''} {memoizedTimeAgo} </span>
 					</div>
 				</span>
 				<div className="invisible group-hover:visible group-hover:z-30 absolute w-full bg-white z-50  ">

@@ -5,22 +5,18 @@
  */
 
 import {
-	AnnotatedPdfWithRelations,
-	HighlightWithRelations,
+	AnnotatedPdfWithProfile,
 } from "@src/lib/types";
 import { AnimatedTooltip } from "../../../src/app/pdf/ui/components/AnimatedTooltip";
 import { Dispatch, SetStateAction } from "react";
 
-interface AnnotatedPdfWithProfile extends AnnotatedPdfWithRelations {
-	userProfilePicture: string;
-	firstName: string;
-	lastName: string;
-}
+
+
 export default function FloatingProfiles({
 	setDisplayHighlights,
 	allHighlightsWithProfile,
 }: {
-	setDisplayHighlights: Dispatch<SetStateAction<HighlightWithRelations[]>>;
+	setDisplayHighlights: Dispatch<SetStateAction<AnnotatedPdfWithProfile[]>>;
 	allHighlightsWithProfile: AnnotatedPdfWithProfile[];
 }) {
 	const items = allHighlightsWithProfile.map((profile, index) => ({
@@ -29,7 +25,7 @@ export default function FloatingProfiles({
 		designation: `Highlights: ${profile.highlights.length}`,
 		image: profile.userProfilePicture,
 		setDisplayHighlights: () => {
-			setDisplayHighlights(profile.highlights);
+			setDisplayHighlights([profile]);
 		},
 	}));
 

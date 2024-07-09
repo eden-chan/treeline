@@ -166,7 +166,7 @@ export default async function Page() {
 				<PDFViewer
 					annotatedPdfId={annotatedPdfId}
 					loadedSource={source}
-					userId={userId}
+					loggedInUserId={userId}
 					loggedInUserHighlights={loggedInUserHighlights}
 					annotatedPdfsWithProfile={annotatedPdfsWithProfile}
 					otherUserHighlights={otherUserHighlights}
