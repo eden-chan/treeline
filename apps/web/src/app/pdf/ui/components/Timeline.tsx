@@ -5,7 +5,6 @@ import { memo } from "react";
 import { calculateTimeAgo } from "@src/lib/utils";
 import { useRouter } from "next/navigation";
 import { Source, SourceGroup } from '@prisma/client';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import { TabsTrigger, TabsList, Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -13,10 +12,19 @@ import { AlignJustify, LayoutGrid, Plus, Edit, Trash } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { createSourceGroupAction, updateSourceAction, updateSourceGroupAction, deleteSourceAction, deleteSourceGroupAction, removeSourceFromGroupAction, addSourceToGroupAction } from '@src/app/actions';
 import { Checkbox } from "@/components/ui/checkbox";
 import Link from 'next/link';
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip"
+
+import { toast } from '@/components/ui/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 // Import server actions
 
 
@@ -50,6 +58,49 @@ const PaperCard = ({ source, isSelected, onSelect }: PaperCardProps) => (
 	</Card>
 );
 
+const DeleteSourceDialog = ({ isOpen, onClose, onConfirm, sourceName }: {
+	isOpen: boolean;
+	onClose: () => void;
+	onConfirm: () => void;
+	sourceName: string;
+}) => (
+	<Dialog open={isOpen} onOpenChange={onClose}>
+		<DialogContent>
+			<DialogHeader>
+				<DialogTitle>Delete Sapling</DialogTitle>
+				<DialogDescription>
+					Are you sure you want to delete the sapling "{sourceName}"? This action cannot be undone.
+				</DialogDescription>
+			</DialogHeader>
+			<DialogFooter>
+				<Button variant="outline" onClick={onClose}>Cancel</Button>
+				<Button variant="destructive" onClick={onConfirm}>Delete</Button>
+			</DialogFooter>
+		</DialogContent>
+	</Dialog>
+);
+
+const DeleteGroupDialog = ({ isOpen, onClose, onConfirm, groupName }: {
+	isOpen: boolean;
+	onClose: () => void;
+	onConfirm: () => void;
+	groupName: string;
+}) => (
+	<Dialog open={isOpen} onOpenChange={onClose}>
+		<DialogContent>
+			<DialogHeader>
+				<DialogTitle>Delete Forest</DialogTitle>
+				<DialogDescription>
+					Are you sure you want to delete the forest "{groupName}"? This action cannot be undone.
+				</DialogDescription>
+			</DialogHeader>
+			<DialogFooter>
+				<Button variant="outline" onClick={onClose}>Cancel</Button>
+				<Button variant="destructive" onClick={onConfirm}>Delete</Button>
+			</DialogFooter>
+		</DialogContent>
+	</Dialog>
+);
 
 const UpdateSourceDialog = ({ source, onClose }: { source: Source, onClose: () => void }) => {
 	return (
@@ -58,10 +109,18 @@ const UpdateSourceDialog = ({ source, onClose }: { source: Source, onClose: () =
 				<DialogTitle>Update Source</DialogTitle>
 			</DialogHeader>
 			<form action={async (formData: FormData) => {
-				const title = formData.get('title') as string;
-				const description = formData.get('description') as string;
-				await updateSourceAction(source.id, title, description);
-				onClose();
+				try {
+					const title = formData.get('title') as string;
+					const description = formData.get('description') as string;
+					await updateSourceAction(source.id, title, description);
+					toast({ title: "Source updated successfully" });
+					onClose();
+				} catch (error) {
+					toast({
+						title: "Failed to update source",
+						variant: "destructive",
+					});
+				}
 			}}>
 				<Input name="title" placeholder="Title" defaultValue={source.title} required />
 				<Textarea name="description" placeholder="Description" defaultValue={source.description} required />
@@ -78,10 +137,18 @@ const UpdateGroupDialog = ({ group, onClose }: { group: SourceGroup, onClose: ()
 				<DialogTitle>Update Forest</DialogTitle>
 			</DialogHeader>
 			<form action={async (formData: FormData) => {
-				const title = formData.get('title') as string;
-				const description = formData.get('description') as string;
-				await updateSourceGroupAction(group.id, title, description);
-				onClose();
+				try {
+					const title = formData.get('title') as string;
+					const description = formData.get('description') as string;
+					await updateSourceGroupAction(group.id, title, description);
+					toast({ title: "Forest updated successfully" });
+					onClose();
+				} catch (error) {
+					toast({
+						title: "Failed to update forest",
+						variant: "destructive",
+					});
+				}
 			}}>
 				<Input name="title" placeholder="Title" defaultValue={group.title} required />
 				<Textarea name="description" placeholder="Description" defaultValue={group.description} required />
@@ -95,19 +162,96 @@ const CreateGroupDialog = ({ selectedSources, onClose }: { selectedSources: stri
 	return (
 		<DialogContent>
 			<DialogHeader>
-				<DialogTitle>Create New Group</DialogTitle>
+				<DialogTitle>Create New Forest</DialogTitle>
 			</DialogHeader>
 			<form action={async (formData: FormData) => {
-				const title = formData.get('title') as string;
-				const description = formData.get('description') as string;
-				await createSourceGroupAction(title, description, selectedSources);
-				onClose();
+				try {
+					const title = formData.get('title') as string;
+					const description = formData.get('description') as string;
+					await createSourceGroupAction(title, description, selectedSources);
+					toast({ title: "Forest created successfully" });
+					onClose();
+				} catch (error) {
+					toast({
+						title: "Failed to create group",
+						variant: "destructive",
+					});
+				}
 			}}>
-				<Input name="title" placeholder="Group Title" required />
-				<Textarea name="description" placeholder="Group Description" required />
-				<Button type="submit">Create Group</Button>
+				<Input name="title" placeholder="Forest Title" required />
+				<Textarea name="description" placeholder="Forest Description" required />
+				<Button type="submit">Create Forest</Button>
 			</form>
 		</DialogContent>
+	);
+};
+
+const AddSourcesDialog = ({
+	isOpen,
+	onClose,
+	group,
+	sources,
+	selectedSourcesForGroup,
+	handleSourceSelect,
+	handleAddSourcesToGroup
+}: {
+	isOpen: boolean;
+	onClose: () => void;
+	group: SourceGroup;
+	sources: Source[];
+	selectedSourcesForGroup: Record<string, string[]>;
+	handleSourceSelect: (groupId: string, sourceId: string) => void;
+	handleAddSourcesToGroup: (groupId: string) => Promise<void>;
+}) => {
+	return (
+		<Dialog open={isOpen} onOpenChange={onClose}>
+			<DialogContent className="sm:max-w-[425px]">
+				<DialogHeader>
+					<DialogTitle>Add Saplings to Forest: {group.title}</DialogTitle>
+				</DialogHeader>
+				<ScrollArea className="mt-4 h-[300px] pr-4">
+					{sources.filter(source => !group.sourceIDs.includes(source.id)).map((source) => (
+						<div key={source.id} className="flex items-center space-x-2 mb-2">
+							<Checkbox
+								id={`${group.id}-${source.id}`}
+								checked={(selectedSourcesForGroup[group.id] || []).includes(source.id)}
+								onCheckedChange={() => handleSourceSelect(group.id, source.id)}
+							/>
+							<label
+								htmlFor={`${group.id}-${source.id}`}
+								className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+							>
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<Link
+												href={`/pdf?url=${source.source}`}
+												className="text-blue-600 hover:underline text-sm font-medium line-clamp-2"
+											>
+												{source.title}
+											</Link>
+										</TooltipTrigger>
+										<TooltipContent className="w-96 max-h-64 overflow-auto p-2">
+											<p className="text-xs">{source.description}</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+							</label>
+						</div>
+					))}
+				</ScrollArea>
+				<Button
+					className="mt-4"
+					onClick={() => {
+						handleAddSourcesToGroup(group.id);
+						onClose();
+					}}
+					disabled={!selectedSourcesForGroup[group.id] || selectedSourcesForGroup[group.id]?.length === 0}
+				>
+					Add Selected Sources
+				</Button>
+			</DialogContent>
+		</Dialog>
 	);
 };
 
@@ -118,6 +262,11 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 	const [updatingSource, setUpdatingSource] = useState<Source | null>(null);
 	const [updatingGroup, setUpdatingGroup] = useState<SourceGroup | null>(null);
 	const [view, setView] = useState("galleryView");
+	const [addSourcesDialogOpen, setAddSourcesDialogOpen] = useState(false);
+	const [currentGroup, setCurrentGroup] = useState<SourceGroup | null>(null);
+	const [selectedSourcesForGroup, setSelectedSourcesForGroup] = useState<Record<string, string[]>>({});
+	const [deletingSource, setDeletingSource] = useState<Source | null>(null);
+	const [deletingGroup, setDeletingGroup] = useState<SourceGroup | null>(null);
 
 	const handleSourceSelect = (id: string) => {
 		setSelectedSources(prev =>
@@ -129,51 +278,143 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 		router.push(`/pdf?url=${url}`);
 	};
 
-	const handleDeleteSource = async (id: string) => {
-		if (confirm("Are you sure you want to delete this source?")) {
-			await deleteSourceAction(id);
-			router.refresh();
+	const handleDeleteSource = async (source: Source) => {
+		setDeletingSource(source);
+	};
+
+	const confirmDeleteSource = async () => {
+		if (deletingSource) {
+			try {
+				await deleteSourceAction(deletingSource.id);
+				toast({ title: "Sapling deleted successfully" });
+				router.refresh();
+			} catch (error) {
+				toast({
+					title: "Failed to delete source",
+					variant: "destructive",
+				});
+			} finally {
+				setDeletingSource(null);
+			}
 		}
 	};
 
-	const handleDeleteGroup = async (id: string) => {
-		if (confirm("Are you sure you want to delete this group?")) {
-			await deleteSourceGroupAction(id);
-			router.refresh();
-		}
+	const handleDeleteGroup = async (group: SourceGroup) => {
+		setDeletingGroup(group);
 	};
 
+	const confirmDeleteGroup = async () => {
+		if (deletingGroup) {
+			try {
+				await deleteSourceGroupAction(deletingGroup.id);
+				toast({ title: "Forest deleted successfully" });
+				router.refresh();
+			} catch (error) {
+				toast({
+					title: "Failed to delete Forest",
+					variant: "destructive",
+				});
+			} finally {
+				setDeletingGroup(null);
+			}
+		}
+	};
 	const handleRemoveSourceFromGroup = async (sourceId: string, groupId: string) => {
-		await removeSourceFromGroupAction(sourceId, groupId);
-		router.refresh();
+		try {
+			await removeSourceFromGroupAction(sourceId, groupId);
+			toast({ title: "Source removed from group successfully" });
+			router.refresh();
+		} catch (error) {
+			toast({
+				title: "Failed to remove sapling from Forest",
+				variant: "destructive",
+			});
+		}
 	};
 
 	const handleAddSourceToGroup = async (sourceId: string, groupId: string) => {
-		await addSourceToGroupAction(sourceId, groupId);
-		router.refresh();
+		try {
+			await addSourceToGroupAction(sourceId, groupId);
+			toast({ title: "Sapling added to group successfully" });
+			router.refresh();
+		} catch (error) {
+			toast({
+				title: "Failed to add sapling to Forest",
+				variant: "destructive",
+			});
+		}
 	};
 
+	const handleSourceSelectForGroup = (groupId: string, sourceId: string) => {
+		setSelectedSourcesForGroup(prev => {
+			const currentSelected = prev[groupId] || [];
+			if (currentSelected.includes(sourceId)) {
+				return { ...prev, [groupId]: currentSelected.filter(id => id !== sourceId) };
+			} else {
+				return { ...prev, [groupId]: [...currentSelected, sourceId] };
+			}
+		});
+	};
+
+	const handleAddSourcesToGroup = async (groupId: string) => {
+		const sourcesToAdd = selectedSourcesForGroup[groupId] || [];
+		for (const sourceId of sourcesToAdd) {
+			await handleAddSourceToGroup(sourceId, groupId);
+		}
+		setSelectedSourcesForGroup(prev => ({ ...prev, [groupId]: [] }));
+	};
+
+	const openAddSourcesDialog = (group: SourceGroup) => {
+		setCurrentGroup(group);
+		setAddSourcesDialogOpen(true);
+	};
 
 	const renderSources = () => {
 		if (view === "galleryView") {
 			return (
-				<div className="w-full grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+				<div className="w-full grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2">
 					{sources.map((source) => (
-						<div key={source.id} onClick={() => handleSourceClick(source.source)}>
-							<PaperCard
-								source={source}
-								isSelected={selectedSources.includes(source.id)}
-								onSelect={handleSourceSelect}
-							/>
-							<div className="mt-2 flex justify-end space-x-2">
-								<Button onClick={(e) => {
-									e.stopPropagation();
-									setUpdatingSource(source);
-								}}><Edit size={16} /></Button>
-								<Button onClick={(e) => {
-									e.stopPropagation();
-									handleDeleteSource(source.id);
-								}}><Trash size={16} /></Button>
+						<div
+							key={source.id}
+							onClick={() => handleSourceClick(source.source)}
+							className="p-2 border rounded-md shadow-sm hover:shadow-md transition-shadow duration-200 flex flex-col justify-between"
+						>
+							<TooltipProvider>
+								<Tooltip>
+									<TooltipTrigger asChild>
+										<Link
+											href={`/pdf?url=${source.source}`}
+											className="text-blue-600 hover:underline text-sm font-medium line-clamp-2"
+										>
+											{source.title}
+										</Link>
+									</TooltipTrigger>
+									<TooltipContent className="w-96 max-h-64 overflow-auto p-2">
+										<p className="text-xs">{source.description}</p>
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+							<div className="mt-2 flex justify-end space-x-1">
+								<Button
+									onClick={(e) => {
+										e.stopPropagation();
+										setUpdatingSource(source);
+									}}
+									className="p-1 h-6 w-6"
+									variant="ghost"
+								>
+									<Edit size={12} />
+								</Button>
+								<Button
+									onClick={(e) => {
+										e.stopPropagation();
+										setDeletingSource(source);
+									}}
+									className="p-1 h-6 w-6"
+									variant="ghost"
+								>
+									<Trash size={12} />
+								</Button>
 							</div>
 						</div>
 					))}
@@ -185,8 +426,7 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 					{sources.map((source) => (
 						<article
 							key={source.id}
-							className={`mb-6 hover:cursor-pointer ${selectedSources.includes(source.id) ? 'border-2 border-blue-500' : ''
-								}`}
+							className={`mb-6 hover:cursor-pointer ${selectedSources.includes(source.id) ? 'border-2 border-blue-500' : ''}`}
 							onClick={() => handleSourceClick(source.source)}
 						>
 							<h2 className="text-xl font-semibold mb-1">{source.title}</h2>
@@ -207,7 +447,7 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 								}}><Edit size={16} /></Button>
 								<Button onClick={(e) => {
 									e.stopPropagation();
-									handleDeleteSource(source.id);
+									setDeletingSource(source);
 								}}><Trash size={16} /></Button>
 								<Link href={`/pdf?url=${source.source}`} className="text-blue-500 hover:underline">
 									View PDF
@@ -220,74 +460,46 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 		}
 	};
 
-	const renderGroups = () => {
-		const [selectedSourcesForGroup, setSelectedSourcesForGroup] = useState<Record<string, string[]>>({});
-
-		const handleSourceSelect = (groupId: string, sourceId: string) => {
-			setSelectedSourcesForGroup(prev => {
-				const currentSelected = prev[groupId] || [];
-				if (currentSelected.includes(sourceId)) {
-					return { ...prev, [groupId]: currentSelected.filter(id => id !== sourceId) };
-				} else {
-					return { ...prev, [groupId]: [...currentSelected, sourceId] };
-				}
-			});
-		};
-
-		const handleAddSourcesToGroup = async (groupId: string) => {
-			const sourcesToAdd = selectedSourcesForGroup[groupId] || [];
-			for (const sourceId of sourcesToAdd) {
-				await handleAddSourceToGroup(sourceId, groupId);
-			}
-			setSelectedSourcesForGroup(prev => ({ ...prev, [groupId]: [] }));
-		};
-
-		return (
-			<div>
-				{sourceGroups.map((group) => (
-					<div key={group.id} className="mb-6 p-4 border rounded">
-						<h2 className="text-xl font-semibold mb-2">{group.title}</h2>
-						<p className="text-gray-600 mb-2">{group.description}</p>
-						<div className="flex space-x-2 mb-4">
-							<Button onClick={() => setUpdatingGroup(group)}><Edit size={16} /></Button>
-							<Button onClick={() => handleDeleteGroup(group.id)}><Trash size={16} /></Button>
-						</div>
-						<h3 className="text-lg font-medium mb-2">Trees in this Forest:</h3>
-						<ul>
-							{sources.filter(source => group.sourceIDs.includes(source.id)).map((source) => (
-								<li key={source.id} className="flex justify-between items-center mb-2">
-									<span>{source.title}</span>
-									<Button onClick={() => handleRemoveSourceFromGroup(source.id, group.id)}>Remove</Button>
-								</li>
-							))}
-						</ul>
-						<div className="mt-4">
-							<h4 className="text-md font-medium mb-2">Add Trees to Forest:</h4>
-							<div className="max-h-40 overflow-y-auto border rounded p-2">
-								{sources.filter(source => !group.sourceIDs.includes(source.id)).map((source) => (
-									<div key={source.id} className="flex items-center space-x-2 mb-2">
-										<Checkbox
-											id={`${group.id}-${source.id}`}
-											checked={(selectedSourcesForGroup[group.id] || []).includes(source.id)}
-											onCheckedChange={() => handleSourceSelect(group.id, source.id)}
-										/>
-										<label htmlFor={`${group.id}-${source.id}`}>{source.title}</label>
-									</div>
-								))}
-							</div>
-							<Button
-								className="mt-2"
-								onClick={() => handleAddSourcesToGroup(group.id)}
-								disabled={!selectedSourcesForGroup[group.id] || selectedSourcesForGroup?.[group.id]?.length === 0}
-							>
-								Add Selected Sources
-							</Button>
-						</div>
+	const renderGroups = () => (
+		<div>
+			{sourceGroups.map((group) => (
+				<div key={group.id} className="mb-6 p-4 border rounded">
+					<h2 className="text-xl font-semibold mb-2">{group.title}</h2>
+					<p className="text-gray-600 mb-2">{group.description}</p>
+					<div className="flex space-x-2 mb-4">
+						<Button onClick={() => setUpdatingGroup(group)}><Edit size={16} /></Button>
+						<Button onClick={() => setDeletingGroup(group)}><Trash size={16} /></Button>
 					</div>
-				))}
-			</div>
-		);
-	};
+					<h3 className="text-lg font-medium mb-2">Trees in this Forest:</h3>
+					<ul>
+						{sources.filter(source => group.sourceIDs.includes(source.id)).map((source) => (
+							<li key={source.id} className="flex justify-between items-center mb-2">
+								<TooltipProvider>
+									<Tooltip>
+										<TooltipTrigger asChild>
+											<Link href={`/pdf?url=${source.source}`} className="text-blue-500 hover:underline">
+												{source.title}
+											</Link>
+										</TooltipTrigger>
+										<TooltipContent className="w-72 h-40 overflow-auto">
+											<p>{source.description}</p>
+										</TooltipContent>
+									</Tooltip>
+								</TooltipProvider>
+								<Button onClick={() => handleRemoveSourceFromGroup(source.id, group.id)}>Remove</Button>
+							</li>
+						))}
+					</ul>
+					<Button
+						className="mt-4"
+						onClick={() => openAddSourcesDialog(group)}
+					>
+						Add Saplings to Forest
+					</Button>
+				</div>
+			))}
+		</div>
+	);
 
 	return (
 		<>
@@ -343,9 +555,33 @@ const ExploreView = ({ sources, sourceGroups }: { sources: Source[], sourceGroup
 					/>
 				)}
 			</Dialog>
+			{currentGroup && (
+				<AddSourcesDialog
+					isOpen={addSourcesDialogOpen}
+					onClose={() => setAddSourcesDialogOpen(false)}
+					group={currentGroup}
+					sources={sources}
+					selectedSourcesForGroup={selectedSourcesForGroup}
+					handleSourceSelect={handleSourceSelectForGroup}
+					handleAddSourcesToGroup={handleAddSourcesToGroup}
+				/>
+			)}
+			<DeleteSourceDialog
+				isOpen={!!deletingSource}
+				onClose={() => setDeletingSource(null)}
+				onConfirm={confirmDeleteSource}
+				sourceName={deletingSource?.title || ''}
+			/>
+			<DeleteGroupDialog
+				isOpen={!!deletingGroup}
+				onClose={() => setDeletingGroup(null)}
+				onConfirm={confirmDeleteGroup}
+				groupName={deletingGroup?.title || ''}
+			/>
 		</>
 	);
 };
+
 
 const Timeline = memo(({ sources, sourceGroups }: { sources: Source[], sourceGroups: SourceGroup[] }) => {
 	return (

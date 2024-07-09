@@ -1,26 +1,47 @@
 'use client'
+import { ToastAction } from '@/components/ui/toast';
+import { toast } from '@/components/ui/use-toast';
 import { createSourceAction } from "@src/app/actions";
+import Link from 'next/link';
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 const DEFAULT_PDF_URL = "https://arxiv.org/pdf/1706.03762";
 
+const ARXIV_PREFIX = "https://arxiv.org";
 export default function SearchCta() {
 	const router = useRouter();
 	const [sourceUrl, setSourceUrl] = useState(DEFAULT_PDF_URL);
 
 	const handleCreateSource = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
+		let pdfUrl = sourceUrl;
 		try {
-			await createSourceAction(sourceUrl);
+			if (sourceUrl.startsWith(ARXIV_PREFIX)) {
+				// replace /abs/ sourceUrl with the /pdf/ url
+				pdfUrl = sourceUrl.replace("/abs/", "/pdf/");
+			}
+			const result = await createSourceAction(pdfUrl);
+			if (result?.sourceAlreadyExists) {
+				toast({
+					title: `Sapling ${result?.title} already exists`, description: result?.description, action: <ToastAction altText="View sapling">
+						<Link href={`/pdf/?url=${result.source}`}>
+							View sapling
+						</Link>
+					</ToastAction>
+				})
+			} else {
+				toast({ title: "Sapling planted successfully", description: "Your research is now being cultivated" })
+			}
 			router.refresh();
-			// Optionally, you can clear the input or show a success message
 			setSourceUrl('');
-			// You might want to navigate to a different page after creating the source
-			// router.push('/sources');
 		} catch (error) {
 			console.error("Failed to create source:", error);
-			// Handle error (e.g., show an error message to the user)
+			toast({
+				title: "Failed to plant sapling",
+				description: "See console for details",
+				action: <ToastAction altText="Try again">Try again</ToastAction>,
+			});
 		}
 	};
 

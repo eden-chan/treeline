@@ -5,7 +5,9 @@ export function calculateTimeAgo(timestamp: Date) {
     return `${Math.round(timeAgo / 60)} minutes ago`;
   } else if (timeAgo < 86400) {
     return `${Math.round(timeAgo / 3600)} hours ago`;
-  } else {
+  } else if (timeAgo < 604800) {
     return `${Math.round(timeAgo / 86400)} days ago`;
+  } else {
+    return `${Math.round(timeAgo / 604800)} weeks ago`;
   }
 }

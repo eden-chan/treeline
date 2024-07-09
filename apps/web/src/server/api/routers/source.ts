@@ -64,6 +64,7 @@ async function getCitationEdges(url: string): Promise<any[]> {
   return allEdges;
 }
 
+const ARXIV_PREFIX='https://arxiv.org'
 
 export const sourceRouter = createTRPCRouter({
   createSource: publicProcedure
@@ -72,7 +73,7 @@ export const sourceRouter = createTRPCRouter({
         source: z.string(),
       }),
     )
-    .mutation<Source | null>(async ({ input }) => {
+    .mutation<Source & { sourceAlreadyExists: boolean } | null>(async ({ input }) => {
       try {
          const existingSource = await db.source.findUnique({
         where: { source: input.source },
@@ -80,7 +81,7 @@ export const sourceRouter = createTRPCRouter({
 
       if (existingSource) {
         console.log("Source already exists:", existingSource);
-        return existingSource;
+        return { ...existingSource, sourceAlreadyExists: true };
       }
 
         let paper :Paper | null = null;
@@ -88,10 +89,11 @@ export const sourceRouter = createTRPCRouter({
         let description =''
         let date = new Date()
 
-        if (input.source.startsWith('https://arxiv.org')) {
-            // strip away the code at the end and put arXiv: in front
-            const paperId = input.source.split('/pdf/')[1];
-            
+        if (input.source.startsWith(ARXIV_PREFIX)) {
+          // replace abs with pdf
+          // strip away the code at the end and put arXiv: in front
+          input.source = input.source.replace('/abs/', '/pdf/');
+          const paperId = input.source.split('/pdf/')[1];
             paper = await getPaper(`arXiv:${paperId}`);
             // const references = await getReferences(`arXiv:${paperId}`);
             // const citations = await getCitations(`arXiv:${paperId}`);
@@ -101,14 +103,17 @@ export const sourceRouter = createTRPCRouter({
             date = new Date(paper.year)
         }
 
-        return await db.source.create({
-          data: {
-            title: title,
+        return {
+          ...await db.source.create({
+            data: {
+              title: title,
             description: description,
             source: input.source,
             uploadedAt: date,
           },
-        });
+        }),
+        sourceAlreadyExists: false,
+      };
       } catch (error) {
         console.error("Failed to create source:", error);
         return null;

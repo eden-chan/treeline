@@ -37,7 +37,7 @@ export default async function Page() {
 	try {
 		// get the uploaded PDF id
 		pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
-		await api.source.createSource({
+		const result = await api.source.createSource({
 			source: pdfUrl.href,
 		});
 

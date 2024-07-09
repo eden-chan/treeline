@@ -105,7 +105,7 @@ export const renderHighlights = (props: MyRenderHighlightsProps) => {
 								return (
 									<HighlightedArea
 										openForest={() => props.openForest(highlight)}
-										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 bg-opacity-40 cursor-pointer"
+										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 bg-yellow-400 bg-opacity-40 cursor-pointer"
 										area={area}
 										props={props}
 									/>
