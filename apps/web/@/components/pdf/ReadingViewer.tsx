@@ -19,7 +19,8 @@ const highlightPlugin = require("./highlight.js").highlightPlugin;
 type Props = {
 	loadedSource: string;
 	pdfBytes: number[];
-	userHighlights: HighlightWithRelations[];
+	loggedInUserHighlights: HighlightWithRelations[];
+	otherUserHighlights: HighlightWithRelations[];
 	userId: string;
 	annotatedPdfId: string;
 	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
@@ -29,14 +30,15 @@ type Props = {
 const ReadingViewer: React.FC<Props> = ({
 	loadedSource,
 	pdfBytes,
-	userHighlights,
+	loggedInUserHighlights,
+	otherUserHighlights,
 	userId,
 	annotatedPdfId,
 	annotatedPdfsWithProfile,
 	userProfiles
 }) => {
-	const [friendHighlights, setFriendHighlights] = useState<HighlightWithRelations[]>([]);
 	const { currentHighlight, selectHighlight, createAskHighlight, setCurrentHighlight } = useAskHighlight();
+	const [selectedHighlights, setSelectedHighlights] = useState<HighlightWithRelations[]>(otherUserHighlights);
 	const utils = clientApi.useUtils();
 	const inputRef = useRef<HTMLTextAreaElement | null>(null);
 	const lastSelectedRef = useRef<LastSelectedArea | null>(null);
@@ -68,7 +70,7 @@ const ReadingViewer: React.FC<Props> = ({
 		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId, source: loadedSource }),
 	});
 
-	const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({ userId, source: loadedSource }).data?.highlights || userHighlights;
+	const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({ userId, source: loadedSource }).data?.highlights || loggedInUserHighlights;
 
 	const deleteHighlight = (highlightId: string) => deleteHighlightMutation.mutate({ highlightId });
 	const editHighlight = async ({ id, highlightId, text }: { id?: string; highlightId: string; text: string }) =>
@@ -90,8 +92,10 @@ const ReadingViewer: React.FC<Props> = ({
 				inputRef, lastSelectedRef
 			});
 		},
-		renderHighlights: (props: RenderHighlightsProps) =>
-			renderHighlights({ ...props, highlights, openForest, editHighlight, deleteHighlight, userId, userProfiles, lastSelectedRef }),
+		renderHighlights: (props: RenderHighlightsProps) => {
+			console.log("selectedHighlights", selectedHighlights);
+			return renderHighlights({ ...props, highlights, selectedHighlights, openForest, editHighlight, deleteHighlight, userId, userProfiles, lastSelectedRef })
+		},
 	});
 
 	const onHighlightClick = (highlight: HighlightWithRelations) => {
@@ -104,7 +108,7 @@ const ReadingViewer: React.FC<Props> = ({
 
 	return (
 		<div>
-			<FloatingProfiles setDisplayHighlights={setFriendHighlights} allHighlightsWithProfile={annotatedPdfsWithProfile} />
+			<FloatingProfiles setDisplayHighlights={setSelectedHighlights} allHighlightsWithProfile={annotatedPdfsWithProfile} />
 			<PanelGroup className="w-full" direction="horizontal">
 
 				<ResizablePanel className="relative" defaultSize={80} style={{ height: "100vh", overflow: "auto" }} collapsible>

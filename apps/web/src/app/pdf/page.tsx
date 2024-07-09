@@ -66,6 +66,8 @@ export default async function Page() {
 		return <RedirectToSignIn redirectUrl={`/pdf?url=${pdfUrl.href}`} />;
 	}
 
+
+	// Get current user highlights, or mark user attempt to annotate PDF
 	let newUserData: AnnotatedPdf & { highlights: HighlightWithRelations[] } = {
 		id: new ObjectId().toString(),
 		highlights: [],
@@ -73,7 +75,7 @@ export default async function Page() {
 		userId: userEmail,
 	};
 
-	let { id, highlights, source, userId } = newUserData;
+	let { id: annotatedPdfId, highlights: loggedInUserHighlights, source, userId } = newUserData;
 	try {
 		const data = await api.annotatedPdf.fetchAnnotatedPdf({
 			userId: userEmail,
@@ -81,14 +83,14 @@ export default async function Page() {
 		});
 
 		if (data) {
-			id = data.id;
-			highlights = data.highlights;
+			annotatedPdfId = data.id;
+			loggedInUserHighlights = data.highlights;
 			source = data.source;
 			userId = data.userId;
 		} else if (userEmail) {
 			await api.annotatedPdf.upsertAnnotatedPdf({
-				id,
-				highlights,
+				id: annotatedPdfId,
+				highlights: loggedInUserHighlights,
 				source,
 				userId: userEmail,
 			});
@@ -115,25 +117,36 @@ export default async function Page() {
 		userList: userEmails,
 	});
 
-	let annotatedPdfsWithProfile: AnnotatedPdfWithProfile[] = [];
+	const annotatedPdfsWithProfile: AnnotatedPdfWithProfile[] = userAnnotations ? userAnnotations.map((annotation) => {
+		return {
+			...annotation,
+			userProfilePicture: userProfiles.find((user) => user.email === annotation.userId)?.imageUrl ?? "",
+			firstName: userProfiles.find((user) => user.email === annotation.userId)?.firstName ?? "",
+			lastName: userProfiles.find((user) => user.email === annotation.userId)?.lastName ?? "",
+		};
+	}) : [];
 
-	// Include users that have annotated the current pdf
+
+	let otherUserHighlights: HighlightWithRelations[] = [];
+
+	// Separate logged-in user highlights from other user highlights
 	if (userAnnotations) {
 		for (let annotation of userAnnotations) {
-			if (annotation.source != pdfUrl.href) continue;
+			if (annotation.source !== pdfUrl.href) continue;
 
 			const userProfile = userProfiles.find(
-				(user) => user.email === annotation.userId,
+				(user) => user.email === annotation.userId
 			);
 
 			if (!userProfile) continue;
 
-			annotatedPdfsWithProfile.push({
-				...annotation,
-				userProfilePicture: userProfile.imageUrl,
-				firstName: userProfile.firstName || "",
-				lastName: userProfile.lastName || "",
-			});
+			if (annotation.userId === userEmail) {
+				loggedInUserHighlights = annotation.highlights;
+			} else if (annotation.userId !== userEmail) {
+				otherUserHighlights.push(
+					...annotation.highlights,
+				);
+			}
 		}
 	}
 
@@ -144,18 +157,19 @@ export default async function Page() {
 
 	return (
 		<AskHighlightProvider
-			annotatedPdfId={id}
+			annotatedPdfId={annotatedPdfId}
 			userId={userId}
 			loadedSource={source}
 			parsedPaper={parsedPaper}
 		>
 			<Suspense fallback={<div>Loading...</div>}>
 				<PDFViewer
-					annotatedPdfId={id}
+					annotatedPdfId={annotatedPdfId}
 					loadedSource={source}
 					userId={userId}
-					userHighlights={highlights}
+					loggedInUserHighlights={loggedInUserHighlights}
 					annotatedPdfsWithProfile={annotatedPdfsWithProfile}
+					otherUserHighlights={otherUserHighlights}
 					pdfBytes={pdfBytes}
 					userProfiles={userProfiles}
 				/>

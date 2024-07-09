@@ -13,7 +13,8 @@ type Props = {
 	annotatedPdfId: string;
 	loadedSource: string;
 	userId: string;
-	userHighlights: HighlightWithRelations[];
+	loggedInUserHighlights: HighlightWithRelations[];
+	otherUserHighlights: HighlightWithRelations[];
 	annotatedPdfsWithProfile: AnnotatedPdfWithProfile[];
 	pdfBytes: number[];
 	userProfiles: UserProfile[];
@@ -23,10 +24,11 @@ export default function PDFViewer({
 	annotatedPdfId,
 	loadedSource,
 	userId,
-	userHighlights,
+	loggedInUserHighlights,
 	annotatedPdfsWithProfile,
 	pdfBytes,
-	userProfiles
+	userProfiles,
+	otherUserHighlights
 }: Props) {
 
 	return (
@@ -36,7 +38,8 @@ export default function PDFViewer({
 				annotatedPdfId={annotatedPdfId}
 				loadedSource={loadedSource}
 				userId={userId}
-				userHighlights={userHighlights}
+				loggedInUserHighlights={loggedInUserHighlights}
+				otherUserHighlights={otherUserHighlights}
 				annotatedPdfsWithProfile={annotatedPdfsWithProfile}
 				userProfiles={userProfiles}
 			/>

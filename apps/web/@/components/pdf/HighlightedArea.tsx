@@ -13,10 +13,9 @@ type Props = {
 	};
 
 	className: string;
-	openForest: () => void;
 }
 
-export const HighlightedArea = ({ area, props, className, openForest }: Props) => (
+export const HighlightedArea = ({ area, props, className }: Props) => (
 	<div
 		key={uuidv4()}
 		onClick={(e) => {

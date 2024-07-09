@@ -76,12 +76,72 @@ type MyRenderHighlightsProps = {
 	userProfiles: UserProfile[];
 	openForest: (highlight: HighlightWithRelations) => void;
 	lastSelectedRef: MutableRefObject<LastSelectedArea | null>;
+	selectedHighlights: HighlightWithRelations[];
 } & RenderHighlightsProps;
 
 export const renderHighlights = (props: MyRenderHighlightsProps) => {
 	try {
 		return (
 			<div>
+				{props.lastSelectedRef.current && (props.lastSelectedRef.current.highlightAreas.length > 0) && (
+					props.lastSelectedRef.current.highlightAreas.map((area) => {
+						return (
+
+							<HighlightedArea
+								className="bg-yellow-400 bg-opacity-10 cursor-pointer"
+								area={area}
+								props={props}
+							/>
+						)
+					})
+				)}
+
+				{props.selectedHighlights.map((highlight) => {
+					const filteredAreas = highlight.highlightAreas.filter(
+						(area) => area.pageIndex === props.pageIndex && area.width > 0,
+					);
+					const rightmostArea = filteredAreas.reduce((maxArea, area) => {
+						return area.left > (maxArea?.left ?? 0) ? area : maxArea;
+					}, filteredAreas[0]);
+					const topmostArea = filteredAreas.reduce((minArea, area) => {
+						return area.top < (minArea?.top ?? 0) ? area : minArea;
+					}, filteredAreas[0]);
+					const bottommostArea = filteredAreas.reduce((maxArea, area) => {
+						return area.top > (maxArea?.top ?? Number.MAX_VALUE)
+							? area
+							: maxArea;
+					}, filteredAreas[0]);
+					const middleHeight =
+						topmostArea && bottommostArea
+							? (topmostArea.top + bottommostArea.top + bottommostArea.height) /
+							2
+							: undefined;
+
+					return (
+						<div key={highlight.id} className="group z-10">
+							{filteredAreas.map((area) => {
+								return (
+									<HighlightedArea
+
+										className="group-hover:bg-purple-600 group-hover:bg-opacity-40 bg-purple-400 bg-opacity-40 cursor-pointer"
+										area={area}
+										props={props}
+									/>
+								);
+							})}
+							<PastNote
+								userId={props.userId}
+								highlight={highlight}
+								middleHeight={middleHeight}
+								rightmostArea={rightmostArea}
+								editHighlight={props.editHighlight}
+								deleteHighlight={props.deleteHighlight}
+								userProfiles={props.userProfiles}
+							/>
+						</div>
+					);
+				})}
+
 				{props.highlights.map((highlight) => {
 					const filteredAreas = highlight.highlightAreas.filter(
 						(area) => area.pageIndex === props.pageIndex && area.width > 0,
@@ -108,26 +168,13 @@ export const renderHighlights = (props: MyRenderHighlightsProps) => {
 							{filteredAreas.map((area) => {
 								return (
 									<HighlightedArea
-										openForest={() => props.openForest(highlight)}
+
 										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 bg-yellow-400 bg-opacity-40 cursor-pointer"
 										area={area}
 										props={props}
 									/>
 								);
 							})}
-							{props.lastSelectedRef.current && (props.lastSelectedRef.current.highlightAreas.length > 0) && (
-								props.lastSelectedRef.current.highlightAreas.map((area) => {
-									return (
-
-										<HighlightedArea
-											openForest={() => props.openForest(highlight)}
-											className="bg-yellow-400 bg-opacity-10 cursor-pointer"
-											area={area}
-											props={props}
-										/>
-									)
-								})
-							)}
 							<PastNote
 								userId={props.userId}
 								highlight={highlight}
