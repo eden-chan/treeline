@@ -1,32 +1,31 @@
-import { MutableRefObject, useState } from "react";
+import { MutableRefObject } from "react";
 import {
 	RenderHighlightsProps,
 	RenderHighlightTargetProps,
 } from "@react-pdf-viewer/highlight";
 
 import { NewHighlightWithRelationsInput } from "@src/server/api/routers/highlight";
-import { Textarea } from "@/components/ui/textarea";
+
 import { HighlightWithRelations, UserProfile } from "@src/lib/types";
 import { HighlightedArea } from "@/components/pdf/HighlightedArea";
 import { PastNote } from "@/components/pdf/PastNote";
 import { MiniChatWindow } from '@/components/pdf/MiniChatWindow';
+import { LastSelectedArea } from '@src/app/pdf/ui';
+
 
 type MyRenderHighlightTargetProps = {
 	annotatedPdfId: string;
-	createAskHighlight: (
-		highlight: NewHighlightWithRelationsInput,
-	) => Promise<HighlightWithRelations | undefined>;
-	setCurrentHighlight: (
-		highlight: HighlightWithRelations | null,
-		forceRerender?: boolean | undefined,
-	) => void;
+	createAskHighlight: (highlight: NewHighlightWithRelationsInput) => Promise<HighlightWithRelations | undefined>;
+	setCurrentHighlight: (highlight: HighlightWithRelations | null, forceRerender?: boolean | undefined) => void;
 	inputRef: MutableRefObject<HTMLTextAreaElement | null>;
 	openForest: (highlight: HighlightWithRelations) => void;
+
 } & RenderHighlightTargetProps;
 
 
-
 export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
+
+	// Keep the selected text highlighted? 
 	const saveHighlight = () => {
 		const highlightDraft: NewHighlightWithRelationsInput = {
 			annotatedPdfId: props.annotatedPdfId,
@@ -36,7 +35,6 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 		props.createAskHighlight(highlightDraft);
 		props.cancel();
 	};
-
 	return (
 		<div
 			className="absolute flex flex-col space-y-2"
@@ -53,6 +51,7 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 			>
 				Save
 			</button>
+			<MiniChatWindow selectedText={props.selectedText} position={props.selectionRegion} />
 		</div>
 	);
 };
@@ -72,6 +71,7 @@ type MyRenderHighlightsProps = {
 	userId: string;
 	userProfiles: UserProfile[];
 	openForest: (highlight: HighlightWithRelations) => void;
+	lastSelectedRef: MutableRefObject<LastSelectedArea | null>;
 } & RenderHighlightsProps;
 
 export const renderHighlights = (props: MyRenderHighlightsProps) => {
@@ -101,18 +101,29 @@ export const renderHighlights = (props: MyRenderHighlightsProps) => {
 
 					return (
 						<div key={highlight.id} className="group z-10">
-							{filteredAreas.map((area, idx) => {
+							{filteredAreas.map((area) => {
 								return (
 									<HighlightedArea
 										openForest={() => props.openForest(highlight)}
-										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 cursor-pointer"
+										className="group-hover:bg-yellow-600 group-hover:bg-opacity-40 bg-opacity-40 cursor-pointer"
 										area={area}
 										props={props}
-										key={idx}
-										idx={idx}
 									/>
 								);
 							})}
+							{props.lastSelectedRef.current && (props.lastSelectedRef.current.highlightAreas.length > 0) && (
+								props.lastSelectedRef.current.highlightAreas.map((area) => {
+									return (
+
+										<HighlightedArea
+											openForest={() => props.openForest(highlight)}
+											className="group-hover:bg-[#ccccff] bg-[#8080FF] group-hover:bg-opacity-40 bg-opacity-40  cursor-pointer"
+											area={area}
+											props={props}
+										/>
+									)
+								})
+							)}
 							<PastNote
 								userId={props.userId}
 								highlight={highlight}

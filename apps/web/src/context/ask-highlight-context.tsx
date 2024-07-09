@@ -22,7 +22,6 @@ import {
 	HighlightWithRelations,
 } from "@src/lib/types";
 import { getNodeById } from "@src/utils/curriculum";
-import { ObjectId } from 'mongodb';
 
 export type ContextProps = {
 	currentHighlight: HighlightWithRelations | null;

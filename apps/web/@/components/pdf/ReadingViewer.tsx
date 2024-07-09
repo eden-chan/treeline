@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from "react";
+import React, { useRef, useState, useMemo, Suspense } from "react";
 import { Viewer } from "@react-pdf-viewer/core";
 import { RenderHighlightsProps, RenderHighlightTargetProps } from "@react-pdf-viewer/highlight";
 import "@react-pdf-viewer/core/lib/styles/index.css";
@@ -8,10 +8,11 @@ import { renderHighlightTarget, renderHighlights } from "@/lib/highlight-plugins
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 import { AnnotatedPdfWithProfile, HighlightWithRelations, UserProfile } from "@src/lib/types";
 import { clientApi } from "@src/trpc/react";
-import { CommandDialogDemo } from '@src/app/pdf/ui/components/CommandK';
 import { ResizableHandle, ResizablePanel } from '../ui/resizable';
 import { PanelGroup } from 'react-resizable-panels';
-import Sidebar from './Sidebar';
+import { Sidebar } from './Sidebar';
+import { LastSelectedArea } from '@src/app/pdf/ui';
+
 
 const highlightPlugin = require("./highlight.js").highlightPlugin;
 
@@ -38,6 +39,8 @@ const ReadingViewer: React.FC<Props> = ({
 	const { currentHighlight, selectHighlight, createAskHighlight, setCurrentHighlight } = useAskHighlight();
 	const utils = clientApi.useUtils();
 	const inputRef = useRef<HTMLTextAreaElement | null>(null);
+	const lastSelectedRef = useRef<LastSelectedArea | null>(null);
+
 
 	const annotatedPdfResetHighlightsMutation = clientApi.annotatedPdf.resetHighlights.useMutation({
 		onMutate: async () => {
@@ -74,11 +77,21 @@ const ReadingViewer: React.FC<Props> = ({
 
 	const openForest = (highlight: HighlightWithRelations) => setCurrentHighlight(highlight);
 
+
 	const highlightPluginInstance = highlightPlugin({
-		renderHighlightTarget: (props: RenderHighlightTargetProps) =>
-			renderHighlightTarget({ ...props, openForest, annotatedPdfId, createAskHighlight, setCurrentHighlight, inputRef }),
+		renderHighlightTarget: (props: RenderHighlightTargetProps) => {
+			lastSelectedRef.current = { highlightAreas: props.highlightAreas, selectedText: props.selectedText };
+			return renderHighlightTarget({
+				...props,
+				openForest,
+				annotatedPdfId,
+				createAskHighlight,
+				setCurrentHighlight,
+				inputRef,
+			});
+		},
 		renderHighlights: (props: RenderHighlightsProps) =>
-			renderHighlights({ ...props, highlights, openForest, editHighlight, deleteHighlight, userId, userProfiles }),
+			renderHighlights({ ...props, highlights, openForest, editHighlight, deleteHighlight, userId, userProfiles, lastSelectedRef }),
 	});
 
 	const onHighlightClick = (highlight: HighlightWithRelations) => {
@@ -92,10 +105,13 @@ const ReadingViewer: React.FC<Props> = ({
 	return (
 		<div>
 			<FloatingProfiles setDisplayHighlights={setFriendHighlights} allHighlightsWithProfile={annotatedPdfsWithProfile} />
-			<CommandDialogDemo />
 			<PanelGroup className="w-full" direction="horizontal">
+
 				<ResizablePanel className="relative" defaultSize={80} style={{ height: "100vh", overflow: "auto" }} collapsible>
-					<Viewer fileUrl={pdfBytesMemoized.length > 0 ? pdfBytesMemoized : loadedSource} plugins={[highlightPluginInstance]} />
+					<Suspense fallback={<div>Loading PDF...</div>}>
+						<Viewer fileUrl={pdfBytesMemoized.length > 0 ? pdfBytesMemoized : loadedSource} plugins={[highlightPluginInstance]} />
+					</Suspense>
+
 				</ResizablePanel>
 				<ResizableHandle withHandle handleClassName="bg-[#B2B2B2]" />
 				<ResizablePanel style={{ height: "100vh", overflow: "auto" }} collapsible>

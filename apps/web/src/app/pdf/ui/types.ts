@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { AnnotatedPdf, User } from "@prisma/client";
+import { RenderHighlightTargetProps } from '@react-pdf-viewer/highlight';
 export interface LTWH {
 	left: number;
 	top: number;
@@ -167,3 +168,9 @@ export const UserSchema = z.object({
 	handle: z.string(),
 	last_name: z.string(),
 });
+
+
+export type LastSelectedArea =  {highlightAreas: 
+	RenderHighlightTargetProps['highlightAreas'], 
+	selectedText: string
+}

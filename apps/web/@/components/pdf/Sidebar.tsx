@@ -12,7 +12,7 @@ type Props = {
 	onHighlightClick: (highlight: HighlightWithRelations) => void;
 };
 
-export default function Sidebar({
+export function Sidebar({
 	highlights,
 	deleteHighlight,
 	resetHighlights,

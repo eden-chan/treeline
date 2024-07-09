@@ -197,7 +197,6 @@ export const PastNote = ({
 		}
 		// Perform any additional logic here, such as updating the textarea value or triggering an action
 	};
-
 	const parentRef = useRef<HTMLDivElement>(null);
 	return (
 		<span

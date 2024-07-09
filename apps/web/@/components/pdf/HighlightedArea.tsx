@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils';
 import { RenderHighlightsProps } from '@react-pdf-viewer/highlight';
+import { v4 as uuidv4 } from 'uuid';
 
 type Props = {
 	props: RenderHighlightsProps;
@@ -10,19 +11,19 @@ type Props = {
 		top: number;
 		width: number;
 	};
-	idx: number;
+
 	className: string;
 	openForest: () => void;
 }
 
-export const HighlightedArea = ({ area, props, idx, className, openForest }: Props) => (
+export const HighlightedArea = ({ area, props, className, openForest }: Props) => (
 	<div
-		key={idx}
+		key={uuidv4()}
 		onClick={(e) => {
 			e.stopPropagation()
 			openForest()
 		}}
-		className={cn("highlight-area z-10 bg-yellow-400 bg-opacity-40", className)}
+		className={cn("z-10", className)}
 		style={Object.assign(
 			{},
 			props.getCssProperties(area, props.rotation),
