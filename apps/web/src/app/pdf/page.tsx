@@ -23,6 +23,11 @@ const PDFViewer = dynamic(() => import("@src/app/pdf/ui/components/Viewer"), {
 import "./ui/style/pdf_viewer.css";
 
 
+export const runtime = 'nodejs'
+export const preferredRegion = 'auto'
+export const maxDuration = 60
+
+
 const CORS_PROTECTED_BASE_URL = ["https://arxiv.org/pdf/"]
 
 export default async function Page() {
@@ -53,9 +58,6 @@ export default async function Page() {
 		console.error(error);
 		return <div>Not a valid URL</div>;
 	}
-
-	// Make a fetch to the /api/pdf route to get the PDF data
-
 
 	const user: User | null = await currentUser();
 	const userEmail: string | undefined = user?.emailAddresses[0]?.emailAddress;

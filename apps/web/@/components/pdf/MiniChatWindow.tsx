@@ -39,7 +39,7 @@ export function MiniChatWindow({ selectedText, position }: MiniChatWindowProps) 
                 <Button onClick={() => sendPrompt('explain')} variant="outline" size="sm">Explain</Button>
                 <Button onClick={() => sendPrompt('ask')} variant="outline" size="sm">Ask</Button>
             </div>
-            <div className="h-32 overflow-y-auto mb-2 text-gray-700">
+            <div className="max-w-96 overflow-y-auto mb-2 text-gray-700">
                 {messages.map(m => (
                     <div key={m.id} className="mb-1">
                         <strong>{m.role === 'user' ? 'You: ' : 'AI: '}</strong>

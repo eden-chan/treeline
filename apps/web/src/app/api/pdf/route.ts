@@ -1,9 +1,15 @@
+export const runtime = 'nodejs';
+export const maxDuration = 60;
+
 import { NextRequest, NextResponse } from 'next/server';
 import axios from 'axios';
 
 export async function GET(request: NextRequest) {
+  console.log('getting api/pdf')
   const { searchParams } = new URL(request.url);
   const url = searchParams.get('url');
+  console.log({url})
+    console.log({ requestUrl: request.url, url });
 
   if (!url) {
     return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 });
