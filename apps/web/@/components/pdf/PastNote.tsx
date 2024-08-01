@@ -1,32 +1,20 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { CircleArrowUp, Trash2 } from "lucide-react";
-import { Textarea } from "../ui/textarea";
+import { useMemo, useRef, useState } from "react";
+import { Trash2 } from "lucide-react";
 import { HighlightWithRelations, UserProfile } from "@src/lib/types";
-import { HighlightCommentTextarea } from './HighlightCommentTextArea';
 import { calculateTimeAgo } from '@src/lib/utils';
-
 
 type Props = {
 	highlight: HighlightWithRelations;
-	rightmostArea:
-	| {
+	rightmostArea: {
 		height: number;
 		left: number;
 		pageIndex: number;
 		top: number;
 		width: number;
-	}
-	| undefined;
+	} | undefined;
 	middleHeight: number | undefined;
-	editHighlight: ({
-		id,
-		highlightId,
-		text,
-	}: {
-		id?: string;
-		highlightId: string;
-		text: string;
-	}) => void;
+	upsertCommentToExistingHighlight: (highlightId: string, text: string, commentId?: string) => void;
+	editHighlight: (highlightId: string, text: string) => void;
 	deleteHighlight: (highlightId: string) => void;
 	userId: string;
 	userProfiles: UserProfile[];
@@ -36,284 +24,137 @@ export const PastNote = ({
 	highlight,
 	rightmostArea,
 	middleHeight,
+	upsertCommentToExistingHighlight,
 	editHighlight,
 	deleteHighlight,
 	userId,
 	userProfiles
-
 }: Props) => {
 	if (!rightmostArea) return null;
 
-	const inputRef = useRef<HTMLTextAreaElement>(null);
+	const [showReplyForm, setShowReplyForm] = useState(false);
 	const replyInputRef = useRef<HTMLTextAreaElement>(null);
-
-	useEffect(() => {
-		if (inputRef.current) {
-			inputRef.current.value = highlight.comments?.[0]?.text ?? "";
-		}
-	}, [highlight.comments]);
+	const userProfile = userProfiles.find(user => user.email === userId);
 
 	const handleTrash = async () => {
 		try {
 			await deleteHighlight(highlight.id);
 		} catch (error) {
-
 			console.error("Failed to delete highlight:", error);
 		}
 	};
 
-	const [showReplyTextarea, setShowReplyTextarea] = useState(false);
+	const handleHighlightEdit = (newText: string) => {
+		editHighlight(highlight.id, newText);
+	};
 
-	const createNewComment = (text: string, commentId: string | undefined) => ({
-		id: commentId, // id will be supplied in returned response
-		highlightId: highlight.id,
-		text,
-		timestamp: new Date(),
-		userId,
-	});
+	const handleCommentEdit = (commentId: string, newText: string) => {
+		upsertCommentToExistingHighlight(highlight.id, newText, commentId);
+	};
 
-
-	const handleUpdateFirstComment = async () => {
-		if (inputRef.current) {
-			const updatedComment = createNewComment(inputRef.current.value, highlight.comments?.[0]?.id);
-			await editHighlight(updatedComment)
+	const handleReplySubmit = (e: React.FormEvent) => {
+		e.preventDefault();
+		const replyText = replyInputRef.current?.value;
+		if (replyText) {
+			upsertCommentToExistingHighlight(highlight.id, replyText);
+			if (replyInputRef.current) {
+				replyInputRef.current.value = '';
+			}
+			setShowReplyForm(false);
 		}
 	};
-
-	const handleUpdateFirstCommentKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-
-		if (!showReplyTextarea && e.key === "Enter" && (e.shiftKey || e.altKey)) {
-			e.preventDefault();
-			handleUpdateFirstComment()
-		}
-	};
-	const handleReply = async (text: string | undefined) => {
-		if (text) {
-			const newComment = createNewComment(text, undefined);
-			await editHighlight(newComment)
-		}
-	};
-
-
-	const handleUpdateCommentReplyKeyDown = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-		if (showReplyTextarea && e.key === "Enter" && (e.shiftKey || e.altKey)) {
-			e.preventDefault();
-			await handleReply(replyInputRef.current?.value);
-		}
-	};
-
-	const handleUpdateCommentSubmit = async () => {
-		await handleReply(replyInputRef.current?.value);
-	};
-
 
 	const firstCommentTimestamp = highlight.comments?.[0]?.timestamp;
 	const memoizedTimeAgo = useMemo(() => firstCommentTimestamp ? calculateTimeAgo(firstCommentTimestamp) : '', [firstCommentTimestamp]);
-	const [isReplyDrafted, setIsReplyDrafted] = useState(false);
-	const isFirstCommentEditable = highlight.comments.length === 0
 
-
-	// I want to get the author of each highlight as well as the time ago
-	const userProfile = userProfiles.find(user => user.email === userId)
-
-
-
-	const listboxRef = useRef<HTMLUListElement>(null);
-
-	function getCaretPosition() {
-		if (!inputRef.current) return { x: 0, y: 0 };
-
-
-
-		const inputElement = inputRef.current;
-		// Create a temporary span element
-		const tempSpan = document.createElement('span');
-		tempSpan.textContent = inputElement.value.substring(0, inputElement.selectionStart);
-
-		// Insert the temporary span just before the caret
-		inputElement.parentNode?.insertBefore(tempSpan, inputElement.nextSibling);
-
-		// Calculate the position of the temporary span
-		const tempRect = tempSpan.getBoundingClientRect();
-		const inputRect = inputElement.getBoundingClientRect();
-
-		// Remove the temporary span
-		tempSpan.remove();
-
-		// Return the calculated position
-		return {
-			x: inputRect.left + (tempRect.width / 2),
-			y: inputRect.top + (tempRect.height / 2)
-		};
-	}
-
-
-	const handleInputChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-		const value = event.target.value;
-		const selectionStart = event.target.selectionStart;
-		const textarea = event.target;
-
-		const mostRecentAtIndex = value.lastIndexOf('@', selectionStart - 1);
-
-		if (mostRecentAtIndex !== -1) {
-			const caretPosition = getCaretPosition();
-
-			if (listboxRef.current) {
-
-				const parentElement = parentRef.current;
-				const parentRect = parentElement?.getBoundingClientRect();
-				const parentOffset = {
-					left: parentRect?.left || 0,
-					top: parentRect?.top || 0,
-				};
-
-				const leftPosition = `${(caretPosition.x - parentOffset.left) * 1.1}px`;
-				const topPosition = `${textarea.scrollHeight}px`;
-				const parsedLeftPosition = `${(parseFloat(leftPosition) % (152))}px`;
-
-				listboxRef.current.style.left = parsedLeftPosition;
-				listboxRef.current.style.top = topPosition;
-
-				listboxRef.current.style.visibility = 'visible'
-			}
-		}
-		// Perform any additional logic here, such as filtering suggestions based on the entered value
-	};
-
-	const handleOptionClick = (optionId: string) => {
-
-		const selectedUserProfile = userProfiles.find(user => user.email === optionId);
-		if (selectedUserProfile && inputRef.current && listboxRef.current) {
-			const currentValue = inputRef.current.value;
-			const atIndex = currentValue.lastIndexOf('@', inputRef.current.selectionStart - 1);
-			const newValue = `${currentValue.substring(0, atIndex + 1)}${selectedUserProfile.firstName} ${selectedUserProfile.lastName} `;
-			inputRef.current.value = newValue;
-			console.log(atIndex)
-			// listboxRef.current.style.visibility = 'hidden'
-		}
-		// Perform any additional logic here, such as updating the textarea value or triggering an action
-	};
-	const parentRef = useRef<HTMLDivElement>(null);
 	return (
-		<span
-			className="absolute text-xs w-[20px] group z-20 "
+		<div
+			id={`highlight-note-${highlight.id}`}
+			className="absolute text-xs w-[300px] group z-20 bg-white shadow-lg rounded-lg p-4"
 			style={{
 				left: `${90}%`,
 				top: `${middleHeight ?? rightmostArea.top}%`,
 				transform: "translate(8px, -50%)",
 			}}
 		>
-			<div ref={parentRef} onMouseLeave={() => { if (listboxRef.current) listboxRef.current.style.visibility = 'hidden' }} className="relative group-hover:w-[200px] pt-10 pb-20 pl-5">
-				<span className="flex items-center">
-					<span className="select-none font-bold text-blue-500 inline hover:bg-blue-500 rounded-full hover:bg-opacity-20 transition duration-300 ease-in-out">⁂</span>
-					<div className="invisible group-hover:visible flex items-center bg-white">
+			<div className="relative">
+				<div className="flex items-center justify-between mb-2">
+					<span className="font-bold text-blue-500">⁂</span>
+					<div className="flex items-center">
 						<button
-							className="text-blue-500 hover:text-blue-700 p-0.5 rounded select-none ml-2"
+							className="text-blue-500 hover:text-blue-700 p-0.5 rounded select-none mr-2"
 							onClick={handleTrash}
 						>
 							<Trash2 className="cursor-pointer" size={16} />
 						</button>
-						<span className="text-xs ml-1 select-none text-black self-end">{userProfile?.firstName ?? 'Anonymous'} {userProfile?.lastName ?? ''} {memoizedTimeAgo} </span>
-					</div>
-				</span>
-				<div className="invisible group-hover:visible group-hover:z-30 absolute w-full bg-white z-50  ">
-					<div>
-						<Textarea
-							ref={inputRef}
-							placeholder="Comment or share with @"
-							disabled={!isFirstCommentEditable}
-							onKeyDown={handleUpdateFirstCommentKeyDown}
-							onChange={handleInputChange}
-							role="combobox"
-							aria-controls="suggestions"
-							aria-autocomplete="list"
-							className="w-full"
-						/>
-						{(
-							<ul
-								id="suggestions"
-								ref={listboxRef}
-								role="listbox"
-								aria-label="Suggestions"
-								className="invisible absolute z-30 bg-white border border-gray-300 rounded-md w-[200px]"
-							>
-								{userProfiles.map((userProfile) => (
-									<li
-										key={userProfile.email}
-										role="option"
-										className={`px-2 py-1 h-[20px] text-xs cursor-pointer hover:bg-gray-200`}
-										onClick={() => handleOptionClick(userProfile.email)}
-									>
-										{userProfile.firstName} {userProfile.lastName}
-									</li>
-								))}
-							</ul>
-						)}
-					</div>
-
-					<div className="pl-5">
-						{highlight.comments.slice(1).map((comment, index) => {
-							const userProfile = userProfiles.find(user => user.email === comment.userId)
-							const timeAgo = calculateTimeAgo(comment.timestamp)
-							return (
-								<HighlightCommentTextarea
-									userProfile={userProfile}
-									key={index}
-									value={comment.text}
-									timeAgo={timeAgo}
-									disabled
-								/>
-							)
-						})}
-					</div>
-					<div className="sticky bottom-0 left-0 bg-white">
-						{!showReplyTextarea && (
-							<div className="flex justify-end bg-white">
-								{highlight.comments?.length > 0 &&
-									<button
-										className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
-										onClick={() => setShowReplyTextarea(true)}
-									>
-										Reply
-									</button>
-								}
-								<button
-									className="text-blue-500 hover:text-blue-700 hover:bg-blue-100 p-0.5 rounded select-none"
-									onClick={handleUpdateFirstComment}
-								>
-									<CircleArrowUp className="cursor-pointer" size={16} />
-								</button>
-							</div>
-						)}
-						{showReplyTextarea && (
-							<>
-								<Textarea
-									ref={replyInputRef}
-									placeholder="Reply"
-									onKeyDown={handleUpdateCommentReplyKeyDown}
-									onChange={() => { setIsReplyDrafted(true) }}
-								/>
-								{isReplyDrafted && (
-									<div className="flex justify-end mt-2">
-										<button
-											className="text-gray-500 hover:text-gray-700 font-semibold text-sm select-none mr-2"
-											onClick={() => setShowReplyTextarea(false)}
-										>
-											Cancel
-										</button>
-										<button
-											className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
-											onClick={handleUpdateCommentSubmit}
-										>
-											Save
-										</button>
-									</div>
-								)}
-							</>
-						)}
+						<span className="text-xs select-none text-black">{userProfile?.firstName ?? 'Anonymous'} {userProfile?.lastName ?? ''} {memoizedTimeAgo}</span>
 					</div>
 				</div>
+				<div
+					contentEditable
+					suppressContentEditableWarning
+					className="w-full p-2 border rounded mb-2 min-h-[50px]"
+					onBlur={(e) => handleHighlightEdit(e.currentTarget.textContent || '')}
+					dangerouslySetInnerHTML={{ __html: highlight.quote }}
+				/>
+				{highlight.comments.map((comment) => {
+					const commentUserProfile = userProfiles.find(user => user.email === comment.userId);
+					const timeAgo = calculateTimeAgo(comment.timestamp);
+					return (
+						<div key={comment.id} className="mb-2">
+							<div className="text-xs text-gray-500 mb-1">
+								{commentUserProfile?.firstName ?? 'Anonymous'} {commentUserProfile?.lastName ?? ''} {timeAgo}
+							</div>
+							<div
+								contentEditable
+								suppressContentEditableWarning
+								className="w-full p-2 border rounded"
+								onBlur={(e) => handleCommentEdit(comment.id, e.currentTarget.textContent || '')}
+								dangerouslySetInnerHTML={{ __html: comment.text }}
+							/>
+						</div>
+					);
+				})}
+				<div className="mt-2">
+					{!showReplyForm ? (
+						<button
+							className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
+							onClick={() => setShowReplyForm(true)}
+						>
+							Reply
+						</button>
+					) : (
+						<form onSubmit={handleReplySubmit}>
+							<textarea
+								ref={replyInputRef}
+								className="w-full p-2 border rounded"
+								placeholder="Add a reply..."
+								onKeyDown={(e) => {
+									if (e.key === 'Enter' && !e.shiftKey) {
+										e.preventDefault();
+										e.currentTarget.form?.requestSubmit();
+									}
+								}}
+							/>
+							<div className="flex justify-end mt-2">
+								<button
+									type="button"
+									className="text-gray-500 hover:text-gray-700 font-semibold text-sm select-none mr-2"
+									onClick={() => setShowReplyForm(false)}
+								>
+									Cancel
+								</button>
+								<button
+									type="submit"
+									className="text-blue-500 hover:text-blue-700 font-semibold text-sm select-none"
+								>
+									Save
+								</button>
+							</div>
+						</form>
+					)}
+				</div>
 			</div>
-		</span>
+		</div>
 	);
 };

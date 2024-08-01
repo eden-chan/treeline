@@ -45,19 +45,12 @@ const ReadingViewer: React.FC<Props> = ({
 	const { currentHighlight, selectHighlight, createAskHighlight, setCurrentHighlight } = useAskHighlight();
 	const [selectedHighlights, setSelectedHighlights] = useState<AnnotatedPdfWithProfile[]>(annotatedPdfsWithProfile);
 	const utils = clientApi.useUtils();
-	const inputRef = useRef<HTMLTextAreaElement | null>(null);
 	const lastSelectedRef = useRef<LastSelectedArea | null>(null);
 	const [isSelecting, setIsSelecting] = useState(false);
 	const [annotationsWithHiddenComments, setCollapsedHighlights] = useState<Set<string>>(new Set());
 
 	const [activeHighlight, setActiveHighlight] = useState<HighlightWithRelations | null>(null);
 
-
-
-	const [editingCommentId, setEditingCommentId] = useState('');
-	const editedCommentTextRef = useRef('');
-	const [editingHighlightId, setEditingHighlightId] = useState('');
-	const editedHighlightTextRef = useRef('');
 
 
 	const annotatedPdfResetHighlightsMutation = clientApi.annotatedPdf.resetHighlights.useMutation({
@@ -120,7 +113,6 @@ const ReadingViewer: React.FC<Props> = ({
 		editHighlightCommentMutation.mutate({ id, highlightId, text, userId: loggedInUserId });
 	const resetHighlights = () => annotatedPdfResetHighlightsMutation.mutate({ id: annotatedPdfId });
 
-	const openForest = (highlight: HighlightWithRelations) => setCurrentHighlight(highlight);
 
 	const addHighlight = (props: RenderHighlightContentProps) => {
 		// Keep the selected text highlighted? 
@@ -215,7 +207,7 @@ const ReadingViewer: React.FC<Props> = ({
 				text
 			}]
 		};
-		const highlight = await createAskHighlight(highlightDraft);
+		await createAskHighlight(highlightDraft);
 		props.cancel();
 		lastSelectedRef.current = null;
 
@@ -238,17 +230,17 @@ const ReadingViewer: React.FC<Props> = ({
 			return renderHighlightContent({ ...props, addHighlight, popupInputRef, lastSelectedRef, addComment, setActiveHighlight, setCollapsedHighlights })
 		},
 		renderHighlights: (props: RenderHighlightsProps) => {
-			return renderHighlights({ ...props, displayedHighlights: highlights, lastSelectedRef, openHighlight, deleteHighlight, loggedInUserId, addComment: (props) => { return Promise.resolve('') }, activeHighlight, isSelecting })
+			return renderHighlights({
+				...props, displayedHighlights: highlights, lastSelectedRef, openHighlight, deleteHighlight, loggedInUserId, addComment, activeHighlight, isSelecting, editHighlight: (highlightId: string, text: string) => {
+					editHighlightMutation.mutate({ highlightId, text });
+				}, upsertCommentToExistingHighlight: (highlightId: string, text: string, commentId?: string) => {
+					upsertCommentToExistingHighlight({ highlightId, text, id: commentId });
+				}, userProfiles
+			})
 		},
 
 	});
 	const { jumpToHighlightArea } = highlightPluginInstance;
-
-	const onHighlightClick = (highlight: HighlightWithRelations) => {
-		const area = highlight.highlightAreas[0];
-		if (area) highlightPluginInstance.jumpToHighlightArea(area);
-		selectHighlight(highlight);
-	};
 
 	const pdfBytesMemoized = useMemo(() => new Uint8Array(pdfBytes), [pdfBytes]);
 
@@ -326,9 +318,6 @@ const ReadingViewer: React.FC<Props> = ({
 	const renderHighlightComments = useCallback((note: HighlightWithRelations) => {
 		const showComments = annotationsWithHiddenComments.has(note.id);
 
-		const handleCommentEdit = (commentId: string, highlightId: string, newText: string) => {
-			upsertCommentToExistingHighlight({ id: commentId, highlightId, text: newText });
-		};
 
 		return (
 			<div className={styles.commentSection}>
@@ -342,7 +331,7 @@ const ReadingViewer: React.FC<Props> = ({
 							className={styles.commentText}
 							contentEditable
 							suppressContentEditableWarning
-							onBlur={(e) => handleCommentEdit(comment.id, note.id, e.currentTarget.textContent || '')}
+							onBlur={(e) => upsertCommentToExistingHighlight({ highlightId: note.id, text: e.currentTarget.textContent || '', id: comment.id })}
 							onKeyDown={(e) => {
 								if (e.key === 'Enter' && !e.shiftKey) {
 									e.preventDefault();
@@ -384,10 +373,6 @@ const ReadingViewer: React.FC<Props> = ({
 		);
 	}, [annotationsWithHiddenComments, upsertCommentToExistingHighlight, handleReplyComment, handleShareComment]);
 	const renderHighlightSidebar = useCallback(() => {
-		const handleHighlightEdit = (highlightId: string, newText: string) => {
-			editHighlightMutation.mutate({ highlightId, text: newText });
-		};
-
 		return (
 			<div className={styles.sidebar}>
 				{highlights.length === 0 && <div className={styles.emptyMessage}>There is no note</div>}
@@ -407,6 +392,12 @@ const ReadingViewer: React.FC<Props> = ({
 									(userHighlights[i] as HTMLElement).style.backgroundColor = 'rgba(59, 130, 246, 0.4)';
 								}
 							}
+
+							const highlightNote = document.getElementById(`highlight-note-${note.id}`);
+							if (highlightNote) {
+								highlightNote.style.backgroundColor = 'rgba(255, 253, 208, 1)';
+								highlightNote.style.zIndex = '2000';
+							}
 						}}
 						onMouseLeave={(e) => {
 							e.preventDefault();
@@ -418,13 +409,20 @@ const ReadingViewer: React.FC<Props> = ({
 									(userHighlights[i] as HTMLElement).style.backgroundColor = 'rgba(250, 204, 21, 0.4)';
 								}
 							}
+							const highlightNote = document.getElementById(`highlight-note-${note.id}`);
+							if (highlightNote) {
+								highlightNote.style.backgroundColor = 'white';
+								highlightNote.style.zIndex = '1';
+							}
+
+
 						}}
 					>
 						<div
 							className={styles.noteContent}
 							contentEditable
 							suppressContentEditableWarning
-							onBlur={(e) => handleHighlightEdit(note.id, e.currentTarget.textContent || '')}
+							onBlur={(e) => editHighlightMutation.mutate({ highlightId: note.id, text: e.currentTarget.textContent || '' })}
 							onKeyDown={(e) => {
 								if (e.key === 'Enter' && !e.shiftKey) {
 									e.preventDefault();
@@ -433,8 +431,7 @@ const ReadingViewer: React.FC<Props> = ({
 							}}
 							onClick={(e) => {
 								// Open the highlight on single click
-								onHighlightClick(note);
-
+								note.highlightAreas[0] && jumpToHighlightArea(note.highlightAreas[0]);
 							}}
 							onDoubleClick={(e) => {
 								// Prevent opening the highlight when starting to edit
@@ -536,7 +533,7 @@ const ReadingViewer: React.FC<Props> = ({
 				)}
 			</div>
 		)
-	}, [highlights, renderHighlightComments, activeHighlight, editingHighlightId]);
+	}, [highlights, renderHighlightComments, activeHighlight]);
 
 
 	const selectionTimeout = useRef<NodeJS.Timeout | null>(null);

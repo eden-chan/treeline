@@ -324,7 +324,10 @@ export const AskHighlightProvider: FC<{
 
 		// Add node to DB
 		createHighlightMutation.mutate({
-			highlight,
+			highlight: {
+				...highlight,
+				comments: highlight.comments ?? [],
+			},
 		});
 
 

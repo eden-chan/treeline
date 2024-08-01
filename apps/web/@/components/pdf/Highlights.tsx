@@ -1,4 +1,5 @@
 import {
+    HighlightArea,
     RenderHighlightContentProps,
     RenderHighlightTargetProps,
     RenderHighlightsProps
@@ -12,7 +13,8 @@ import sidebarStyles from './PDFAnnotator.module.css';
 import { AnnotateIcon, HighlightIcon } from "@/components/pdf/CustomIcons";
 import { Button, Position, PrimaryButton, Tooltip } from '@react-pdf-viewer/core';
 import { LastSelectedArea } from '@/components/pdf/types';
-import { HighlightWithRelations } from '@src/lib/types';
+import { HighlightWithRelations, UserProfile } from '@src/lib/types';
+import { PastNote } from './PastNote';
 
 
 
@@ -34,7 +36,6 @@ type MyRenderHighlightContentProps = {
     addComment: (props: RenderHighlightContentProps, text: string) => void;
     setActiveHighlight: (highlight: HighlightWithRelations | null) => void;
     setCollapsedHighlights: React.Dispatch<React.SetStateAction<Set<string>>>;
-
 } & RenderHighlightContentProps;
 
 
@@ -47,6 +48,9 @@ type MyRenderHighlightsProps = {
     lastSelectedRef: MutableRefObject<LastSelectedArea | null>;
     activeHighlight: HighlightWithRelations | null;
     isSelecting: boolean;
+    editHighlight: (highlightId: string, text: string) => void;
+    upsertCommentToExistingHighlight: (highlightId: string, text: string, commentId?: string) => void;
+    userProfiles: UserProfile[];
 
 } & RenderHighlightsProps;
 
@@ -58,7 +62,6 @@ export const renderHighlightContent = (props: MyRenderHighlightContentProps) => 
             return;
         }
 
-        // props.toggle()
 
         await props.addComment(props, props.popupInputRef.current?.value ?? '')
 
@@ -185,6 +188,23 @@ export const renderHighlightTarget = (props: MyRenderHighlightTargetProps) => {
 };
 
 
+const calculateAreaStats = (filteredAreas: HighlightArea[]) => {
+    const rightmostArea = filteredAreas.reduce((maxArea, area) =>
+        area.left > (maxArea?.left ?? 0) ? area : maxArea, filteredAreas[0]);
+
+    const topmostArea = filteredAreas.reduce((minArea, area) =>
+        area.top < (minArea?.top ?? 0) ? area : minArea, filteredAreas[0]);
+
+    const bottommostArea = filteredAreas.reduce((maxArea, area) =>
+        area.top > (maxArea?.top ?? Number.MAX_VALUE) ? area : maxArea, filteredAreas[0]);
+
+    const middleHeight = topmostArea && bottommostArea
+        ? (topmostArea.top + bottommostArea.top + bottommostArea.height) / 2
+        : undefined;
+
+    return { rightmostArea, middleHeight };
+};
+
 
 export const renderHighlights = (props: MyRenderHighlightsProps) => {
     const renderLastSelectedHighlight = useCallback(() => {
@@ -215,6 +235,8 @@ export const renderHighlights = (props: MyRenderHighlightsProps) => {
                 area => area.pageIndex === props.pageIndex && area.width > 0
             );
 
+            const { rightmostArea, middleHeight } = calculateAreaStats(filteredAreas);
+
             return (
                 <div
                     key={highlight.id}
@@ -225,11 +247,23 @@ export const renderHighlights = (props: MyRenderHighlightsProps) => {
                         if (highlight.id === props.activeHighlight?.id) return;
                         const sidebar = document.getElementById(`sidebar-highlight-${highlight.id}`);
                         if (sidebar) sidebar.classList.add(sidebarStyles.activeNoteItem);
+                        const highlightNote = document.getElementById(`highlight-note-${highlight.id}`);
+                        if (highlightNote) {
+                            highlightNote.style.backgroundColor = 'rgba(255, 253, 208, 1)';
+                            highlightNote.style.zIndex = '2000';
+                        }
+
                     }}
                     onMouseLeave={() => {
                         if (highlight.id === props.activeHighlight?.id) return;
                         const sidebar = document.getElementById(`sidebar-highlight-${highlight.id}`);
                         if (sidebar) sidebar.classList.remove(sidebarStyles.activeNoteItem);
+
+                        const highlightNote = document.getElementById(`highlight-note-${highlight.id}`);
+                        if (highlightNote) {
+                            highlightNote.style.backgroundColor = 'white';
+                            highlightNote.style.zIndex = '1';
+                        }
                     }}
                 >
                     {filteredAreas.map((area, index) => (
@@ -245,8 +279,17 @@ export const renderHighlights = (props: MyRenderHighlightsProps) => {
                                 props.getCssProperties(area, props.rotation),
                             )}
                         />
-
                     ))}
+                    <PastNote
+                        userId={props.loggedInUserId}
+                        highlight={highlight}
+                        middleHeight={middleHeight}
+                        rightmostArea={rightmostArea}
+                        upsertCommentToExistingHighlight={props.upsertCommentToExistingHighlight}
+                        editHighlight={props.editHighlight}
+                        deleteHighlight={props.deleteHighlight}
+                        userProfiles={props.userProfiles}
+                    />
                 </div>
             );
         });
