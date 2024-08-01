@@ -6,6 +6,19 @@ import { db } from "@src/lib/db";
 import { ObjectId } from "mongodb";
 
 export const commentRouter = createTRPCRouter({
+  deleteComment: publicProcedure
+    .input(z.object({ commentId: z.string() }))
+		.mutation<boolean>(async ({ input }) => {
+			try {
+				await db.comment.delete({
+					where: { id: input.commentId },
+				});
+        return true;
+			} catch (error) {
+				console.error("Failed to delete comment:", error);
+				return false;
+			}
+		}),
 	upsertComment: publicProcedure
 		.input(
 			z.object({

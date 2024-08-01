@@ -139,4 +139,24 @@ export const highlightRouter = createTRPCRouter({
 				return null;
 			}
 		}),
+		updateHighlight: publicProcedure
+    .input(
+      z.object({
+        highlightId: z.string(),
+        text: z.string(),
+      }),
+    )
+    .mutation<HighlightWithRelations | null>(async ({ input }) => {
+      try {
+        const updatedHighlight = await db.highlight.update({
+          where: { id: input.highlightId },
+          data: { quote: input.text },
+          include: { comments: true, node: true },
+        });
+        return updatedHighlight;
+      } catch (error) {
+        console.error("Failed to update highlight:", error);
+        return null;
+      }
+    }),
 });

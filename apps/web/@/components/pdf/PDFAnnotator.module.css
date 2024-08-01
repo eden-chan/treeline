@@ -40,9 +40,20 @@
 }
 
 .noteContent {
-  cursor: pointer;
+    padding: 5px;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
 }
 
+.noteContentt:focus {
+    background-color: transparent;
+    border: none;
+    outline: none;
+}
 .noteQuote {
   font-style: italic;
   color: #4b5563;
@@ -125,9 +136,6 @@
   margin-bottom: 0.25rem;
 }
 
-.commentText {
-  font-size: 0.875rem;
-}
 
 .commentFooter, .highlightFooter {
   display: flex;
@@ -185,4 +193,21 @@
 
 .flash {
   animation: flash 2s;
+}
+
+
+.commentText {
+    padding: 5px;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+}
+
+.commentText:focus {
+    background-color: transparent;
+    border: none;
+    outline: none;
 }

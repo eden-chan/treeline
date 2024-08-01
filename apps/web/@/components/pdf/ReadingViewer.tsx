@@ -78,7 +78,29 @@ const ReadingViewer: React.FC<Props> = ({
 		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId: loggedInUserId, source: loadedSource }),
 	});
 
-	const editHighlightMutation = clientApi.comment.upsertComment.useMutation({
+
+
+	const editHighlightMutation = clientApi.highlight.updateHighlight.useMutation({
+		onMutate: async (newData) => {
+			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId: loggedInUserId, source: loadedSource });
+			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId: loggedInUserId, source: loadedSource }, oldData => oldData);
+		},
+		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId: loggedInUserId, source: loadedSource }),
+	});
+
+
+	const editHighlightCommentMutation = clientApi.comment.upsertComment.useMutation({
+		onMutate: async (res) => {
+			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId: loggedInUserId, source: loadedSource });
+			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId: loggedInUserId, source: loadedSource }, oldData => oldData);
+		},
+		onSuccess: () => {
+			utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId: loggedInUserId, source: loadedSource })
+		},
+	});
+
+
+	const deleteHighlightCommentMutation = clientApi.comment.deleteComment.useMutation({
 		onMutate: async (res) => {
 			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId: loggedInUserId, source: loadedSource });
 			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId: loggedInUserId, source: loadedSource }, oldData => oldData);
@@ -90,11 +112,12 @@ const ReadingViewer: React.FC<Props> = ({
 
 
 
+
 	const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({ userId: loggedInUserId, source: loadedSource }).data?.highlights || loggedInUserHighlights;
 
 	const deleteHighlight = (highlightId: string) => deleteHighlightMutation.mutate({ highlightId });
-	const addCommentToExistingHighlight = async ({ id, highlightId, text }: { id?: string; highlightId: string; text: string }) =>
-		editHighlightMutation.mutate({ id, highlightId, text, userId: loggedInUserId });
+	const upsertCommentToExistingHighlight = async ({ id, highlightId, text }: { id?: string; highlightId: string; text: string }) =>
+		editHighlightCommentMutation.mutate({ id, highlightId, text, userId: loggedInUserId });
 	const resetHighlights = () => annotatedPdfResetHighlightsMutation.mutate({ id: annotatedPdfId });
 
 	const openForest = (highlight: HighlightWithRelations) => setCurrentHighlight(highlight);
@@ -250,16 +273,6 @@ const ReadingViewer: React.FC<Props> = ({
 	};
 
 
-
-
-	const handleHighlightDelete = useCallback(async (highlightId: string) => {
-		await deleteHighlight(highlightId);
-		setActiveHighlight(null);
-	}, [deleteHighlight]);
-
-	// const handleEditHighlight = useCallback((highlightId: string, text: string) => {
-	// 	editHighlightText(highlightId, text);
-	// }, []);
 	const handleReplyHighlight = useCallback((highlight: HighlightWithRelations) => {
 		console.log('handleReplyHighlight', highlight);
 		setCollapsedHighlights(prev => {
@@ -285,14 +298,7 @@ const ReadingViewer: React.FC<Props> = ({
 		console.log('handleShareHighlight', highlightId);
 	}, []);
 
-	// const handleEditComment = useCallback((highlightId: string, commentId: string, text: string) => {
-	// 	// Add textbox for the comment box
-	// 	editHighlightComment(highlightId, commentId, text);
-	// }, [editHighlightComment]);
-	// const handleDeleteComment = useCallback((highlightId: string, commentId: string) => {
 
-	// 	deleteHighlightComment(highlightId, commentId);
-	// }, [deleteHighlightComment]);
 
 	const handleReplyComment = useCallback((highlight: HighlightWithRelations) => {
 		console.log('handleReplyComment', highlight);
@@ -319,6 +325,11 @@ const ReadingViewer: React.FC<Props> = ({
 
 	const renderHighlightComments = useCallback((note: HighlightWithRelations) => {
 		const showComments = annotationsWithHiddenComments.has(note.id);
+
+		const handleCommentEdit = (commentId: string, highlightId: string, newText: string) => {
+			upsertCommentToExistingHighlight({ id: commentId, highlightId, text: newText });
+		};
+
 		return (
 			<div className={styles.commentSection}>
 				{showComments && note.comments && note.comments.map((comment) => (
@@ -327,43 +338,25 @@ const ReadingViewer: React.FC<Props> = ({
 							<span>{comment.userId || 'Anonymous'}</span>
 							<span>{new Date(comment.timestamp).toLocaleString()}</span>
 						</div>
-						{editingCommentId === comment.id ? (
-							<textarea
-								defaultValue={comment.text}
-								onChange={(e) => {
-									editedCommentTextRef.current = e.target.value;
-									// debouncedHandleEditComment(note.id, comment.id, e.target.value);
-								}}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter' && !e.shiftKey) {
-										e.preventDefault();
-										// handleEditComment(note.id, comment.id, editedCommentTextRef.current);
-										setEditingCommentId('');
-									}
-								}}
-							/>
-						) : (
-							<div className={styles.commentText}>{comment.text}</div>
-						)}
+						<div
+							className={styles.commentText}
+							contentEditable
+							suppressContentEditableWarning
+							onBlur={(e) => handleCommentEdit(comment.id, note.id, e.currentTarget.textContent || '')}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' && !e.shiftKey) {
+									e.preventDefault();
+									e.currentTarget.blur();
+								}
+							}}
+						>
+							{comment.text}
+						</div>
 						<div className={styles.commentFooter}>
-							<button
-								className={`${styles.commentButton} ${styles.editButton}`}
-								onClick={() => {
-									if (editingCommentId === comment.id) {
-										// handleEditComment(note.id, comment.id, editedCommentTextRef.current);
-										setEditingCommentId('');
-									} else {
-										setEditingCommentId(comment.id);
-										editedCommentTextRef.current = comment.text;
-									}
-								}}
-							>
-								{editingCommentId === comment.id ? 'Save' : <EditIcon className={styles.icon} />}
-							</button>
 							<button
 								className={`${styles.commentButton} ${styles.deleteButton}`}
 								onClick={() => {
-									// handleDeleteComment(note.id, comment.id);
+									deleteHighlightCommentMutation.mutate({ commentId: comment.id });
 								}}
 							>
 								<TrashIcon className={styles.icon} />
@@ -389,9 +382,12 @@ const ReadingViewer: React.FC<Props> = ({
 				))}
 			</div>
 		);
-	}, [annotationsWithHiddenComments, editingCommentId]);
-
+	}, [annotationsWithHiddenComments, upsertCommentToExistingHighlight, handleReplyComment, handleShareComment]);
 	const renderHighlightSidebar = useCallback(() => {
+		const handleHighlightEdit = (highlightId: string, newText: string) => {
+			editHighlightMutation.mutate({ highlightId, text: newText });
+		};
+
 		return (
 			<div className={styles.sidebar}>
 				{highlights.length === 0 && <div className={styles.emptyMessage}>There is no note</div>}
@@ -424,44 +420,26 @@ const ReadingViewer: React.FC<Props> = ({
 						}}
 					>
 
-						{editingHighlightId === note.id ? (
-							<textarea
-								className={styles.commentTextarea}
-								defaultValue={note.quote}
-								onChange={(e) => {
-									editedHighlightTextRef.current = e.target.value;
-									// debouncedHandleEditComment(note.id, comment.id, e.target.value);
-								}}
-							/>
-						) : (
-							<div
-								className={styles.noteContent}
-								onClick={() => {
-									openHighlight(note);
-									jumpToHighlightArea(note.highlightAreas[0]);
-								}}
-							>
-								<div>{note.quote}</div>
-							</div>
-						)}
+						<div
+							className={styles.noteContent}
+							contentEditable
+							suppressContentEditableWarning
+							onBlur={(e) => handleHighlightEdit(note.id, e.currentTarget.textContent || '')}
+							onKeyDown={(e) => {
+								if (e.key === 'Enter' && !e.shiftKey) {
+									e.preventDefault();
+									e.currentTarget.blur();
+								}
+							}}
+							onClick={(e) => {
+								// Prevent opening the highlight when starting to edit
+								e.stopPropagation();
+							}}
+						>
+							{note.quote}
+						</div>
 
 						<div className={styles.highlightFooter}>
-							<button
-								className={`${styles.commentButton} ${styles.editButton}`}
-								onClick={(e) => {
-									e.stopPropagation();
-									if (editingHighlightId === note.id) {
-										// handleEditHighlight(note.id, editedHighlightTextRef.current);
-										setEditingHighlightId('');
-									} else {
-										// handleEditHighlight(note.id, note.text);
-										setEditingHighlightId(note.id);
-										editedHighlightTextRef.current = note.quote;
-									}
-								}}
-							>
-								{editingHighlightId === note.id ? 'Save' : <EditIcon className={styles.icon} />}
-							</button>
 							<button
 								className={`${styles.commentButton} ${styles.deleteButton}`}
 								onClick={(e) => {
@@ -502,7 +480,7 @@ const ReadingViewer: React.FC<Props> = ({
 							<div>
 								<form onSubmit={(e) => {
 									e.preventDefault();
-									addCommentToExistingHighlight({ highlightId: note.id, text: commentInputRef.current?.value ?? '' })
+									upsertCommentToExistingHighlight({ highlightId: note.id, text: commentInputRef.current?.value ?? '' })
 									if (commentInputRef.current) {
 										commentInputRef.current.value = '';
 									}
