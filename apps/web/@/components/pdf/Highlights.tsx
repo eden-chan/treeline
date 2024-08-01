@@ -41,7 +41,7 @@ type MyRenderHighlightContentProps = {
 type MyRenderHighlightsProps = {
     displayedHighlights: HighlightWithRelations[];
     openHighlight: (highlight: HighlightWithRelations) => void;
-    deleteHighlight: (highlightId: string) => Promise<boolean>;
+    deleteHighlight: (highlightId: string) => void;
     addComment: (text: string, parentId: string) => Promise<string>;
     loggedInUserId: string;
     lastSelectedRef: MutableRefObject<LastSelectedArea | null>;
