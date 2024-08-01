@@ -147,6 +147,7 @@ export const HighlightWithCurriculumNodeSchema = HighlightSchema.extend({
 	node: CurriculumNodeSchemaBase.omit({ highlightId: true })
 		.or(z.undefined())
 		.or(z.null()),
+	comments: z.array(CommentSchema).optional(),
 });
 
 export const IHighlightSchema = HighlightSchema.extend({

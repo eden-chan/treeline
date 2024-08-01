@@ -17,21 +17,21 @@ import { HighlightWithRelations } from '@src/lib/types';
 
 
 type MyRenderHighlightTargetProps = {
-    addHighlight: (props: RenderHighlightContentProps) => Promise<string>
+    addHighlight: (props: RenderHighlightContentProps) => void;
     annotatedPdfId: string;
     popupInputRef: MutableRefObject<HTMLTextAreaElement | null>;
     lastSelectedRef: MutableRefObject<LastSelectedArea | null>;
-    addComment: (text: string, parentId: string) => Promise<string>;
+    addComment: (props: RenderHighlightContentProps, text: string) => void;
     focusPopupInput: () => void;
 
 } & RenderHighlightTargetProps;
 
 
 type MyRenderHighlightContentProps = {
-    addHighlight: (props: RenderHighlightContentProps) => Promise<string>
+    addHighlight: (props: RenderHighlightContentProps) => void;
     popupInputRef: MutableRefObject<HTMLTextAreaElement | null>;
     lastSelectedRef: MutableRefObject<LastSelectedArea | null>;
-    addComment: (text: string, parentId: string) => Promise<string>;
+    addComment: (props: RenderHighlightContentProps, text: string) => void;
     setActiveHighlight: (highlight: HighlightWithRelations | null) => void;
     setCollapsedHighlights: React.Dispatch<React.SetStateAction<Set<string>>>;
 
@@ -42,7 +42,7 @@ type MyRenderHighlightsProps = {
     displayedHighlights: HighlightWithRelations[];
     openHighlight: (highlight: HighlightWithRelations) => void;
     deleteHighlight: (highlightId: string) => void;
-    addComment: (text: string, parentId: string) => Promise<string>;
+    addComment: (props: RenderHighlightContentProps, text: string) => void;
     loggedInUserId: string;
     lastSelectedRef: MutableRefObject<LastSelectedArea | null>;
     activeHighlight: HighlightWithRelations | null;
@@ -52,8 +52,6 @@ type MyRenderHighlightsProps = {
 
 export const renderHighlightContent = (props: MyRenderHighlightContentProps) => {
 
-
-
     const handleCommentSubmit = async () => {
 
         if (!props.popupInputRef.current?.value) {
@@ -61,12 +59,12 @@ export const renderHighlightContent = (props: MyRenderHighlightContentProps) => 
         }
 
         // props.toggle()
-        const highlightId = await props.addHighlight(props)
-        const commentId = await props.addComment(props.popupInputRef.current?.value ?? '', highlightId)
+
+        await props.addComment(props, props.popupInputRef.current?.value ?? '')
 
         props.setCollapsedHighlights(prev => {
             const newSet = new Set(prev);
-            newSet.add(highlightId);
+            // newSet.add(props.);
             return newSet;
         });
 

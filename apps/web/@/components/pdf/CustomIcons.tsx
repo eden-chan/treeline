@@ -144,7 +144,7 @@ export const TrashIcon = ({ className }: { className: string }) => {
             data-component="TrashIcon"
             className={className}
         >
-            <g fill="none" fill-rule="evenodd">
+            <g fill="none" fillRule="evenodd">
                 <path d="M0 0h16v16H0z" />
                 <path
                     stroke="currentColor"
@@ -188,7 +188,7 @@ export const EditIcon = ({ className }: { className: string }) => {
             data-component="EditIcon"
             className={className}
         >
-            <g fill="none" fill-rule="evenodd">
+            <g fill="none" fillRule="evenodd">
                 <path d="M0 0h16v16H0z" />
                 <path
                     stroke="currentColor"

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo, Suspense, useCallback } from "react";
+import React, { useRef, useState, useMemo, Suspense, useCallback, useEffect } from "react";
 import { Viewer } from "@react-pdf-viewer/core";
 import { RenderHighlightContentProps, RenderHighlightsProps, RenderHighlightTargetProps } from "@react-pdf-viewer/highlight";
 import "@react-pdf-viewer/core/lib/styles/index.css";
@@ -42,7 +42,7 @@ const ReadingViewer: React.FC<Props> = ({
 	annotatedPdfsWithProfile,
 	userProfiles
 }) => {
-	const { selectHighlight, createAskHighlight, setCurrentHighlight } = useAskHighlight();
+	const { currentHighlight, selectHighlight, createAskHighlight, setCurrentHighlight } = useAskHighlight();
 	const [selectedHighlights, setSelectedHighlights] = useState<AnnotatedPdfWithProfile[]>(annotatedPdfsWithProfile);
 	const utils = clientApi.useUtils();
 	const inputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -79,11 +79,13 @@ const ReadingViewer: React.FC<Props> = ({
 	});
 
 	const editHighlightMutation = clientApi.comment.upsertComment.useMutation({
-		onMutate: async () => {
+		onMutate: async (res) => {
 			await utils.annotatedPdf.fetchAnnotatedPdf.cancel({ userId: loggedInUserId, source: loadedSource });
 			utils.annotatedPdf.fetchAnnotatedPdf.setData({ userId: loggedInUserId, source: loadedSource }, oldData => oldData);
 		},
-		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId: loggedInUserId, source: loadedSource }),
+		onSuccess: () => {
+			utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId: loggedInUserId, source: loadedSource })
+		},
 	});
 
 
@@ -91,7 +93,7 @@ const ReadingViewer: React.FC<Props> = ({
 	const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({ userId: loggedInUserId, source: loadedSource }).data?.highlights || loggedInUserHighlights;
 
 	const deleteHighlight = (highlightId: string) => deleteHighlightMutation.mutate({ highlightId });
-	const editHighlight = async ({ id, highlightId, text }: { id?: string; highlightId: string; text: string }) =>
+	const addCommentToExistingHighlight = async ({ id, highlightId, text }: { id?: string; highlightId: string; text: string }) =>
 		editHighlightMutation.mutate({ id, highlightId, text, userId: loggedInUserId });
 	const resetHighlights = () => annotatedPdfResetHighlightsMutation.mutate({ id: annotatedPdfId });
 
@@ -106,11 +108,12 @@ const ReadingViewer: React.FC<Props> = ({
 			quote: props.selectedText,
 		};
 		createAskHighlight(highlightDraft);
+
 		props.cancel();
 		// Don't double highlight when saving highlight
+
 		lastSelectedRef.current = null;
 
-		return Promise.resolve('');
 	}
 
 	const commentInputRef = useRef<HTMLTextAreaElement>(null);
@@ -176,6 +179,24 @@ const ReadingViewer: React.FC<Props> = ({
 		openHighlight(highlight)
 	}, []);
 
+	const addComment = async (props: RenderHighlightContentProps, text: string) => {
+
+		// Keep the selected text highlighted? 
+		const highlightDraft: NewHighlightWithRelationsInput = {
+			annotatedPdfId,
+			highlightAreas: props.highlightAreas,
+			quote: props.selectedText,
+			comments: [{
+				userId: loggedInUserId,
+				timestamp: new Date(),
+				text
+			}]
+		};
+		const highlight = await createAskHighlight(highlightDraft);
+		props.cancel();
+		lastSelectedRef.current = null;
+
+	}
 
 	const highlightPluginInstance = highlightPlugin({
 		renderHighlightTarget: (props: RenderHighlightTargetProps) => {
@@ -186,12 +207,12 @@ const ReadingViewer: React.FC<Props> = ({
 				popupInputRef,
 				lastSelectedRef,
 				addHighlight,
-				addComment: (props) => { return Promise.resolve('') },
+				addComment,
 				focusPopupInput
 			});
 		},
 		renderHighlightContent: (props: RenderHighlightContentProps) => {
-			return renderHighlightContent({ ...props, addHighlight, popupInputRef, lastSelectedRef, addComment: (props) => { return Promise.resolve('') }, setActiveHighlight, setCollapsedHighlights })
+			return renderHighlightContent({ ...props, addHighlight, popupInputRef, lastSelectedRef, addComment, setActiveHighlight, setCollapsedHighlights })
 		},
 		renderHighlights: (props: RenderHighlightsProps) => {
 			return renderHighlights({ ...props, displayedHighlights: highlights, lastSelectedRef, openHighlight, deleteHighlight, loggedInUserId, addComment: (props) => { return Promise.resolve('') }, activeHighlight, isSelecting })
@@ -227,6 +248,73 @@ const ReadingViewer: React.FC<Props> = ({
 				});
 			});
 	};
+
+
+
+
+	const handleHighlightDelete = useCallback(async (highlightId: string) => {
+		await deleteHighlight(highlightId);
+		setActiveHighlight(null);
+	}, [deleteHighlight]);
+
+	// const handleEditHighlight = useCallback((highlightId: string, text: string) => {
+	// 	editHighlightText(highlightId, text);
+	// }, []);
+	const handleReplyHighlight = useCallback((highlight: HighlightWithRelations) => {
+		console.log('handleReplyHighlight', highlight);
+		setCollapsedHighlights(prev => {
+			const newSet = new Set(prev);
+			newSet.add(highlight.id);
+			return newSet;
+		});
+		openHighlight(highlight)
+	}, []);
+	const handleShareHighlight = useCallback((highlightId: string) => {
+
+		window.location.hash = `highlight-${highlightId}`;
+		// copy to clipboard 
+
+		const currentUrl = window.location.href;
+		navigator.clipboard.writeText(currentUrl).then(() => {
+			alert('Link copied to clipboard: ' + currentUrl);
+		}).catch(err => {
+			console.error('Failed to copy link to clipboard:', err);
+		});
+
+
+		console.log('handleShareHighlight', highlightId);
+	}, []);
+
+	// const handleEditComment = useCallback((highlightId: string, commentId: string, text: string) => {
+	// 	// Add textbox for the comment box
+	// 	editHighlightComment(highlightId, commentId, text);
+	// }, [editHighlightComment]);
+	// const handleDeleteComment = useCallback((highlightId: string, commentId: string) => {
+
+	// 	deleteHighlightComment(highlightId, commentId);
+	// }, [deleteHighlightComment]);
+
+	const handleReplyComment = useCallback((highlight: HighlightWithRelations) => {
+		console.log('handleReplyComment', highlight);
+		// TODO: handle nested comments
+		setCollapsedHighlights(prev => {
+			const newSet = new Set(prev);
+			newSet.add(highlight.id);
+			return newSet;
+		});
+		openHighlight(highlight)
+	}, []);
+	const handleShareComment = useCallback((highlightId: string) => {
+		window.location.hash = `highlight-${highlightId}`;
+		const currentUrl = window.location.href;
+		navigator.clipboard.writeText(currentUrl).then(() => {
+			alert('Link copied to clipboard: ' + currentUrl);
+		}).catch(err => {
+			console.error('Failed to copy link to clipboard:', err);
+		});
+	}, []);
+
+
 
 
 	const renderHighlightComments = useCallback((note: HighlightWithRelations) => {
@@ -283,7 +371,7 @@ const ReadingViewer: React.FC<Props> = ({
 							<button
 								className={`${styles.commentButton} ${styles.replyButton}`}
 								onClick={() => {
-									// handleReplyComment(note);
+									handleReplyComment(note);
 								}}
 							>
 								<ReplyIcon className={styles.icon} />
@@ -291,7 +379,7 @@ const ReadingViewer: React.FC<Props> = ({
 							<button
 								className={`${styles.commentButton} ${styles.shareButton}`}
 								onClick={() => {
-									// handleShareComment(note.id, comment.id);
+									handleShareComment(note.id);
 								}}
 							>
 								<ShareIcon className={styles.icon} />
@@ -387,7 +475,7 @@ const ReadingViewer: React.FC<Props> = ({
 								className={`${styles.commentButton} ${styles.replyButton}`}
 								onClick={(e) => {
 									e.stopPropagation();
-									// handleReplyHighlight(note);
+									handleReplyHighlight(note);
 								}}
 							>
 								<ReplyIcon className={styles.icon} />
@@ -396,7 +484,7 @@ const ReadingViewer: React.FC<Props> = ({
 								className={`${styles.commentButton} ${styles.shareButton}`}
 								onClick={(e) => {
 									e.stopPropagation();
-									// handleShareHighlight(note.id);
+									handleShareHighlight(note.id);
 								}}
 							>
 								<ShareIcon className={styles.icon} />
@@ -414,7 +502,10 @@ const ReadingViewer: React.FC<Props> = ({
 							<div>
 								<form onSubmit={(e) => {
 									e.preventDefault();
-									// handleCommentSubmit();
+									addCommentToExistingHighlight({ highlightId: note.id, text: commentInputRef.current?.value ?? '' })
+									if (commentInputRef.current) {
+										commentInputRef.current.value = '';
+									}
 								}}>
 									<textarea
 										ref={commentInputRef}
@@ -481,6 +572,47 @@ const ReadingViewer: React.FC<Props> = ({
 			setIsSelecting(false);
 		}
 	};
+
+
+
+	const [scrolledToHashOnLoad, setScrolledToHashOnLoad] = useState(false);
+	useEffect(() => {
+		const handleHashChange = () => {
+			console.log('calling this thing')
+			if (scrolledToHashOnLoad) return;
+			console.log('calling this thing again')
+			if (window.location.hash.startsWith('#highlight-')) {
+				const highlightId = window.location.hash.substring(11); // Remove '#highlight-'
+				setTimeout(() => {
+					const highlightElement = document.querySelector(`[data-highlight-id="${highlightId}"]`);
+					console.log('highlightElement', highlightElement, 'highlightId', highlightId);
+					if (highlightElement) {
+						const highlight = highlights.find(h => h.id === highlightId);
+						if (highlight) {
+							jumpToHighlightArea(highlight.highlightAreas[0]);
+							openHighlight(highlight);
+							setScrolledToHashOnLoad(true);
+						}
+					}
+				}, 1000); // Wait for 1 second before searching for the element
+			}
+
+		};
+
+		// Call once on mount to handle initial URL
+		handleHashChange();
+
+		// Add event listener for hash changes
+		window.addEventListener('hashchange', handleHashChange);
+
+		// Cleanup
+		return () => {
+			window.removeEventListener('hashchange', handleHashChange);
+		};
+	}, [highlights, openHighlight, scrolledToHashOnLoad]);
+
+
+
 
 	return (
 		<div>

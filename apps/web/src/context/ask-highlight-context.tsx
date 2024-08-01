@@ -268,6 +268,11 @@ export const AskHighlightProvider: FC<{
 					source: loadedSource,
 				});
 
+				console.log('created highlight', input, 'current', currentHighlightRef.current)
+				if (currentHighlightRef.current && input) {
+					currentHighlightRef.current.id = input.id;
+					console.log('created update highlight', input, 'current', currentHighlightRef.current)
+				}
 				// Todo: address potential race condition where onFinish callback for useChat executes before
 				// setting the new id values
 				if (!input?.node || !currentHighlightRef.current?.node) return;
@@ -321,6 +326,7 @@ export const AskHighlightProvider: FC<{
 		createHighlightMutation.mutate({
 			highlight,
 		});
+
 
 		const tempHighlight = {
 			...highlight,

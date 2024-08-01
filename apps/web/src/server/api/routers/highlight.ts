@@ -8,10 +8,12 @@ import {
 	CurriculumNodeWithRelations,
 	HighlightWithRelations,
 } from "@src/lib/types";
+import { Comment } from "@prisma/client";
 
 export type NewHighlightWithRelationsInput = Omit<
 	Highlight & {
 		node?: Omit<CurriculumNode, "id" | "parentId" | "highlightId"> | null;
+		comments?: Omit<Comment, "id" | "highlightId">[] | null;
 	},
 	"id"
 >;
@@ -36,6 +38,15 @@ export const highlightRouter = createTRPCRouter({
 							connect: {
 								id: input.highlight.annotatedPdfId,
 							},
+						},
+						comments: {
+							create: input.highlight.comments
+								?.filter(comment => comment.text !== null)
+								.map(comment => ({
+									userId: comment.userId,
+									timestamp: comment.timestamp,
+									text: comment.text ?? '',
+								})) || [],
 						},
 					},
 					include: {
