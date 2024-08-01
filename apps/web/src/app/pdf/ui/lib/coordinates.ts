@@ -4,7 +4,7 @@
 // for clarity reasons I decided not to store actual (0, 1) coordinates, but
 // provide width and height, so user can compute ratio himself if needed
 
-import type { LTWHP, Scaled, Viewport } from "../types";
+import type { LTWHP, Scaled, Viewport } from "../../../../../@/components/pdf/types";
 
 interface WIDTH_HEIGHT {
 	width: number;

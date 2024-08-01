@@ -1,17 +1,19 @@
-import React, { useRef, useState, useMemo, Suspense } from "react";
+import React, { useRef, useState, useMemo, Suspense, useCallback } from "react";
 import { Viewer } from "@react-pdf-viewer/core";
-import { RenderHighlightsProps, RenderHighlightTargetProps } from "@react-pdf-viewer/highlight";
+import { RenderHighlightContentProps, RenderHighlightsProps, RenderHighlightTargetProps } from "@react-pdf-viewer/highlight";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import "@react-pdf-viewer/default-layout/lib/styles/index.css";
 import FloatingProfiles from "@/components/pdf/FloatingProfiles";
-import { renderHighlightTarget, renderHighlights } from "@/lib/highlight-plugins";
+
 import { useAskHighlight } from "@src/context/ask-highlight-context";
 import { AnnotatedPdfWithProfile, HighlightWithRelations, UserProfile } from "@src/lib/types";
 import { clientApi } from "@src/trpc/react";
 import { ResizableHandle, ResizablePanel } from '../ui/resizable';
 import { PanelGroup } from 'react-resizable-panels';
 import { Sidebar } from './Sidebar';
-import { LastSelectedArea } from '@src/app/pdf/ui';
+import { LastSelectedArea } from '@/components/pdf/types';
+import { renderHighlightContent, renderHighlightTarget, renderHighlights } from './Highlights';
+import { NewHighlightWithRelationsInput } from '@src/server/api/routers/highlight';
 
 
 const highlightPlugin = require("./highlight.js").highlightPlugin;
@@ -70,6 +72,8 @@ const ReadingViewer: React.FC<Props> = ({
 		onSuccess: () => utils.annotatedPdf.fetchAnnotatedPdf.invalidate({ userId: loggedInUserId, source: loadedSource }),
 	});
 
+
+
 	const highlights = clientApi.annotatedPdf.fetchAnnotatedPdf.useQuery({ userId: loggedInUserId, source: loadedSource }).data?.highlights || loggedInUserHighlights;
 
 	const deleteHighlight = (highlightId: string) => deleteHighlightMutation.mutate({ highlightId });
@@ -79,24 +83,75 @@ const ReadingViewer: React.FC<Props> = ({
 
 	const openForest = (highlight: HighlightWithRelations) => setCurrentHighlight(highlight);
 
+	const addHighlight = (props: RenderHighlightContentProps) => {
+		// Keep the selected text highlighted? 
+
+		const highlightDraft: NewHighlightWithRelationsInput = {
+			annotatedPdfId,
+			highlightAreas: props.highlightAreas,
+			quote: props.selectedText,
+		};
+		createAskHighlight(highlightDraft);
+		props.cancel();
+		// Don't double highlight when saving highlight
+		lastSelectedRef.current = null;
+
+		return Promise.resolve('');
+	}
+
+
+
+	const commentInputRef = useRef<HTMLTextAreaElement>(null);
+	const popupInputRef = useRef<HTMLTextAreaElement | null>(null);
+
+
+	const _focusCommentInput = useCallback(() => {
+		if (commentInputRef.current) {
+			commentInputRef.current.focus();
+		} else {
+			setTimeout(focusCommentInput, 100);
+		}
+	}, []);
+	const focusCommentInput = useCallback(() => {
+		setTimeout(_focusCommentInput, 100);
+	}, [_focusCommentInput]);
+
+	// do the same focus but for input ref
+	const _focusPopupInput = useCallback(() => {
+		if (popupInputRef.current) {
+			popupInputRef.current.focus();
+		} else {
+			setTimeout(focusCommentInput, 100);
+		}
+	}, []);
+	const focusPopupInput = useCallback(() => {
+		setTimeout(_focusPopupInput, 100);
+	}, [_focusPopupInput]);
+
+
 
 	const highlightPluginInstance = highlightPlugin({
 		renderHighlightTarget: (props: RenderHighlightTargetProps) => {
 			lastSelectedRef.current = { highlightAreas: props.highlightAreas, selectedText: props.selectedText };
 			return renderHighlightTarget({
 				...props,
-				openForest,
-				annotatedPdfId,
-				createAskHighlight,
-				setCurrentHighlight,
-				inputRef, lastSelectedRef
+				annotatedPdfId: '',
+				popupInputRef,
+				lastSelectedRef,
+				addHighlight,
+				addComment: (props) => { return Promise.resolve('') },
+				focusPopupInput
 			});
 		},
-		renderHighlights: (props: RenderHighlightsProps) => {
-			console.log("selectedHighlights", selectedHighlights);
-			return renderHighlights({ ...props, highlights, selectedHighlights, openForest, editHighlight, deleteHighlight, loggedInUserId: loggedInUserId, userProfiles, lastSelectedRef })
+		renderHighlightContent: (props: RenderHighlightContentProps) => {
+			return renderHighlightContent({ ...props, addHighlight, popupInputRef, lastSelectedRef, addComment: (props) => { return Promise.resolve('') }, setActiveHighlight: (props) => { return Promise.resolve('') }, setCollapsedHighlights: (props) => { return Promise.resolve('') } })
 		},
+		renderHighlights: (props: RenderHighlightsProps) => {
+			return renderHighlights({ ...props, displayedHighlights: highlights, lastSelectedRef, openHighlight: (props) => { return Promise.resolve(false) }, deleteHighlight: (props) => { return Promise.resolve(true) }, loggedInUserId: '', addComment: (props) => { return Promise.resolve('') }, activeHighlight: null, isSelecting: false })
+		},
+
 	});
+	const { jumpToHighlightArea } = highlightPluginInstance;
 
 	const onHighlightClick = (highlight: HighlightWithRelations) => {
 		const area = highlight.highlightAreas[0];

@@ -694,6 +694,10 @@ var Tracker = function (_a) {
 					)
 					.concat([getRectFromOffsets(endDiv, 0, endOffset)])
 					.map(function (rect) {
+						if (!rect) {
+							// <EDGE_CASE>
+							return null;
+						}
 						return {
 							height: (rect.height * 100) / startPageRect.height,
 							left:
@@ -703,6 +707,9 @@ var Tracker = function (_a) {
 								((rect.top - startPageRect.top) * 100) / startPageRect.height,
 							width: (rect.width * 100) / startPageRect.width,
 						};
+					})
+					.filter(function (rect) {
+						return rect !== null;
 					});
 				break;
 			case SelectionRange.DifferentPages:

@@ -3,7 +3,7 @@ import { User } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
-import { UserSchema } from "@src/app/pdf/ui/types";
+import { UserSchema } from "@/components/pdf/types";
 
 export const userRouter = createTRPCRouter({
 	updateFollowStatus: publicProcedure

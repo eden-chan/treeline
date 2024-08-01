@@ -1,4 +1,4 @@
-import { Page } from "../types";
+import { Page } from "../../../../../@/components/pdf/types";
 
 export const getDocument = (elm: any): Document =>
   (elm || {}).ownerDocument || document;

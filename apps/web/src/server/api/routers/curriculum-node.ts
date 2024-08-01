@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Highlight, CurriculumNode } from "@prisma/client";
-import { CurriculumNodeSchemaBase } from "@src/app/pdf/ui/types";
+import { CurriculumNodeSchemaBase } from "@/components/pdf/types";
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
 

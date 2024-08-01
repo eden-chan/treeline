@@ -1,4 +1,4 @@
-import type { LTWHP } from "../types.js";
+import type { LTWHP } from "../../../../../@/components/pdf/types.js";
 
 const sort = (rects: Array<LTWHP>) =>
   rects.sort((A, B) => {

@@ -3,7 +3,7 @@ import { Highlight, CurriculumNode } from "@prisma/client";
 
 import { db } from "@src/lib/db";
 import { createTRPCRouter, publicProcedure } from "@src/server/api/trpc";
-import { HighlightWithCurriculumNodeSchema } from "@src/app/pdf/ui/types";
+import { HighlightWithCurriculumNodeSchema } from "@/components/pdf/types";
 import {
 	CurriculumNodeWithRelations,
 	HighlightWithRelations,

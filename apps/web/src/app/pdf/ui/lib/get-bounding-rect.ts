@@ -1,4 +1,4 @@
-import type { LTWHP } from "../types.js";
+import type { LTWHP } from "../../../../../@/components/pdf/types.js";
 
 const getBoundingRect = (clientRects: Array<LTWHP>): LTWHP => {
 	const rects = Array.from(clientRects).map((rect) => {

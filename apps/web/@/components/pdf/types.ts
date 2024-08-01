@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { AnnotatedPdf, User } from "@prisma/client";
-import { RenderHighlightTargetProps } from '@react-pdf-viewer/highlight';
+import { HighlightArea, RenderHighlightTargetProps } from '@react-pdf-viewer/highlight';
 export interface LTWH {
 	left: number;
 	top: number;
@@ -44,12 +44,6 @@ export interface HighlightContent {
 	content: Content;
 }
 
-export interface Comment {
-	text: string | null;
-	emoji: string | null;
-	timestamp: Date;
-	userId: string;
-}
 
 export interface NewHighlight extends HighlightContent {
 	position: ScaledPosition;
@@ -173,4 +167,51 @@ export const UserSchema = z.object({
 export type LastSelectedArea =  {highlightAreas: 
 	RenderHighlightTargetProps['highlightAreas'], 
 	selectedText: string
+}
+
+
+export type PaperInfo = {
+  title: string;
+  description: string;
+  date: string;
+  authors: string[];
+};
+
+
+
+export type Source = {
+  id: string;
+  url: string;
+  name: string;
+  description: string; 
+  date: string;
+}
+
+export type NewSource = {
+  id: string;
+  url: string;
+  name: string;
+  description: string;
+  date: string;
+};
+export type Collection = {
+  id: string;
+  title: string;
+  description: string;
+  sources: Source[];
+}
+
+
+export type Comment = {
+  id: string;
+  userId: string;
+  timestamp: string;
+  text: string;
+}
+
+export type ProcessedHighlight = {
+  id: string;
+  text: string;
+  highlightAreas: HighlightArea[];
+  comments: Comment[];
 }

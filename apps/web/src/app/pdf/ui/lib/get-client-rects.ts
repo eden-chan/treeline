@@ -1,4 +1,4 @@
-import type { LTWHP, Page } from "../types.js";
+import type { LTWHP, Page } from "../../../../../@/components/pdf/types.js";
 
 import optimizeClientRects from "./optimize-client-rects.js";
 
