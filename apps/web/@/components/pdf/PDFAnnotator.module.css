@@ -47,12 +47,14 @@
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
+    cursor: pointer;
 }
 
 .noteContentt:focus {
     background-color: transparent;
     border: none;
     outline: none;
+    cursor: text;
 }
 .noteQuote {
   font-style: italic;
@@ -204,10 +206,12 @@
     font-family: inherit;
     font-size: inherit;
     line-height: inherit;
+    cursor: pointer;
 }
 
 .commentText:focus {
     background-color: transparent;
     border: none;
     outline: none;
+    cursor: text;
 }

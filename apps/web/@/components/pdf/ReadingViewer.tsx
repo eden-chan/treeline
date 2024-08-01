@@ -398,6 +398,7 @@ const ReadingViewer: React.FC<Props> = ({
 						className={`${note.id === activeHighlight?.id ? styles.activeNoteItem : styles.noteItem}`}
 						onMouseEnter={(e) => {
 							e.preventDefault();
+
 							if (note.id === activeHighlight?.id) return;
 							const pdfHighlight = document.getElementById(`pdf-highlight-${note.id}`);
 							if (pdfHighlight) {
@@ -419,7 +420,6 @@ const ReadingViewer: React.FC<Props> = ({
 							}
 						}}
 					>
-
 						<div
 							className={styles.noteContent}
 							contentEditable
@@ -432,8 +432,14 @@ const ReadingViewer: React.FC<Props> = ({
 								}
 							}}
 							onClick={(e) => {
+								// Open the highlight on single click
+								onHighlightClick(note);
+
+							}}
+							onDoubleClick={(e) => {
 								// Prevent opening the highlight when starting to edit
 								e.stopPropagation();
+								e.currentTarget.focus();
 							}}
 						>
 							{note.quote}
