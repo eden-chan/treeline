@@ -28,7 +28,7 @@ export const preferredRegion = 'auto'
 export const maxDuration = 60
 
 
-const CORS_PROTECTED_BASE_URL = ["https://arxiv.org/pdf/"]
+const CORS_PROTECTED_BASE_URL = ["https://arxiv.org/pdf/", "https://github.com"]
 
 export default async function Page() {
 	const headersList = headers();
@@ -42,6 +42,7 @@ export default async function Page() {
 	try {
 		// get the uploaded PDF id
 		pdfUrl = new URL(urlParams.get("url") || defaultPdfURL);
+
 		const result = await api.source.createSource({
 			source: pdfUrl.href,
 		});
@@ -52,11 +53,15 @@ export default async function Page() {
 			const response = await fetch(pdfUrl.href);
 			const pdfBytes_ = await response.arrayBuffer();
 			pdfBytes = Array.from(new Uint8Array(pdfBytes_));
+		} else {
+			const response = await fetch(pdfUrl.href);
+			const pdfBytes_ = await response.arrayBuffer();
+			pdfBytes = Array.from(new Uint8Array(pdfBytes_));
 		}
 
 	} catch (error) {
 		console.error(error);
-		return <div>Not a valid URL</div>;
+		return <div>Not a valid URL</div>
 	}
 
 	const user: User | null = await currentUser();

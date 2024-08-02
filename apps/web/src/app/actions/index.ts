@@ -111,7 +111,7 @@ export const createSourceAction = async (pdfUrl: string) => {
 
 export async function createSourceGroupAction(title: string, description: string, sourceIds: string[]) {
     try {
-		console.log({title,description,sourceIds})
+
         const result = await api.source.createSourceGroup({
             title,
             description,
@@ -185,7 +185,7 @@ export async function deleteSourceGroupAction(id: string) {
 export async function removeSourceFromGroupAction(sourceId: string, groupId: string) {
   try {
     const result = await api.source.removeSourceFromGroup({ sourceId, groupId });
-	console.log({result})
+
     if (!result) {
       throw new Error("Failed to remove source from group");
     }
@@ -199,7 +199,7 @@ export async function removeSourceFromGroupAction(sourceId: string, groupId: str
 export async function addSourceToGroupAction(sourceId: string, groupId: string) {
   try {
     const result = await api.source.addSourceToGroup({ sourceId, groupId });
-	console.log({result})
+
     if (!result) {
       throw new Error("Failed to add source to group");
     }

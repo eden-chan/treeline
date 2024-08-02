@@ -51,7 +51,7 @@ async function getCitationEdges(url: string): Promise<any[]> {
         offset: offset
       }
     }).json<{ data: any[] }>();
-    console.log(page)
+
 
     allEdges.push(...page.data);
 
@@ -80,7 +80,7 @@ export const sourceRouter = createTRPCRouter({
       });
 
       if (existingSource) {
-        console.log("Source already exists:", existingSource);
+
         return { ...existingSource, sourceAlreadyExists: true };
       }
 
@@ -97,7 +97,7 @@ export const sourceRouter = createTRPCRouter({
             paper = await getPaper(`arXiv:${paperId}`);
             // const references = await getReferences(`arXiv:${paperId}`);
             // const citations = await getCitations(`arXiv:${paperId}`);
-            // console.log({references, citations})
+
             title = paper.title 
             description = paper.abstract
             date = new Date(paper.year)

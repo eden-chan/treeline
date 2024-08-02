@@ -266,7 +266,6 @@ const ReadingViewer: React.FC<Props> = ({
 
 
 	const handleReplyHighlight = useCallback((highlight: HighlightWithRelations) => {
-		console.log('handleReplyHighlight', highlight);
 		setCollapsedHighlights(prev => {
 			const newSet = new Set(prev);
 			newSet.add(highlight.id);
@@ -287,13 +286,12 @@ const ReadingViewer: React.FC<Props> = ({
 		});
 
 
-		console.log('handleShareHighlight', highlightId);
 	}, []);
 
 
 
 	const handleReplyComment = useCallback((highlight: HighlightWithRelations) => {
-		console.log('handleReplyComment', highlight);
+
 		// TODO: handle nested comments
 		setCollapsedHighlights(prev => {
 			const newSet = new Set(prev);
@@ -559,14 +557,14 @@ const ReadingViewer: React.FC<Props> = ({
 	const [scrolledToHashOnLoad, setScrolledToHashOnLoad] = useState(false);
 	useEffect(() => {
 		const handleHashChange = () => {
-			console.log('calling this thing')
+
 			if (scrolledToHashOnLoad) return;
-			console.log('calling this thing again')
+
 			if (window.location.hash.startsWith('#highlight-')) {
 				const highlightId = window.location.hash.substring(11); // Remove '#highlight-'
 				setTimeout(() => {
 					const highlightElement = document.querySelector(`[data-highlight-id="${highlightId}"]`);
-					console.log('highlightElement', highlightElement, 'highlightId', highlightId);
+
 					if (highlightElement) {
 						const highlight = highlights.find(h => h.id === highlightId);
 						if (highlight) {
@@ -609,7 +607,7 @@ const ReadingViewer: React.FC<Props> = ({
 							onMouseUp={handleSelectionEnd}
 							onMouseLeave={handleSelectionEnd}>
 
-							<Viewer fileUrl={pdfBytesMemoized.length > 0 ? pdfBytesMemoized : loadedSource} plugins={[highlightPluginInstance]} />
+							<Viewer fileUrl={pdfBytesMemoized} plugins={[highlightPluginInstance]} />
 						</div>
 					</ResizablePanel>
 				</Suspense>
