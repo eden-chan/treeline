@@ -27,12 +27,13 @@ type RoomSchema = {
 export const db = init<Schema, RoomSchema>({ appId: import.meta.env.VITE_INSTANTDB_APP_ID ?? '' });
 export const ANONYMOUS_USER_ID = "anonymous";
 
-export const addHighlight = (highlight: NewHighlight, userId: string = ANONYMOUS_USER_ID) => {
+export const addHighlight = (highlight: NewHighlight, userId: string = ANONYMOUS_USER_ID, userName: string = ANONYMOUS_USER_ID) => {
     console.log("Saving highlight", highlight);
     return db.transact(
         tx.highlights[id()].update({
             ...highlight,
             userId,
+            userName,
         })
     );
 };

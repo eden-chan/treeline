@@ -24,8 +24,8 @@ export function AreaHighlight({
     highlightClass = styles.currentUser;
   } else if (highlightType === HighlightType.ANONYMOUS_USER) {
     highlightClass = styles.anonymousUser;
-  } else if (highlightType === HighlightType.OTHER_USER) {
-    highlightClass = styles.otherUser;
+  } else if (highlightType === HighlightType.OTHER_REGISTERED_USER) {
+    highlightClass = styles.otherRegisteredUser;
   }
 
 

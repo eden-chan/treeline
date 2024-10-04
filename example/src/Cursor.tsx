@@ -31,7 +31,6 @@ export default function InstantCursors({ children, roomId = MAIN_ROOM_ID, userId
             userCursorColor={randomDarkColor}
             className={styles.cursorsContainer}
         >
-            Move your cursor around! ✨
             {children}
         </Cursors>
     );

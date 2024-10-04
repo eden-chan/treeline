@@ -57,10 +57,9 @@ export function ViewManager() {
   );
 }
 
-
-
 export function PDFAnnotator() {
   const [url, setUrl] = useState(initialUrl);
+  const [selectedHighlightTypes, setSelectedHighlightTypes] = useState<HighlightType[]>(Object.values(HighlightType));
   const scrollViewerTo = useRef((highlight: IHighlight) => {
     console.log('[App] scrollViewerTo', highlight)
   });
@@ -98,6 +97,19 @@ export function PDFAnnotator() {
   }
   const { highlights } = data;
 
+  const getHighlightType = (highlightUserId: string): HighlightType => {
+    if (highlightUserId === user?.id) {
+      return HighlightType.CURRENT_USER;
+    }
+    if (highlightUserId === ANONYMOUS_USER_ID) {
+      return HighlightType.ANONYMOUS_USER;
+    }
+    return HighlightType.OTHER_REGISTERED_USER;
+  };
+
+  const filteredHighlights = highlights.filter(highlight =>
+    selectedHighlightTypes.includes(getHighlightType(highlight.userId))
+  );
 
   const handleResetHighlights = () => {
     resetHighlights(highlights);
@@ -109,24 +121,15 @@ export function PDFAnnotator() {
     setUrl(newUrl);
   };
 
-  const getHighlightType = (highlightUserId: string): HighlightType => {
-    console.log('[App] highlightUserId', highlightUserId, 'user?.id', user?.id, highlightUserId === user?.id)
-    if (highlightUserId === user?.id) {
-      return HighlightType.CURRENT_USER;
-    }
-    if (highlightUserId === ANONYMOUS_USER_ID) {
-      return HighlightType.ANONYMOUS_USER;
-    }
-    return HighlightType.OTHER_USER;
-  };
-
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
       <div className="App" style={{ display: "flex", height: "100vh" }}>
         <Sidebar
-          highlights={highlights}
+          highlights={filteredHighlights}
           resetHighlights={handleResetHighlights}
           toggleDocument={toggleDocument}
+          selectedHighlightTypes={selectedHighlightTypes}
+          setSelectedHighlightTypes={setSelectedHighlightTypes}
         />
         <div
           style={{
@@ -163,11 +166,12 @@ export function PDFAnnotator() {
                     onConfirm={(comment) => {
                       console.log('[App] user making highlight', user)
                       const highlightUserId = user?.id ?? ANONYMOUS_USER_ID
+                      const highlightUserName = user?.email ?? ANONYMOUS_USER_ID
                       addHighlight({
                         content,
                         position,
                         comment,
-                      } as NewHighlight, highlightUserId);
+                      } as NewHighlight, highlightUserId, highlightUserName);
                       hideTipAndSelection();
                     }}
                   />
@@ -220,14 +224,13 @@ export function PDFAnnotator() {
                     </Popup>
                   );
                 }}
-                highlights={highlights}
+                highlights={filteredHighlights}
               />
             )}
           </PdfLoader>
         </div>
       </div>
     </InstantCursors>
-
   );
 }
 

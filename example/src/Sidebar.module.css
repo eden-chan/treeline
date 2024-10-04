@@ -19,7 +19,7 @@
   background: rgba(173, 216, 230, 0.8); /* Light blue */
 }
 
-.otherUser {
+.otherRegisteredUser {
   background: rgba(144, 238, 144, 0.8); /* Light green */
 }
 
@@ -33,7 +33,11 @@
 .legendItem {
   display: flex;
   align-items: center;
-  margin-bottom: 5px;
+  margin-bottom: 10px;
+}
+
+.legendItem input[type="checkbox"] {
+  margin-right: 10px;
 }
 
 .legendColor {
@@ -45,4 +49,5 @@
 
 .legendText {
   font-size: 14px;
+  cursor: pointer;
 }

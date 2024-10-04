@@ -4,11 +4,14 @@ import type { IHighlight } from "./react-pdf-highlighter";
 import treeline from './treeline.png';
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import styles from './Sidebar.module.css';
+import { HighlightType } from "./utils/highlightTypes";
 
 interface Props {
   highlights: Array<IHighlight>;
   resetHighlights: () => void;
   toggleDocument: () => void;
+  selectedHighlightTypes: HighlightType[];
+  setSelectedHighlightTypes: React.Dispatch<React.SetStateAction<HighlightType[]>>;
 }
 
 const updateHash = (highlight: IHighlight) => {
@@ -19,7 +22,17 @@ export function Sidebar({
   highlights,
   toggleDocument,
   resetHighlights,
+  selectedHighlightTypes,
+  setSelectedHighlightTypes
 }: Props) {
+  const handleFilterChange = (type: HighlightType) => {
+    setSelectedHighlightTypes(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+
   return (
     <div className='sidebar' style={{ width: '25vw' }}>
       <div className={styles.header}>
@@ -41,18 +54,20 @@ export function Sidebar({
 
           <div className={styles.legend}>
             <h3>Highlight Legend</h3>
-            <div className={styles.legendItem}>
-              <div className={`${styles.legendColor} ${styles.currentUser}`} />
-              <span className={styles.legendText}>Current User</span>
-            </div>
-            <div className={styles.legendItem}>
-              <div className={`${styles.legendColor} ${styles.anonymousUser}`} />
-              <span className={styles.legendText}>Anonymous User</span>
-            </div>
-            <div className={styles.legendItem}>
-              <div className={`${styles.legendColor} ${styles.otherUser}`} />
-              <span className={styles.legendText}>Other User</span>
-            </div>
+            {Object.values(HighlightType).map(type => (
+              <div key={type} className={styles.legendItem}>
+                <input
+                  type="checkbox"
+                  id={`filter-${type}`}
+                  checked={selectedHighlightTypes.includes(type)}
+                  onChange={() => handleFilterChange(type)}
+                />
+                <div className={`${styles.legendColor} ${styles[type]}`} />
+                <label htmlFor={`filter-${type}`} className={styles.legendText}>
+                  {type.replace(/([A-Z])/g, ' $1').trim()} {/* Convert camelCase to spaces */}
+                </label>
+              </div>
+            ))}
           </div>
         </p>
       </div>
@@ -73,7 +88,7 @@ export function Sidebar({
             }}
           >
             <div>
-              <strong>{highlight.comment.text}</strong>
+              <strong>{highlight.comment.text} </strong>
               {highlight.content.text ? (
                 <blockquote style={{ marginTop: "0.5rem" }}>
                   {`${highlight.content.text.slice(0, 90).trim()}…`}
@@ -89,7 +104,7 @@ export function Sidebar({
               ) : null}
             </div>
             <div className="highlight__location">
-              Page {highlight.position.pageNumber}
+              Author: {highlight.userName} | Page: {highlight.position.pageNumber}
             </div>
           </li>
         ))}
