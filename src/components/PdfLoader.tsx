@@ -7,6 +7,7 @@ interface Props {
   workerSrc: string;
 
   url: string;
+  bytes?: Uint8Array;
   beforeLoad: JSX.Element;
   errorMessage?: JSX.Element;
   children: (pdfDocument: PDFDocumentProxy) => JSX.Element;
@@ -14,6 +15,8 @@ interface Props {
   cMapUrl?: string;
   cMapPacked?: boolean;
 }
+
+
 
 interface State {
   pdfDocument: PDFDocumentProxy | null;
@@ -100,14 +103,66 @@ export class PdfLoader extends Component<Props, State> {
           cMapPacked,
         };
 
+
+        //  if url failed, try agani with different passing in bytes
+        //  if bytes failed, try by uploading to server and pulling that in
+        // NOTE: If a URL is used to fetch the PDF data a standard Fetch API call (or XHR as fallback) 
+        // is used, which means it must follow same origin rules, e.g. no cross-domain requests 
+        // without CORS.
         return getDocument(document).promise.then((pdfDocument) => {
           this.setState({ pdfDocument, failedAttempts: 0 });
         });
       })
-      .catch((e) => {
+      .catch(async (e) => {
         this.componentDidCatch(e);
         if (this.state.failedAttempts < 2) {
+
+          const firstTry = this.state.failedAttempts === 0
+          const secondTry = this.state.failedAttempts === 1
+
+          if (firstTry) {
+            // TODO: migrate to server side with nextjs just to resolve this cors. 
+            // Server-side implementation to fetch bytes
+            // const getBytes = async (url: string) => {
+            //   try {
+            //     const response = await fetch('/api/fetch-pdf', {
+            //       method: 'POST',
+            //       headers: {
+            //         'Content-Type': 'application/json',
+            //       },
+            //       body: JSON.stringify({ url }),
+            //     });
+
+            //     if (!response.ok) {
+            //       throw new Error('Server failed to fetch PDF');
+            //     }
+
+            //     const arrayBuffer = await response.arrayBuffer();
+            //     return new Uint8Array(arrayBuffer);
+            //   } catch (error) {
+            //     console.error('Error fetching bytes from server:', error);
+            //     throw error;
+            //   }
+            // };
+
+            // let bytes: Uint8Array | null = null;
+            // try {
+            //   bytes = await getBytes(url);
+            // } catch (error) {
+            //   console.error('Error getting bytes on first retry, so next try will be to upload pdf to server and pull that in instead', error);
+            //   // throw error;
+            // }
+
+            // get the bytes of the pdf and pass that in instead
+          } else if (secondTry) {
+            // upload the pdf to server and pull that in instead
+            const uploadUrl = 'https://api.uploadthing.com/v2/upload';
+            console.log('second retry is to uploadUrl to server ', this.props.url, uploadUrl);
+          }
+
           console.log(`Retrying PDF load. Attempt ${this.state.failedAttempts + 1}`);
+
+          // get the bytes of the pdf and pass that in instead
           setTimeout(() => this.load(), 1000); // Retry after 1 second
         }
       });
