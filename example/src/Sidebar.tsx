@@ -2,11 +2,9 @@ import { ClerkSignedInComponent } from './ClerkSignedInComponent';
 import { ClerkSignedOutComponent } from './ClerkSignedOutComponent';
 import type { IHighlight } from "./react-pdf-highlighter";
 import treeline from './treeline.png';
-import {
-  SignedIn,
-  SignedOut,
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import styles from './Sidebar.module.css';
 
-} from "@clerk/clerk-react";
 interface Props {
   highlights: Array<IHighlight>;
   resetHighlights: () => void;
@@ -23,11 +21,11 @@ export function Sidebar({
   resetHighlights,
 }: Props) {
   return (
-    <div className="sidebar" style={styles.sidebar}>
-      <div style={styles.header}>
-        <h2 style={styles.headerText}>
+    <div className={styles.sidebar}>
+      <div className={styles.header}>
+        <h2 className={styles.headerText}>
           Treeline
-          <img src={treeline} alt="Treeline" style={styles.logo} />
+          <img src={treeline} alt="Treeline" className={styles.logo} />
         </h2>
         <p style={{ fontSize: "0.7rem" }}>
           <a href="https://github.com/eden-chan/treeline">
@@ -40,6 +38,22 @@ export function Sidebar({
             To create area highlight hold ⌥ Option key (Alt), then click and
             drag.
           </small>
+
+          <div className={styles.legend}>
+            <h3>Highlight Legend</h3>
+            <div className={styles.legendItem}>
+              <div className={`${styles.legendColor} ${styles.currentUser}`} />
+              <span className={styles.legendText}>Current User</span>
+            </div>
+            <div className={styles.legendItem}>
+              <div className={`${styles.legendColor} ${styles.anonymousUser}`} />
+              <span className={styles.legendText}>Anonymous User</span>
+            </div>
+            <div className={styles.legendItem}>
+              <div className={`${styles.legendColor} ${styles.otherUser}`} />
+              <span className={styles.legendText}>Other User</span>
+            </div>
+          </div>
         </p>
       </div>
       <SignedOut>
@@ -52,8 +66,7 @@ export function Sidebar({
       <ul className="sidebar__highlights">
         {highlights.map((highlight, index) => (
           <li
-            // biome-ignore lint/suspicious/noArrayIndexKey: This is an example app
-            key={index}
+            key={highlight.id}
             className="sidebar__highlight"
             onClick={() => {
               updateHash(highlight);
@@ -96,19 +109,3 @@ export function Sidebar({
     </div>
   );
 }
-
-const styles = {
-  sidebar: {
-    width: "25vw",
-  },
-  header: {
-    padding: "1rem",
-  },
-  headerText: {
-    marginBottom: "1rem",
-  },
-  logo: {
-    width: '2.5rem',
-    height: '2.5rem',
-  },
-};

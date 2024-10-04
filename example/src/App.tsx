@@ -18,7 +18,9 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { addHighlight, updateHighlight, resetHighlights, useHighlights } from "./utils/dbUtils";
+import { addHighlight, updateHighlight, resetHighlights, useHighlights, ANONYMOUS_USER_ID } from "./utils/dbUtils";
+import { useAuth as useDbAuth } from "./utils/dbUtils";
+import { HighlightType } from "./utils/highlightTypes";
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -40,7 +42,6 @@ const HighlightPopup = ({
 
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
 const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
-
 const searchParams = new URLSearchParams(document.location.search);
 const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 
@@ -66,10 +67,9 @@ export function PDFAnnotator() {
   const getHighlightById = useCallback((id: string) => {
     return data?.highlights.find((highlight) => highlight.id === id);
   }, [data]);
+  const { user } = useDbAuth();
 
   useEffect(() => {
-
-
     const scrollToHighlightFromHash = () => {
       const highlight = getHighlightById(parseIdFromHash());
       if (highlight) {
@@ -106,6 +106,16 @@ export function PDFAnnotator() {
     setUrl(newUrl);
   };
 
+  const getHighlightType = (highlightUserId: string): HighlightType => {
+    console.log('[App] highlightUserId', highlightUserId, 'user?.id', user?.id, highlightUserId === user?.id)
+    if (highlightUserId === user?.id) {
+      return HighlightType.CURRENT_USER;
+    }
+    if (highlightUserId === ANONYMOUS_USER_ID) {
+      return HighlightType.ANONYMOUS_USER;
+    }
+    return HighlightType.OTHER_USER;
+  };
 
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>
@@ -127,6 +137,7 @@ export function PDFAnnotator() {
               pdfDocument={pdfDocument}
               enableAreaSelection={(event) => event.altKey}
               onScrollChange={resetHash}
+
               scrollRef={(scrollTo) => {
                 scrollViewerTo.current = scrollTo;
                 console.log(scrollTo)
@@ -146,11 +157,13 @@ export function PDFAnnotator() {
                 <Tip
                   onOpen={transformSelection}
                   onConfirm={(comment) => {
+                    console.log('[App] user making highlight', user)
+                    const highlightUserId = user?.id ?? ANONYMOUS_USER_ID
                     addHighlight({
                       content,
                       position,
                       comment,
-                    } as NewHighlight);
+                    } as NewHighlight, highlightUserId);
                     hideTipAndSelection();
                   }}
                 />
@@ -166,11 +179,14 @@ export function PDFAnnotator() {
               ) => {
                 const isTextHighlight = !highlight.content?.image;
 
+                const highlightType = getHighlightType(highlight.userId);
+
                 const component = isTextHighlight ? (
                   <Highlight
                     isScrolledTo={isScrolledTo}
                     position={highlight.position}
                     comment={highlight.comment}
+                    highlightType={highlightType}
                   />
                 ) : (
                   <AreaHighlight
@@ -183,6 +199,7 @@ export function PDFAnnotator() {
                         { image: screenshot(boundingRect) },
                       );
                     }}
+                    highlightType={highlightType}
                   />
                 );
 

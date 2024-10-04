@@ -15,3 +15,14 @@
 .scrolledTo .part {
   background: #ff4141;
 }
+.currentUser {
+  background: rgba(255, 226, 143, 1);
+}
+
+.anonymousUser {
+  background: rgba(173, 216, 230, 0.8); /* Light blue */
+}
+
+.otherUser {
+  background: rgba(144, 238, 144, 0.8); /* Light green */
+}

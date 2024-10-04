@@ -1,3 +1,4 @@
+import { HighlightType } from '../../example/src/utils/highlightTypes.js';
 import styles from "../style/Highlight.module.css";
 import type { LTWHP } from "../types.js";
 
@@ -14,6 +15,7 @@ interface Props {
     text: string;
   };
   isScrolledTo: boolean;
+  highlightType: string;
 }
 
 export function Highlight({
@@ -23,8 +25,18 @@ export function Highlight({
   onMouseOut,
   comment,
   isScrolledTo,
+  highlightType
 }: Props) {
   const { rects, boundingRect } = position;
+
+  let highlightClass = '';
+  if (highlightType === HighlightType.CURRENT_USER) {
+    highlightClass = styles.currentUser;
+  } else if (highlightType === HighlightType.ANONYMOUS_USER) {
+    highlightClass = styles.anonymousUser;
+  } else if (highlightType === HighlightType.OTHER_USER) {
+    highlightClass = styles.otherUser;
+  }
 
   return (
     <div
@@ -41,7 +53,7 @@ export function Highlight({
           {comment.emoji}
         </div>
       ) : null}
-      <div className={`Highlight__parts ${styles.parts}`}>
+      <div className={`Highlight__parts ${styles.parts} `}>
         {rects.map((rect, index) => (
           <div
             onMouseOver={onMouseOver}
@@ -50,7 +62,7 @@ export function Highlight({
             // biome-ignore lint/suspicious/noArrayIndexKey: We can use position hash at some point in future
             key={index}
             style={rect}
-            className={`Highlight__part ${styles.part}`}
+            className={`Highlight__part ${styles.part} ${highlightClass}`}
           />
         ))}
       </div>

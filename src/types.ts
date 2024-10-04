@@ -59,6 +59,7 @@ export interface NewHighlight extends HighlightContent, HighlightComment {
 
 export interface IHighlight extends NewHighlight {
   id: string;
+  userId: string;
 }
 
 export interface ViewportHighlight extends HighlightContent, HighlightComment {

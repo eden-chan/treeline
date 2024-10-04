@@ -2,27 +2,41 @@ import { Rnd } from "react-rnd";
 import { getPageFromElement } from "../lib/pdfjs-dom";
 import styles from "../style/AreaHighlight.module.css";
 import type { LTWHP, ViewportHighlight } from "../types";
+import { HighlightType } from '../../example/src/utils/highlightTypes';
 
 interface Props {
   highlight: ViewportHighlight;
   onChange: (rect: LTWHP) => void;
   isScrolledTo: boolean;
+  highlightType: string;
 }
 
 export function AreaHighlight({
   highlight,
   onChange,
   isScrolledTo,
+  highlightType,
   ...otherProps
 }: Props) {
+
+  let highlightClass = '';
+  if (highlightType === HighlightType.CURRENT_USER) {
+    highlightClass = styles.currentUser;
+  } else if (highlightType === HighlightType.ANONYMOUS_USER) {
+    highlightClass = styles.anonymousUser;
+  } else if (highlightType === HighlightType.OTHER_USER) {
+    highlightClass = styles.otherUser;
+  }
+
+
+  console.log('[AreaHighlight] highlightType', highlightType, highlightClass)
   return (
     <div
-      className={`${styles.areaHighlight} ${
-        isScrolledTo ? styles.scrolledTo : ""
-      }`}
+      className={`${styles.areaHighlight} ${isScrolledTo ? styles.scrolledTo : ""
+        }`}
     >
       <Rnd
-        className={styles.part}
+        className={`${styles.part} ${highlightClass}`}
         onDragStop={(_, data) => {
           const boundingRect: LTWHP = {
             ...highlight.position.boundingRect,

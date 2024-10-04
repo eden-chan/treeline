@@ -1,0 +1,52 @@
+.sidebar {
+  width: 25vw;
+}
+
+.header {
+  padding: 1rem;
+}
+
+.headerText {
+  margin-bottom: 1rem;
+}
+
+.logo {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.currentUser {
+  background: rgba(255, 226, 143, 1);
+}
+
+.anonymousUser {
+  background: rgba(173, 216, 230, 0.8); /* Light blue */
+}
+
+.otherUser {
+  background: rgba(144, 238, 144, 0.8); /* Light green */
+}
+
+.legend {
+  margin-top: 20px;
+  padding: 10px;
+  background-color: #f0f0f0;
+  border-radius: 5px;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.legendColor {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  border-radius: 3px;
+}
+
+.legendText {
+  font-size: 14px;
+}
