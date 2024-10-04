@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 
 import {
   AreaHighlight,
@@ -9,7 +9,7 @@ import {
   Popup,
   Tip,
 } from "./react-pdf-highlighter";
-import type { Comment, IHighlight, NewHighlight } from "./react-pdf-highlighter";
+import type { Comment, IHighlight } from "./react-pdf-highlighter";
 
 import { Sidebar } from "./Sidebar";
 import { Spinner } from "./Spinner";
@@ -18,7 +18,8 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { addHighlight, updateHighlight, resetHighlights, getHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocuments, Document, HighlightResponseType, getDocumentsWithHighlights, addComment, addHighlightWithComment, getHighlightsByDocument } from "./utils/dbUtils";
+import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights as getDocumentsWithHighlightsAndComments, addHighlightWithComment } from "./utils/dbUtils";
+import type { Document, DocumentWithHighlightsAndComments } from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
 import InstantCursors from './Cursor';
@@ -70,10 +71,10 @@ export function PDFAnnotator() {
   const userColor = useMemo(() => randomDarkColor, []);
 
   // Fetch Documents
-  const { data: documentData, isLoading: isLoadingDocuments, error: errorDocuments } = getDocumentsWithHighlights();
+  const { data: documentData, isLoading: isLoadingDocuments, error: errorDocuments } = getDocumentsWithHighlightsAndComments();
 
   // Fetch displayed Document
-  const currentDocument = documentData?.documents.find(doc => doc.sourceUrl === url)
+  const currentDocument: DocumentWithHighlightsAndComments | undefined = documentData?.documents.find(doc => doc.sourceUrl === url)
 
   console.log('[App] currentDocument', currentDocument)
   // Fetch Highlights
@@ -132,23 +133,24 @@ export function PDFAnnotator() {
     setUrl(newDocument.sourceUrl);
   };
 
-  const filteredHighlights = highlights?.filter(highlight =>
+  // reduce the highlights to only the ones that are in the selectedHighlightTypes
+  const renderedFilterHighlights = highlights?.filter(highlight =>
     selectedHighlightTypes.includes(getHighlightType(highlight.userId))
-  ) || []
+  ).map(highlight => ({ ...highlight, content: { text: highlight.content.text, image: highlight.content.image } as IHighlight['content'] })) ?? []
+
 
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
       <div className="App" style={{ display: "flex", height: "100vh" }}>
         <Sidebar
-          documents={documentData?.documents as Document[]}
-          highlights={filteredHighlights as HighlightResponseType[]}
+          documents={documentData?.documents}
           resetHighlights={handleResetHighlights}
           toggleDocument={toggleDocument}
           selectedHighlightTypes={selectedHighlightTypes}
           setSelectedHighlightTypes={setSelectedHighlightTypes}
           currentUser={user ?? null}
           currentUserColor={userColor}
-          currentDocument={documentData?.documents[0]}
+          currentDocument={currentDocument}
         />
         <div
           style={{
@@ -161,19 +163,19 @@ export function PDFAnnotator() {
           <PdfLoader url={url} beforeLoad={<Spinner />}>
             {(pdfDocument) => (
               <PdfHighlighter
-                highlights={filteredHighlights as HighlightResponseType[]}
+                highlights={renderedFilterHighlights}
                 pdfDocument={pdfDocument}
                 enableAreaSelection={(event) => event.altKey}
                 onScrollChange={resetHash}
 
                 scrollRef={(scrollTo) => {
-                  scrollViewerTo.current = scrollTo;
+                  // scrollViewerTo.current = scrollTo;
                   console.log(scrollTo)
                   const highlightId = parseIdFromHash();
                   const highlight = highlights?.find(highlight => highlight.id === highlightId);
                   console.log('[App] clicked highlight', highlight)
                   if (highlight) {
-                    // scrollViewerTo.current(highlight as IHighlight);
+                    scrollViewerTo.current(highlight as IHighlight);
                   }
 
                 }}
@@ -228,6 +230,8 @@ export function PDFAnnotator() {
                   screenshot,
                   isScrolledTo,
                 ) => {
+
+                  console.log('%c[App] rendered highlight', 'color: red', highlight)
                   const isTextHighlight = !highlight.content?.image;
 
                   const highlightType = getHighlightType(highlight.userId);
@@ -236,7 +240,7 @@ export function PDFAnnotator() {
                     <Highlight
                       isScrolledTo={isScrolledTo}
                       position={highlight.position}
-                      comment={{ text: 'test', emoji: '🔥' }}
+                      comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }}
                       highlightType={highlightType}
                     />
                   ) : (
@@ -256,7 +260,7 @@ export function PDFAnnotator() {
 
                   return (
                     <Popup
-                      popupContent={<HighlightPopup {...highlight} comment={{ text: 'test', emoji: '🔥', userId: 'test' }} />}
+                      popupContent={<HighlightPopup {...highlight} comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }} />}
                       onMouseOver={(popupContent) =>
                         setTip(highlight, () => popupContent)
                       }

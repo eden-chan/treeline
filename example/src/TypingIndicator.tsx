@@ -1,8 +1,6 @@
 import { useState } from 'react';
 import { MAIN_ROOM_ID, useRoom } from './utils/dbUtils';
 import styles from './TypingIndicator.module.css';
-import type { Comment } from "./react-pdf-highlighter";
-import type { Document } from "./utils/dbUtils";
 
 
 
@@ -10,10 +8,10 @@ interface ChatProps {
     roomId: string;
     username: string;
     color: string;
-    document: Document;
+
 }
 
-export default function Chat({ roomId = MAIN_ROOM_ID, username, color, document }: ChatProps) {
+export default function Chat({ roomId = MAIN_ROOM_ID, username, color }: ChatProps) {
     const room = useRoom(roomId);
     const user = {
         name: username,

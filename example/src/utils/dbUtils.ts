@@ -5,11 +5,9 @@ import {
   init_experimental,
   type InstantEntity,
   type InstantQuery,
-  type InstantQueryResult,
-  type InstantSchemaDatabase,
 } from "@instantdb/react";
 
-import type { IHighlight, ScaledPosition, Content, CreateDocumentDraft } from "../react-pdf-highlighter";
+import type { ScaledPosition, Content, CreateDocumentDraft } from "../react-pdf-highlighter";
 
 
 const schema = i.graph(
@@ -19,8 +17,7 @@ const schema = i.graph(
       sourceUrl: i.string(),
     }),
     highlights: i.entity({
-      text: i.string(),
-      image: i.string(),
+      content: i.json(),
       position: i.json(),
       userId: i.string(),
       userName: i.string(),
@@ -209,6 +206,11 @@ const highlightsQuery = {
 } satisfies InstantQuery<DB>;
 
 export type HighlightResponseType = InstantEntity<DB, "highlights">;
+
+export type HighlightResponseTypeWithComments = InstantEntity<DB, "highlights"> & {
+    comments: InstantEntity<DB, "comments">[];
+};
+
 export const getHighlights = () => {
     return db.useQuery(highlightsQuery);
 };
@@ -222,7 +224,8 @@ const highlightsQueryByDocumentId = (sourceUrl: string) => {
                 where: {
                     'documents.sourceUrl': sourceUrl,   
                 }
-            }
+            }, 
+            comments: {},
         },
     } satisfies InstantQuery<DB>;
 }
@@ -295,17 +298,29 @@ const documentQuery = {
 } satisfies InstantQuery<DB>;
 
 export type Document = InstantEntity<DB, "documents">;
+
+export type DocumentWithHighlightsAndComments = InstantEntity<DB, "documents"> & {
+    highlights: HighlightResponseTypeWithComments[];
+    comments: Comment[]; // document-level comments
+};
 // alternatively
 // export type DocumentResult = InstantQueryResult<DB, typeof documentQuery>["documents"];
-export const getDocuments = () => {
-    return db.useQuery(documentQuery);
+export const getDocuments = () : Promise<DocumentWithHighlightsAndComments[]> => {
+    const {data} = db.useQuery(documentQuery);
+    if (data?.documents) {
+        return Promise.resolve(data.documents as DocumentWithHighlightsAndComments[]);
+    }
+    return Promise.reject("Failed to fetch documents");
 };
 
 const documentQueryWithHighlights = { 
     documents: {
-        highlights: {},
-    },
-} satisfies InstantQuery<DB>;
+        highlights: {
+            comments: {},
+        },
+        comments: {},
+    }} satisfies InstantQuery<DB>;
+
 
 
 // export type DocumentWithHighlights = InstantQueryResult<DB, typeof documentQueryWithHighlights>["documents"];

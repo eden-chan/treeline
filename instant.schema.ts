@@ -3,15 +3,17 @@
 
 import { i } from "@instantdb/react";
 
-
-export const schema = i.graph(
+const graph = i.graph(
   {
     "comments": i.entity({
-  
+      "emoji": i.any(),
+      "text": i.any(),
+      "userId": i.any(),
+      "userName": i.any(),
     }),
     "documents": i.entity({
-      "name": i.string(),
-      "sourceUrl": i.string(),
+      "name": i.any(),
+      "sourceUrl": i.any().unique(),
     }),
     "highlights": i.entity({
       "content": i.any(),
@@ -60,4 +62,4 @@ export const schema = i.graph(
   }
 );
 
-export default  schema;
+export default graph;

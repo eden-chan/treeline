@@ -4,8 +4,8 @@ import treeline from './treeline.png';
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import styles from './Sidebar.module.css';
 import { HighlightType } from "./utils/highlightTypes";
-import { addDocument, ANONYMOUS_USER_ID, getHighlights, MAIN_ROOM_ID } from './utils/dbUtils';
-import type { Document, HighlightResponseType } from './utils/dbUtils';
+import { addDocument, ANONYMOUS_USER_ID, MAIN_ROOM_ID } from './utils/dbUtils';
+import type { Document, DocumentWithHighlightsAndComments, HighlightResponseType, HighlightResponseTypeWithComments } from './utils/dbUtils';
 import Chat from './TypingIndicator';
 import type { User } from '@instantdb/react';
 
@@ -19,8 +19,7 @@ interface Props {
   setSelectedHighlightTypes: React.Dispatch<React.SetStateAction<HighlightType[]>>;
   currentUser: User | null;
   currentUserColor: string;
-  currentDocument: Document;
-  highlights: HighlightResponseType[];
+  currentDocument?: DocumentWithHighlightsAndComments;
 }
 
 const updateHash = (highlight: HighlightResponseType) => {
@@ -85,6 +84,8 @@ export function Sidebar({
   currentDocument,
 }: Props) {
 
+  const highlights: HighlightResponseTypeWithComments[] | undefined = currentDocument?.highlights
+
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes(prev =>
       prev.includes(type)
@@ -93,8 +94,6 @@ export function Sidebar({
     );
   };
 
-  const { data, isLoading: isLoadingHighlights, error: errorHighlights } = getHighlights();
-  const highlights = data?.highlights
 
   return (
     <div className={styles.sidebar}>
@@ -146,7 +145,7 @@ export function Sidebar({
         </SignedIn>
 
         <ul className={styles.highlightsList}>
-          {highlights?.map((highlight: HighlightResponseType) => (
+          {highlights?.map((highlight) => (
             <li
               key={highlight.id}
               className={styles.highlightItem}
@@ -154,18 +153,30 @@ export function Sidebar({
                 updateHash(highlight);
               }}
             >
+
               <div>
                 {/* <strong>{highlight.comments?.[0]?.text} </strong> */}
-                {highlight.text ? (
+                {highlight.content.text ? (
                   <blockquote className={styles.highlightQuote}>
-                    {`${highlight.text.slice(0, 90).trim()}…`}
+                    {`${highlight.content.text.slice(0, 90).trim()}…`}
                   </blockquote>
                 ) : null}
-                {highlight.image ? (
+                {highlight.content.image ? (
                   <div className={styles.highlightImage}>
-                    <img src={highlight.image} alt={"Screenshot"} />
+                    <img src={highlight.content.image} alt={"Screenshot"} />
                   </div>
                 ) : null}
+                <div>
+
+                  {highlight.comments?.map((comment) => (
+                    <div key={comment.id}>
+                      {comment.text}
+                    </div>
+                  ))}
+
+                </div>
+
+
               </div>
               <div className={styles.highlightInfo}>
                 Author: {highlight.userName} | Page: {highlight.position.pageNumber}
@@ -186,7 +197,7 @@ export function Sidebar({
           roomId={MAIN_ROOM_ID}
           username={currentUser?.email ?? ANONYMOUS_USER_ID}
           color={currentUserColor}
-          document={currentDocument}
+
 
         />
       </div>
