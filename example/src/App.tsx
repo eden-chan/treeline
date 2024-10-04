@@ -23,6 +23,7 @@ import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
 import InstantCursors from './Cursor';
 import InstantAvatarStack from './AvatarStack';
+import InstantTopics from './Emoji';
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -231,6 +232,7 @@ export function PDFAnnotator() {
             )}
           </PdfLoader>
 
+          <InstantTopics roomId={MAIN_ROOM_ID} />
           <InstantAvatarStack roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} />
 
         </div>

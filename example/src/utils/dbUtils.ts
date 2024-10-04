@@ -6,11 +6,29 @@ type Schema = {
 }
 
 // Provide a room schema to get typings for presence!
+type EmojiName = keyof typeof emoji;
 type RoomSchema = {
   chat: {
     presence: { name: string, color: string };
+     topics: {
+            emoji: {
+                name: EmojiName;
+                rotationAngle: number;
+                directionAngle: number;
+            };
+        };
   };
 }
+
+export const emoji = {
+    fire: '🔥',
+    wave: '👋',
+    confetti: '🎉',
+    heart: '❤️',
+} as const;
+
+export const emojiNames = Object.keys(emoji) as EmojiName[];
+
 
 // Generic type for room schemas.
 // type RoomSchemaShape = {

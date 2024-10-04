@@ -1,0 +1,49 @@
+.container {
+  display: flex;
+  flex-direction: row;
+  width: auto;
+  height: auto;
+  justify-content: flex-start;
+  align-items: center;
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  background-color: transparent;
+  user-select: none;
+  z-index: 1000;
+  white-space: nowrap;
+  padding: 10px;
+}
+
+.emojiButton {
+  border-radius: 0.5rem;
+  background-color: white;
+  padding: 0.75rem;
+  font-size: 1.875rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px
+    rgba(0, 0, 0, 0.06);
+  transition: all 200ms ease-in-out;
+}
+
+.emojiButton:hover {
+  transform: translateY(-0.25rem);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px
+    rgba(0, 0, 0, 0.05);
+}
+
+.emojiAnimation {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: auto;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.emojiSpin {
+  font-size: 2.5rem;
+}
