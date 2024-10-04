@@ -9,7 +9,7 @@ import {
   type InstantSchemaDatabase,
 } from "@instantdb/react";
 
-import type { IHighlight, NewHighlight, ScaledPosition, Content, HighlightContent, DocumentHighlightDraft, CreateDocumentDraft } from "../react-pdf-highlighter";
+import type { IHighlight, ScaledPosition, Content, CreateDocumentDraft } from "../react-pdf-highlighter";
 
 
 const schema = i.graph(
@@ -19,14 +19,17 @@ const schema = i.graph(
       sourceUrl: i.string(),
     }),
     highlights: i.entity({
-      content: i.any(),
-      position: i.any(),
-      userId: i.any(),
-      userName: i.any(),
+      text: i.string(),
+      image: i.string(),
+      position: i.json(),
+      userId: i.string(),
+      userName: i.string(),
     }),
     comments: i.entity({
       text: i.string(),
       emoji: i.string(),
+      userId: i.string(),
+      userName: i.string(),
     }),
   },
    {
@@ -67,16 +70,9 @@ const schema = i.graph(
       }
     }
   },
-  
 );
 
-
-
-// todo: support chat and different urls
-type Schema = {
-    documents: Document,
-    highlights: IHighlight,
-}
+// 
 
 // Provide a room schema to get typings for presence!
 type EmojiName = keyof typeof emoji;
@@ -119,10 +115,13 @@ const config = {
     appId: import.meta.env.VITE_INSTANTDB_APP_ID ?? '',
  
 }
-export const db = init<Schema, RoomSchema>(config);
-// export const db = init_experimental<typeof schema>({...config,
-//   schema,
-// });
+
+export const presenceDb = init<typeof schema, RoomSchema>(config);
+
+// for type support
+export const db = init_experimental<typeof schema>({...config,
+  schema,
+});
 
 
 
@@ -131,23 +130,57 @@ type DB = typeof db;
 // for when your want to get the type of DB before calling `init`
 // type DB_alternate = InstantSchemaDatabase<typeof schema>;
 
-
-
-
 export const ANONYMOUS_USER_ID = "anonymous";
 
 // =========
 // Highlights
 // =========
-export const addHighlight = (documentHighlight: DocumentHighlightDraft) => {
-    console.log("Saving highlight", documentHighlight);
+
+
+export type CreateHighlightSchemaDraft= {
+    position: Partial<ScaledPosition>,
+    content: Partial<Content>,
+    userId: string,
+    userName: string,
+}
+
+export type AddHighlightWithCommentSchemaDraft = {
+    highlight: CreateHighlightSchemaDraft;
+    documentId: string;
+    comment?: CreateCommentDraft;
+};
+
+export const addHighlightWithComment = ({ highlight, documentId, comment }: AddHighlightWithCommentSchemaDraft) => {
+    const highlightId = id()
+    
+    if (!documentId) {
+        throw new Error("Document ID is required");
+    }
+    
+    if (comment) {
+        const commentId = id()
+
+        console.log("Adding highlight with comment", highlightId, commentId)
+        return db.transact(
+           [ tx.highlights[highlightId].update({...highlight}).link({documents: documentId}),
+            tx.comments[commentId].update({...comment}).link({highlights: highlightId})
+        ]
+        );
+    }
+
+    console.log("Adding highlight without comment", highlightId)
+    // No comment is passed in 
+    return db.transact(
+        tx.highlights[highlightId].update({...highlight}).link({documents: documentId}),
+    );
+
+}
+
+export const addHighlight = ( highlight: CreateHighlightSchemaDraft) => {
+    console.log("Saving highlight with addHighlight", highlight);
     const highlightId = id()
     return db.transact(
-        tx.highlights[highlightId].update({
-            ...documentHighlight,
-            userId,
-            userName,
-        }).link({documents: documentId, comments: commentId})
+        tx.highlights[highlightId].update({...highlight}),
     );
 };
 
@@ -165,19 +198,81 @@ export const deleteHighlight = (highlightId: string) => {
     return db.transact(tx.highlights[highlightId].delete());
 };
 
-export const resetHighlights = (highlights: IHighlight[]) => {
+export const resetHighlights = (highlights: HighlightResponseType[]) => {
     console.log("Resetting all highlights");
     return db.transact(highlights.map(h => tx.highlights[h.id].delete()));
 };
 
+
+const highlightsQuery = { 
+    highlights: {},
+} satisfies InstantQuery<DB>;
+
+export type HighlightResponseType = InstantEntity<DB, "highlights">;
 export const getHighlights = () => {
-    const query = {
+    return db.useQuery(highlightsQuery);
+};
+
+
+
+const highlightsQueryByDocumentId = (sourceUrl: string) => { 
+    return { 
         highlights: {
-            documents: {},
-            comments: {},
+            $: {
+                where: {
+                    'documents.sourceUrl': sourceUrl,   
+                }
+            }
         },
-    };
-    return db.useQuery(query);
+    } satisfies InstantQuery<DB>;
+}
+
+export const getHighlightsByDocument = (sourceUrl: string) => {
+    return db.useQuery(highlightsQueryByDocumentId(sourceUrl));
+}
+
+
+// =========
+// Comments
+// =========
+
+
+const commentsQuery = { 
+    comments: {},
+} satisfies InstantQuery<DB>;
+
+export type Comment = InstantEntity<DB, "comments">;
+
+type CreateCommentDraft = {
+    text: string,
+    emoji: string,
+    userId: string,
+    userName: string,
+}
+export const addComment = (comment: CreateCommentDraft, commentId?: string) => {
+    // If we want to batch create comment with the highlight, we need to generate the id ahead of time
+    return db.transact(
+        tx.comments[commentId ?? id()].update({...comment}),
+    );
+}
+
+export const deleteComment = (commentId: string) => {
+    console.log("Deleting comment", commentId);
+    return db.transact(tx.comments[commentId].delete());
+};
+
+export const updateComment = (commentId: string, text: string) => {
+    console.log("Updating comment", commentId, text);
+    return db.transact(tx.comments[commentId].update({text}));
+};
+
+export const resetComments = () => {
+    console.log("Resetting all comments");
+    const {data}= db.useQuery(commentsQuery);
+    if (data?.comments) {
+        return db.transact(data.comments.map(c => tx.comments[c.id].delete()));
+    }
+    return Promise.reject("Failed to fetch comments");
 };
 
 // =========
@@ -202,9 +297,20 @@ const documentQuery = {
 export type Document = InstantEntity<DB, "documents">;
 // alternatively
 // export type DocumentResult = InstantQueryResult<DB, typeof documentQuery>["documents"];
-
 export const getDocuments = () => {
     return db.useQuery(documentQuery);
+};
+
+const documentQueryWithHighlights = { 
+    documents: {
+        highlights: {},
+    },
+} satisfies InstantQuery<DB>;
+
+
+// export type DocumentWithHighlights = InstantQueryResult<DB, typeof documentQueryWithHighlights>["documents"];
+export const getDocumentsWithHighlights = () => {
+    return db.useQuery(documentQueryWithHighlights);
 };
 
 export const signInWithIdToken = (idToken: string, clientName: string) => {
@@ -216,7 +322,7 @@ export const signInWithIdToken = (idToken: string, clientName: string) => {
 
 export const MAIN_ROOM_ID = 'MAIN'
 export const useRoom = (roomId = MAIN_ROOM_ID) => {
-    const room = db.room('chat', roomId);
+    const room = presenceDb.room('chat', roomId);
     return room;
 
 }

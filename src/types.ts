@@ -101,13 +101,20 @@ export type CommentDraft = Omit<Comment, 'replies'> // text + emoji
 export type HighlightDraft = Omit<NewHighlight, 'comments'> // content + position
 
 // Creating a new document 
-export interface DocumentHighlightDraft  {
-    highlight: HighlightDraft; //  + position
-    // comment: CommentDraft; // text + emoji
+
+
+export interface HighlightMetadata {
     userId: string;
     userName: string;
     documentId?: string;
+}
 
+export interface CreateDocumentHighlightDraft  {
+    // highlight: HighlightDraft; // content + position
+    // comment: CommentDraft; // text + emoji
+    highlightDraft: HighlightDraft;
+    commentDraft: CommentDraft;
+    highlightMetadata: HighlightMetadata;
 }
 
 export interface CreateDocumentDraft {

@@ -18,7 +18,7 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { addHighlight, updateHighlight, resetHighlights, getHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocuments } from "./utils/dbUtils";
+import { addHighlight, updateHighlight, resetHighlights, getHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocuments, Document, HighlightResponseType, getDocumentsWithHighlights, addComment, addHighlightWithComment, getHighlightsByDocument } from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
 import InstantCursors from './Cursor';
@@ -45,7 +45,7 @@ const HighlightPopup = ({
   ) : null;
 
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
-const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
+
 const searchParams = new URLSearchParams(document.location.search);
 const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 
@@ -69,20 +69,26 @@ export function PDFAnnotator() {
 
   const userColor = useMemo(() => randomDarkColor, []);
 
-  const { data, isLoading: isLoadingDocuments, error: errorDocuments } = getDocuments();
-  const highlights = data?.documents[0].highlights
+  // Fetch Documents
+  const { data: documentData, isLoading: isLoadingDocuments, error: errorDocuments } = getDocumentsWithHighlights();
 
-  const getHighlightById = useCallback((id: string) => {
-    return []
-    // return data?.highlights.find((highlight) => highlight.id === id);
-  }, []);
+  // Fetch displayed Document
+  const currentDocument = documentData?.documents.find(doc => doc.sourceUrl === url)
+
+  console.log('[App] currentDocument', currentDocument)
+  // Fetch Highlights
+  // const { data: highlightData, error: errorHighlights } = getHighlightsByDocument(url);
+  const highlights = currentDocument?.highlights
+
   const { user } = useDbAuth();
+
 
   useEffect(() => {
     const scrollToHighlightFromHash = () => {
-      const highlight = getHighlightById(parseIdFromHash());
+      const highlightId = parseIdFromHash();
+      const highlight = highlights?.find(highlight => highlight.id === highlightId);
       if (highlight) {
-        scrollViewerTo.current(highlight);
+        // scrollViewerTo.current(highlight as IHighlight);
       }
     };
 
@@ -94,7 +100,7 @@ export function PDFAnnotator() {
         false,
       );
     };
-  }, [getHighlightById]);
+  }, [highlights]);
 
   if (isLoadingDocuments) {
     return <Spinner />
@@ -102,7 +108,7 @@ export function PDFAnnotator() {
   if (errorDocuments) {
     return <div>Error fetching data: {errorDocuments.message}</div>;
   }
-  // const { highlights } = documents;
+
 
   const getHighlightType = (highlightUserId: string): HighlightType => {
     if (highlightUserId === user?.id) {
@@ -114,40 +120,35 @@ export function PDFAnnotator() {
     return HighlightType.OTHER_REGISTERED_USER;
   };
 
-  const filteredHighlights = []
-  // highlights.filter(highlight =>
-  //   selectedHighlightTypes.includes(getHighlightType(highlight.userId))
-  // );
+
 
   const handleResetHighlights = () => {
-    resetHighlights(highlights);
+    if (highlights) {
+      resetHighlights(highlights);
+    }
   };
 
-  const toggleDocument = () => {
-    const newUrl =
-      url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
-    setUrl(newUrl);
+  const toggleDocument = (newDocument: Document) => {
+    setUrl(newDocument.sourceUrl);
   };
 
-  // const currentDocument = {
-  //   id: "1",
-  //   name: "Document 1",
-  //   sourceUrl: url,
-  //   highlights: highlights as IHighlight[],
-  //   chatSection: highlights[0].comments,
-  // }
+  const filteredHighlights = highlights?.filter(highlight =>
+    selectedHighlightTypes.includes(getHighlightType(highlight.userId))
+  ) || []
+
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
       <div className="App" style={{ display: "flex", height: "100vh" }}>
         <Sidebar
-          documents={data?.documents}
+          documents={documentData?.documents as Document[]}
+          highlights={filteredHighlights as HighlightResponseType[]}
           resetHighlights={handleResetHighlights}
           toggleDocument={toggleDocument}
           selectedHighlightTypes={selectedHighlightTypes}
           setSelectedHighlightTypes={setSelectedHighlightTypes}
           currentUser={user ?? null}
           currentUserColor={userColor}
-          currentDocument={data?.documents[0]}
+          currentDocument={documentData?.documents[0]}
         />
         <div
           style={{
@@ -160,6 +161,7 @@ export function PDFAnnotator() {
           <PdfLoader url={url} beforeLoad={<Spinner />}>
             {(pdfDocument) => (
               <PdfHighlighter
+                highlights={filteredHighlights as HighlightResponseType[]}
                 pdfDocument={pdfDocument}
                 enableAreaSelection={(event) => event.altKey}
                 onScrollChange={resetHash}
@@ -167,10 +169,11 @@ export function PDFAnnotator() {
                 scrollRef={(scrollTo) => {
                   scrollViewerTo.current = scrollTo;
                   console.log(scrollTo)
-                  const highlight = getHighlightById(parseIdFromHash());
+                  const highlightId = parseIdFromHash();
+                  const highlight = highlights?.find(highlight => highlight.id === highlightId);
                   console.log('[App] clicked highlight', highlight)
                   if (highlight) {
-                    scrollViewerTo.current(highlight);
+                    // scrollViewerTo.current(highlight as IHighlight);
                   }
 
                 }}
@@ -183,29 +186,35 @@ export function PDFAnnotator() {
                   <Tip
                     onOpen={transformSelection}
                     onConfirm={(comment) => {
-                      console.log('[App] user making highlight', user)
-                      // const highlightUserId = user?.id ?? ANONYMOUS_USER_ID
-                      // const highlightUserName = user?.email ?? ANONYMOUS_USER_ID
-                      // const highlightDraft = {
-                      //   content,
-                      //   position,
-                      // }
+                      console.trace('[App] user making highlight', user, 'with comment', comment)
 
-                      // const commentDraft = {
-                      //   text: comment.text,
-                      //   emoji: comment.emoji,
-                      //   userId: highlightUserId,
-                      //   userName: highlightUserName,
-                      // }
+                      if (!currentDocument) {
+                        console.error('[Confirm Highlight] failed - no current document')
+                        return
+                      }
+                      const userId = user?.id ?? ANONYMOUS_USER_ID;
+                      const userName = user?.email ?? ANONYMOUS_USER_ID;
 
-                      // const documentHighlightDraft = {
-                      //   highlight: highlightDraft,
-                      //   comment: commentDraft,
-                      // }
 
-                      // addHighlight({
 
-                      // } as NewHighlight, highlightUserId, highlightUserName);
+                      const commentDraft = comment.text || comment.emoji ? {
+                        text: comment.text,
+                        emoji: comment.emoji,
+                        userId,
+                        userName,
+                      } : undefined
+
+
+                      const highlightDraft = {
+                        position,
+                        content,
+                        userId,
+                        userName,
+                      }
+
+                      // addHighlight(newHighlightDraft)
+                      addHighlightWithComment({ highlight: highlightDraft, documentId: currentDocument.id, comment: commentDraft })
+
                       hideTipAndSelection();
                     }}
                   />
@@ -227,7 +236,7 @@ export function PDFAnnotator() {
                     <Highlight
                       isScrolledTo={isScrolledTo}
                       position={highlight.position}
-                      comment={highlight.comments[0]}
+                      comment={{ text: 'test', emoji: '🔥' }}
                       highlightType={highlightType}
                     />
                   ) : (
@@ -247,7 +256,7 @@ export function PDFAnnotator() {
 
                   return (
                     <Popup
-                      popupContent={<HighlightPopup {...highlight} comment={highlight.comments[0]} />}
+                      popupContent={<HighlightPopup {...highlight} comment={{ text: 'test', emoji: '🔥', userId: 'test' }} />}
                       onMouseOver={(popupContent) =>
                         setTip(highlight, () => popupContent)
                       }
@@ -258,7 +267,6 @@ export function PDFAnnotator() {
                     </Popup>
                   );
                 }}
-                highlights={filteredHighlights}
               />
             )}
           </PdfLoader>

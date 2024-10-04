@@ -96,32 +96,3 @@
 .chatContainer {
   border-top: 1px solid #ccc;
 }
-
-.newDocumentForm {
-  margin-top: 20px;
-  padding: 15px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-}
-
-.inputField {
-  width: 100%;
-  padding: 8px;
-  margin-bottom: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.submitButton {
-  width: 100%;
-  padding: 10px;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.submitButton:hover {
-  background-color: #45a049;
-}

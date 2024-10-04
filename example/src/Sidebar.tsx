@@ -1,12 +1,11 @@
 import { ClerkSignedInComponent } from './ClerkSignedInComponent';
 import { ClerkSignedOutComponent } from './ClerkSignedOutComponent';
-import type { IHighlight } from "./react-pdf-highlighter";
 import treeline from './treeline.png';
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import styles from './Sidebar.module.css';
 import { HighlightType } from "./utils/highlightTypes";
-import { ANONYMOUS_USER_ID, MAIN_ROOM_ID } from './utils/dbUtils';
-import type { Document } from './utils/dbUtils';
+import { addDocument, ANONYMOUS_USER_ID, getHighlights, MAIN_ROOM_ID } from './utils/dbUtils';
+import type { Document, HighlightResponseType } from './utils/dbUtils';
 import Chat from './TypingIndicator';
 import type { User } from '@instantdb/react';
 
@@ -15,46 +14,59 @@ import type { User } from '@instantdb/react';
 interface Props {
   documents: Document[];
   resetHighlights: () => void;
-  toggleDocument: () => void;
+  toggleDocument: (newDocument: Document) => void;
   selectedHighlightTypes: HighlightType[];
   setSelectedHighlightTypes: React.Dispatch<React.SetStateAction<HighlightType[]>>;
   currentUser: User | null;
   currentUserColor: string;
   currentDocument: Document;
+  highlights: HighlightResponseType[];
 }
 
-const updateHash = (highlight: IHighlight) => {
+const updateHash = (highlight: HighlightResponseType) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 
-
 const CreateDocumentForm = () => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get('name') as string;
+    const sourceUrl = formData.get('sourceUrl') as string;
+    addDocument({ name, sourceUrl });
+    e.currentTarget.reset();
+  };
+
   return (
-    <form>
-      <input type="text" placeholder="Document Name" />
-      <input type="url" placeholder="PDF URL" />
+    <form onSubmit={handleSubmit}>
+      <input type="text" name="name" placeholder="Document Name" />
+      <input type="url" name="sourceUrl" placeholder="PDF URL" />
       <button type="submit">Create Document</button>
     </form>
   )
 }
 
-
-const DocumentList = ({ documents }: { documents: Document[] }) => {
-  if (!documents) return <div>No documents found</div>;
+const DocumentList = ({ documents, toggleDocument }: { documents: Document[], toggleDocument: (doc: Document) => void }) => {
+  if (!documents || documents.length === 0) return <div>No documents found</div>;
 
   return (
-    <ul>
-
+    <ul className={styles.documentList}>
       {documents.map((doc: Document) => (
-        <li key={doc.id}>
-          <pre>
-            <code>
-              {JSON.stringify(doc, null, 2)}
-            </code>
-          </pre>
-          <span>{doc.name}</span>
-          <a href={doc.sourceUrl} target="_blank" rel="noopener noreferrer">
-            {doc.sourceUrl}
+        <li key={doc.id} className={styles.documentItem}>
+          <button
+            type="button"
+            onClick={() => toggleDocument(doc)}
+            className={styles.documentButton}
+          >
+            {doc.name}
+          </button>
+          <a
+            href={doc.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={styles.documentLink}
+          >
+            View PDF
           </a>
         </li>
       ))}
@@ -81,7 +93,8 @@ export function Sidebar({
     );
   };
 
-  const highlights = currentDocument.highlights as IHighlight[]
+  const { data, isLoading: isLoadingHighlights, error: errorHighlights } = getHighlights();
+  const highlights = data?.highlights
 
   return (
     <div className={styles.sidebar}>
@@ -96,7 +109,7 @@ export function Sidebar({
               Open in GitHub
             </a>
           </div>
-          <DocumentList documents={documents} />
+          <DocumentList documents={documents} toggleDocument={toggleDocument} />
           <CreateDocumentForm />
 
 
@@ -133,7 +146,7 @@ export function Sidebar({
         </SignedIn>
 
         <ul className={styles.highlightsList}>
-          {highlights?.map((highlight) => (
+          {highlights?.map((highlight: HighlightResponseType) => (
             <li
               key={highlight.id}
               className={styles.highlightItem}
@@ -142,15 +155,15 @@ export function Sidebar({
               }}
             >
               <div>
-                <strong>{highlight.comments?.[0]?.text} </strong>
-                {highlight.content.text ? (
+                {/* <strong>{highlight.comments?.[0]?.text} </strong> */}
+                {highlight.text ? (
                   <blockquote className={styles.highlightQuote}>
-                    {`${highlight.content.text.slice(0, 90).trim()}…`}
+                    {`${highlight.text.slice(0, 90).trim()}…`}
                   </blockquote>
                 ) : null}
-                {highlight.content.image ? (
+                {highlight.image ? (
                   <div className={styles.highlightImage}>
-                    <img src={highlight.content.image} alt={"Screenshot"} />
+                    <img src={highlight.image} alt={"Screenshot"} />
                   </div>
                 ) : null}
               </div>
@@ -161,10 +174,7 @@ export function Sidebar({
           ))}
         </ul>
         <div className={styles.buttonContainer}>
-          <button type="button" onClick={toggleDocument}>
-            Toggle PDF document
-          </button>
-          {highlights?.length > 0 && (
+          {highlights && highlights.length > 0 && (
             <button type="button" onClick={resetHighlights}>
               Reset highlights
             </button>
