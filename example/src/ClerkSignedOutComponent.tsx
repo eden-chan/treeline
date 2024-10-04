@@ -1,4 +1,4 @@
-import { SignInButton } from "@clerk/clerk-react";
+import { SignInButton } from "@clerk/nextjs";
 import styles from './ClerkSignedOutComponent.module.css';
 
 export function ClerkSignedOutComponent() {

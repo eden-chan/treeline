@@ -16,7 +16,7 @@ import { Spinner } from "./Spinner";
 import "./style/App.css";
 // import "../../dist/style.css";
 
-import { ClerkProvider } from "@clerk/clerk-react";
+import { ClerkProvider } from "@clerk/nextjs";
 
 import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights as getDocumentsWithHighlightsAndComments, addHighlightWithComment } from "./utils/dbUtils";
 import type { Document, DocumentWithHighlightsAndComments } from "./utils/dbUtils";

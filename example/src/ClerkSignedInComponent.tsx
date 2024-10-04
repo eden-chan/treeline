@@ -1,6 +1,9 @@
 "use client";
 import { useEffect } from 'react';
-import { useAuth as useClerkAuth } from "@clerk/clerk-react";
+
+
+
+import { useAuth as useClerkAuth } from "@clerk/nextjs";
 import { signInWithIdToken, signOut as signOutFromDb, useAuth as useDbAuth } from "./utils/dbUtils";
 import styles from './ClerkSignedInComponent.module.css';
 

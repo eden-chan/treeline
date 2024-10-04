@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { SignedIn, SignedOut } from "@clerk/nextjs";
 import type { User } from '@instantdb/react';
 import { ClerkSignedInComponent } from './ClerkSignedInComponent';
 import { ClerkSignedOutComponent } from './ClerkSignedOutComponent';
@@ -7,7 +7,7 @@ import Chat from './TypingIndicator';
 import { HighlightType } from "./utils/highlightTypes";
 import { addDocument, ANONYMOUS_USER_ID, MAIN_ROOM_ID } from './utils/dbUtils';
 import type { Document, DocumentWithHighlightsAndComments, HighlightResponseType, HighlightResponseTypeWithComments } from './utils/dbUtils';
-import treeline from './treeline.png';
+
 import styles from './Sidebar.module.css';
 
 interface SidebarProps {
@@ -193,7 +193,7 @@ export function Sidebar({
         <div className={styles.header}>
           <div className={styles.headerText}>
             Treeline
-            <img src={treeline} alt="Treeline" className={styles.logo} />
+            <img src={"/treeline.png"} alt="Treeline" className={styles.logo} />
           </div>
           <div style={{ fontSize: "0.7rem" }}>
             <a href="https://github.com/eden-chan/treeline">Open in GitHub</a>
