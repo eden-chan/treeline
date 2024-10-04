@@ -61,6 +61,7 @@
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "instant-cli": "^0.14.12",
     "playwright": "^1.45.1",
     "postcss-import": "^16.1.0",
     "typescript": "^5.6.2",

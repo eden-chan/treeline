@@ -1,3 +1,16 @@
+.sidebar {
+  width: 25vw;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.sidebarContent {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
 .header {
   padding: 1rem;
 }
@@ -16,11 +29,11 @@
 }
 
 .anonymousUser {
-  background: rgba(173, 216, 230, 0.8); /* Light blue */
+  background: rgba(173, 216, 230, 0.8);
 }
 
 .otherRegisteredUser {
-  background: rgba(144, 238, 144, 0.8); /* Light green */
+  background: rgba(144, 238, 144, 0.8);
 }
 
 .legend {
@@ -50,4 +63,36 @@
 .legendText {
   font-size: 14px;
   cursor: pointer;
+}
+
+.highlightsList {
+  list-style-type: none;
+  padding: 0;
+}
+
+.highlightItem {
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.highlightQuote {
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.highlightImage {
+  margin-top: 0.5rem;
+}
+
+.highlightInfo {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.buttonContainer {
+  margin-top: 1rem;
+}
+
+.chatContainer {
+  border-top: 1px solid #ccc;
 }

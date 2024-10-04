@@ -1,7 +1,18 @@
+import { useState } from 'react';
 import { MAIN_ROOM_ID, useRoom } from './utils/dbUtils';
 import styles from './TypingIndicator.module.css';
+import type { Comment, Document } from "./react-pdf-highlighter";
 
-export default function InstantTypingIndicator({ roomId = MAIN_ROOM_ID, username, color }: { roomId: string, username: string, color: string }) {
+
+
+interface ChatProps {
+    roomId: string;
+    username: string;
+    color: string;
+    document: Document;
+}
+
+export default function Chat({ roomId = MAIN_ROOM_ID, username, color, document }: ChatProps) {
     const room = useRoom(roomId);
     const user = {
         name: username,
@@ -19,13 +30,31 @@ export default function InstantTypingIndicator({ roomId = MAIN_ROOM_ID, username
         active.map((activePeer) => [activePeer.name, activePeer])
     );
 
+    const [message, setMessage] = useState('');
+
+    const handleSendMessage = () => {
+        if (message.trim()) {
+            // const newComment: Comment = {
+            //     text: message,
+            //     emoji: "💬", // You can change this or make it dynamic
+            //     userId: username
+            // };
+            // const updatedDocument = {
+            //     ...document,
+            //     chatSection: [...document.chatSection, newComment]
+            // };
+            // onUpdateDocument(updatedDocument);
+            setMessage('');
+        }
+    };
+
     return (
         <div className={styles.container}>
-            <div className={styles.sideContainer} key="side">
+            <div className={styles.sideContainer} key={crypto.randomUUID()}>
                 {peers.map((peer) => {
                     return (
                         <div
-                            key={peer.name}
+                            key={crypto.randomUUID()}
                             className={styles.avatarContainer}
                             style={{
                                 borderColor: peer.color,
@@ -41,11 +70,29 @@ export default function InstantTypingIndicator({ roomId = MAIN_ROOM_ID, username
                     );
                 })}
             </div>
+            <div className={styles.chatMessages}>
+                {document?.chatSection?.map((comment: Comment) => (
+                    <div
+                        key={crypto.randomUUID()}
+                        className={`${styles.message} ${comment.userId === username ? styles.myMessage : styles.otherMessage}`}
+                    >
+                        <strong>{comment.userId}: </strong>{comment.text}
+                    </div>
+                ))}
+            </div>
             <div key="main" className={styles.mainContainer}>
                 <textarea
                     placeholder="Compose your message here..."
                     className={styles.textarea}
-                    onKeyDown={(e) => inputProps.onKeyDown(e)}
+                    value={message}
+                    onChange={(e) => setMessage(e.target.value)}
+                    onKeyDown={(e) => {
+                        inputProps.onKeyDown(e);
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSendMessage();
+                        }
+                    }}
                     onBlur={() => inputProps.onBlur()}
                 />
                 <div className={styles.typingInfo}>

@@ -23,7 +23,7 @@ export default function InstantAvatarStack({ roomId, username, color }: { roomId
                 />
             ) : null}
             {Object.entries(presence.peers).map(([id, peer]) => (
-                <Avatar key={id} name={peer.name} color={peer.color} />
+                <Avatar key={id} name={`${peer.name}-${crypto.randomUUID()}`} color={peer.color} />
             ))}
         </div>
     );

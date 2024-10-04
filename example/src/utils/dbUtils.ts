@@ -1,8 +1,10 @@
 import { init, tx, id } from '@instantdb/react';
 import type { IHighlight, NewHighlight, ScaledPosition, Content } from "../react-pdf-highlighter";
+
+// todo: support chat and different urls
 type Schema = {
+    documents: Document,
     highlights: IHighlight,
-    
 }
 
 // Provide a room schema to get typings for presence!
@@ -76,6 +78,10 @@ export const resetHighlights = (highlights: IHighlight[]) => {
 };
 
 export const useHighlights = () => {
+    return db.useQuery({ highlights: {} });
+};
+
+export const useDocument = () => {
     return db.useQuery({ highlights: {} });
 };
 

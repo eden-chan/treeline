@@ -44,16 +44,21 @@ export interface HighlightContent {
   content: Content;
 }
 
+
+export type Reply = Omit<Comment, 'replies'> 
+
 export interface Comment {
   text: string;
   emoji: string;
+  userId: string;
+  replies?: Reply[];
 }
 
-export interface HighlightComment {
-  comment: Comment;
+export interface HighlightCommentSection {
+  comments: Comment[];
 }
 
-export interface NewHighlight extends HighlightContent, HighlightComment {
+export interface NewHighlight extends HighlightContent, HighlightCommentSection {
   position: ScaledPosition;
 }
 
@@ -63,7 +68,7 @@ export interface IHighlight extends NewHighlight {
   userName: string;
 }
 
-export interface ViewportHighlight extends HighlightContent, HighlightComment {
+export interface ViewportHighlight extends HighlightContent, HighlightCommentSection {
   position: Position;
 }
 
@@ -77,4 +82,15 @@ export interface Viewport {
 export interface Page {
   node: HTMLElement;
   number: number;
+}
+
+
+
+// New Document interface
+export interface Document {
+  id: string;
+  name: string;
+  sourceUrl: string; // PDF content
+  highlights: IHighlight[];
+  chatSection: Comment[]; // Document-level comment thread
 }

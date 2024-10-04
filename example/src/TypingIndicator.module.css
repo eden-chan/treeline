@@ -1,7 +1,7 @@
 .container {
   display: flex;
   flex-direction: column;
-  height: 200px;
+  height: 300px;
   padding: 10px;
   background-color: #f0f0f0;
   border-top: 1px solid #ccc;
@@ -46,6 +46,29 @@
   flex: 1;
   flex-direction: column;
   justify-content: flex-end;
+}
+
+.chatMessages {
+  flex: 1;
+  overflow-y: auto;
+  margin-bottom: 10px;
+}
+
+.message {
+  padding: 5px 10px;
+  margin-bottom: 5px;
+  border-radius: 10px;
+  max-width: 80%;
+}
+
+.myMessage {
+  align-self: flex-end;
+  background-color: #dcf8c6;
+}
+
+.otherMessage {
+  align-self: flex-start;
+  background-color: #ffffff;
 }
 
 .textarea {

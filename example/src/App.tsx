@@ -9,7 +9,7 @@ import {
   Popup,
   Tip,
 } from "./react-pdf-highlighter";
-import type { IHighlight, NewHighlight } from "./react-pdf-highlighter";
+import type { Comment, IHighlight, NewHighlight } from "./react-pdf-highlighter";
 
 import { Sidebar } from "./Sidebar";
 import { Spinner } from "./Spinner";
@@ -36,7 +36,7 @@ const resetHash = () => {
 const HighlightPopup = ({
   comment,
 }: {
-  comment: { text: string; emoji: string };
+  comment: Comment;
 }) =>
   comment.text ? (
     <div className="Highlight__popup">
@@ -67,8 +67,8 @@ export function PDFAnnotator() {
     console.log('[App] scrollViewerTo', highlight)
   });
 
+  const userColor = useMemo(() => randomDarkColor, []);
   const { isLoading, error, data } = useHighlights();
-
   const getHighlightById = useCallback((id: string) => {
     return data?.highlights.find((highlight) => highlight.id === id);
   }, [data]);
@@ -91,7 +91,6 @@ export function PDFAnnotator() {
       );
     };
   }, [getHighlightById]);
-  const userColor = useMemo(() => randomDarkColor, []);
 
   if (isLoading) {
     return <Spinner />
@@ -125,7 +124,13 @@ export function PDFAnnotator() {
     setUrl(newUrl);
   };
 
-
+  const currentDocument = {
+    id: "1",
+    name: "Document 1",
+    sourceUrl: url,
+    highlights: highlights as IHighlight[],
+    chatSection: highlights[0].comments,
+  }
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
       <div className="App" style={{ display: "flex", height: "100vh" }}>
@@ -137,6 +142,7 @@ export function PDFAnnotator() {
           setSelectedHighlightTypes={setSelectedHighlightTypes}
           currentUser={user ?? null}
           currentUserColor={userColor}
+          currentDocument={currentDocument}
         />
         <div
           style={{
@@ -175,10 +181,11 @@ export function PDFAnnotator() {
                       console.log('[App] user making highlight', user)
                       const highlightUserId = user?.id ?? ANONYMOUS_USER_ID
                       const highlightUserName = user?.email ?? ANONYMOUS_USER_ID
+
                       addHighlight({
                         content,
                         position,
-                        comment,
+                        comments: [comment],
                       } as NewHighlight, highlightUserId, highlightUserName);
                       hideTipAndSelection();
                     }}
@@ -201,7 +208,7 @@ export function PDFAnnotator() {
                     <Highlight
                       isScrolledTo={isScrolledTo}
                       position={highlight.position}
-                      comment={highlight.comment}
+                      comment={highlight.comments[0]}
                       highlightType={highlightType}
                     />
                   ) : (
@@ -221,7 +228,7 @@ export function PDFAnnotator() {
 
                   return (
                     <Popup
-                      popupContent={<HighlightPopup {...highlight} />}
+                      popupContent={<HighlightPopup {...highlight} comment={highlight.comments[0]} />}
                       onMouseOver={(popupContent) =>
                         setTip(highlight, () => popupContent)
                       }
