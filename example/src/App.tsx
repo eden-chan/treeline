@@ -25,15 +25,12 @@ import "../../dist/style.css";
 
 import { init, tx, id } from '@instantdb/react'
 
-// ID for app: Instant Tutorial Todo App
-const APP_ID = 'af1181a3-0924-4015-8a54-848b344a55e2'
-
 // Optional: Declare your schema for intellisense!
 type Schema = {
   highlights: IHighlight
 }
 
-const db = init<Schema>({ appId: APP_ID })
+const db = init<Schema>({ appId: process.env.INSTANTDB_APP_ID ?? '' })
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -90,10 +87,6 @@ export function App() {
     return <div>Error fetching data: {error.message}</div>
   }
   const { highlights } = data
-  // console.log('data', data)
-  // const [highlights, setHighlights] = useState<Array<IHighlight>>(
-  //   testHighlights[initialUrl] ? [...testHighlights[initialUrl]] : [],
-  // );
 
   const resetHighlights = () => {
     db.transact(highlights.map(h => tx.highlights[h.id].delete()));
@@ -103,7 +96,6 @@ export function App() {
     const newUrl =
       url === PRIMARY_PDF_URL ? SECONDARY_PDF_URL : PRIMARY_PDF_URL;
     setUrl(newUrl);
-    // setHighlights(testHighlights[newUrl] ? [...testHighlights[newUrl]] : []);
   };
 
   const getHighlightById = (id: string) => {
