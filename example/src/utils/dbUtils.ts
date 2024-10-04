@@ -40,7 +40,6 @@ export const useHighlights = () => {
 };
 
 export const signInWithIdToken = (idToken: string, clientName: string) => {
-    console.log('[dbUtils] Signing in to Instant with Clerk token', idToken);
     return db.auth.signInWithIdToken({
         clientName,
         idToken,

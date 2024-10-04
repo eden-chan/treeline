@@ -259,10 +259,8 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
               anyRectsOnPage = true;
             }
           }
-        } else if (highlight.position.boundingRect.pageNumber) {
-          anyRectsOnPage = true;
         }
-        if (anyRectsOnPage || pageNumber === highlight.position.pageNumber) {
+        if (anyRectsOnPage || pageNumber === highlight.position.pageNumber || pageNumber === highlight.position.boundingRect.pageNumber) {
           groupedHighlights[pageNumber].push(pageSpecificHighlight);
         }
       }
@@ -385,11 +383,12 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   };
 
   scrollTo = (highlight: T_HT) => {
-    const { pageNumber, boundingRect, usePdfCoordinates } = highlight.position;
-
+    const { boundingRect, usePdfCoordinates } = highlight.position;
+    const pageNumber = boundingRect.pageNumber || highlight.position.pageNumber;
     this.viewer.container.removeEventListener("scroll", this.onScroll);
 
-    const pageViewport = this.viewer.getPageView(pageNumber - 1).viewport;
+    const page = this.viewer.getPageView(pageNumber - 1);
+    const pageViewport = page.viewport;
 
     const scrollMargin = 10;
 

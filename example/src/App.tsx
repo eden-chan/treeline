@@ -80,21 +80,31 @@ export function PDFAnnotator() {
   const [url, setUrl] = useState(initialUrl);
   const scrollViewerTo = useRef((highlight: IHighlight) => {
     // Implement scrolling logic here
-    console.log('[App] scrollViewerTo', highlight)
-    document.location.hash = `#highlight-${highlight.id}`
+    // console.log('[App] scrollViewerTo', highlight)
+    // document.location.hash = `#highlight-${highlight.id}`
 
   });
 
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  const scrollToHighlightFromHash = useCallback(() => {
-    const highlight = getHighlightById(parseIdFromHash());
-    if (highlight) {
-      scrollViewerTo.current(highlight);
-    }
-  }, []);
+
+
+
+  const { isLoading, error, data } = useHighlights();
+
+  const getHighlightById = useCallback((id: string) => {
+    return data?.highlights.find((highlight) => highlight.id === id);
+  }, [data]);
 
   useEffect(() => {
+
+
+    const scrollToHighlightFromHash = () => {
+      const highlight = getHighlightById(parseIdFromHash());
+      if (highlight) {
+        scrollViewerTo.current(highlight);
+      }
+    };
+
     window.addEventListener("hashchange", scrollToHighlightFromHash, false);
     return () => {
       window.removeEventListener(
@@ -103,16 +113,8 @@ export function PDFAnnotator() {
         false,
       );
     };
-  }, [scrollToHighlightFromHash]);
+  }, [getHighlightById]);
 
-  const { isLoading, error, data } = useHighlights();
-  console.log(
-    "[App] data",
-    data,
-    typeof data,
-    data?.highlights,
-    typeof data?.highlights,
-  );
   if (isLoading) {
     return <div>Fetching data...</div>;
   }
@@ -121,9 +123,7 @@ export function PDFAnnotator() {
   }
   const { highlights } = data;
 
-  const getHighlightById = (id: string) => {
-    return highlights.find((highlight) => highlight.id === id);
-  };
+
   const handleResetHighlights = () => {
     resetHighlights(highlights);
   };
@@ -157,7 +157,13 @@ export function PDFAnnotator() {
               onScrollChange={resetHash}
               scrollRef={(scrollTo) => {
                 scrollViewerTo.current = scrollTo;
-                scrollToHighlightFromHash();
+                console.log(scrollTo)
+                const highlight = getHighlightById(parseIdFromHash());
+                console.log('[App] clicked highlight', highlight)
+                if (highlight) {
+                  scrollViewerTo.current(highlight);
+                }
+
               }}
               onSelectionFinished={(
                 position,
@@ -240,7 +246,6 @@ function ClerkSignedInComponent() {
       return;
     }
 
-    console.log("[App] Signing in to Instant with Clerk token", idToken);
     signInWithIdToken(
       idToken,
       import.meta.env.VITE_CLERK_CLIENT_NAME ?? "Treeline",
