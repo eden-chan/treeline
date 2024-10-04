@@ -13,13 +13,10 @@ import type { IHighlight, NewHighlight } from "./react-pdf-highlighter";
 
 import { Sidebar } from "./Sidebar";
 import { Spinner } from "./Spinner";
-
 import "./style/App.css";
 import "../../dist/style.css";
 
-import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-react";
-import { ClerkSignedInComponent } from "./ClerkSignedInComponent";
-import { ClerkSignedOutComponent } from "./ClerkSignedOutComponent";
+import { ClerkProvider } from "@clerk/clerk-react";
 
 import { addHighlight, updateHighlight, resetHighlights, useHighlights } from "./utils/dbUtils";
 
@@ -53,12 +50,6 @@ export function ViewManager() {
       publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ""}
       afterSignOutUrl="/"
     >
-      <SignedIn>
-        <ClerkSignedInComponent />
-      </SignedIn>
-      <SignedOut>
-        <ClerkSignedOutComponent />
-      </SignedOut>
       <PDFAnnotator />
     </ClerkProvider>
   );
@@ -97,7 +88,7 @@ export function PDFAnnotator() {
   }, [getHighlightById]);
 
   if (isLoading) {
-    return <div>Fetching data...</div>;
+    return <Spinner />
   }
   if (error) {
     return <div>Error fetching data: {error.message}</div>;
