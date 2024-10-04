@@ -46,3 +46,4 @@ yarn-error.log*
 
 # Yarn Integrity file
 .yarn-integrity
+example/dist/

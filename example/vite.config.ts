@@ -1,7 +1,10 @@
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
+import path from 'path';
 
-export default defineConfig({
+export default defineConfig(({ command, mode }) => {
+  process.env = {...process.env, ...loadEnv(mode, path.join(process.cwd(), '..'))};
+  return {
   base: "/",
   build: {
     outDir: "dist",
@@ -12,11 +15,13 @@ export default defineConfig({
   },
   define: {
     APP_VERSION: JSON.stringify(process.env.npm_package_version),
+
   },
   resolve: {
     alias: {
       '@': '/src',
     },
   },
-  assetsInclude: ['**/*.png'],
+    assetsInclude: ['**/*.png'],
+  }
 });
