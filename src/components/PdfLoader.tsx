@@ -18,12 +18,14 @@ interface Props {
 interface State {
   pdfDocument: PDFDocumentProxy | null;
   error: Error | null;
+  failedAttempts: number;
 }
 
 export class PdfLoader extends Component<Props, State> {
   state: State = {
     pdfDocument: null,
     error: null,
+    failedAttempts: 0,
   };
 
   static defaultProps = {
@@ -45,6 +47,7 @@ export class PdfLoader extends Component<Props, State> {
 
   componentDidUpdate({ url }: Props) {
     if (this.props.url !== url) {
+      this.setState({ failedAttempts: 0, error: null });
       this.load();
     }
   }
@@ -52,22 +55,36 @@ export class PdfLoader extends Component<Props, State> {
   componentDidCatch(error: Error) {
     const { onError } = this.props;
 
+    console.error('PdfLoader componentDidCatch', error);
+
     if (onError) {
       onError(error);
     }
 
-    this.setState({ pdfDocument: null, error });
+    this.setState(prevState => ({
+      pdfDocument: null,
+      error,
+      failedAttempts: prevState.failedAttempts + 1,
+    }));
   }
 
   load() {
     const { ownerDocument = document } = this.documentRef.current || {};
     const { url, cMapUrl, cMapPacked, workerSrc } = this.props;
-    const { pdfDocument: discardedDocument } = this.state;
+    const { pdfDocument: discardedDocument, failedAttempts } = this.state;
+
+    if (failedAttempts >= 2) {
+      console.error('PdfLoader: Max retry attempts reached');
+      return;
+    }
+
     this.setState({ pdfDocument: null, error: null });
 
     if (typeof workerSrc === "string") {
       GlobalWorkerOptions.workerSrc = workerSrc;
     }
+
+    console.log('PdfLoader load', url, discardedDocument, ownerDocument);
 
     Promise.resolve()
       .then(() => discardedDocument?.destroy())
@@ -84,23 +101,34 @@ export class PdfLoader extends Component<Props, State> {
         };
 
         return getDocument(document).promise.then((pdfDocument) => {
-          this.setState({ pdfDocument });
+          this.setState({ pdfDocument, failedAttempts: 0 });
         });
       })
-      .catch((e) => this.componentDidCatch(e));
+      .catch((e) => {
+        this.componentDidCatch(e);
+        if (this.state.failedAttempts < 2) {
+          console.log(`Retrying PDF load. Attempt ${this.state.failedAttempts + 1}`);
+          setTimeout(() => this.load(), 1000); // Retry after 1 second
+        }
+      });
   }
 
   render() {
     const { children, beforeLoad } = this.props;
-    const { pdfDocument, error } = this.state;
+    const { pdfDocument, error, failedAttempts } = this.state;
+
+    if (failedAttempts < 2 && !pdfDocument) {
+      return beforeLoad;
+    }
+
+    if (failedAttempts >= 2 || error) {
+      return this.renderError();
+    }
+
     return (
       <>
         <span ref={this.documentRef} />
-        {error
-          ? this.renderError()
-          : !pdfDocument || !children
-            ? beforeLoad
-            : children(pdfDocument)}
+        {pdfDocument && children ? children(pdfDocument) : null}
       </>
     );
   }
@@ -111,6 +139,6 @@ export class PdfLoader extends Component<Props, State> {
       return React.cloneElement(errorMessage, { error: this.state.error });
     }
 
-    return null;
+    return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>Failed to load PDF after multiple attempts. Please try again later.</div>;
   }
 }
