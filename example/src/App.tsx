@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect, useCallback, useRef } from "react";
 
@@ -79,7 +80,13 @@ export function PDFAnnotator() {
   const [url, setUrl] = useState(initialUrl);
   const scrollViewerTo = useRef((highlight: IHighlight) => {
     // Implement scrolling logic here
+    console.log('[App] scrollViewerTo', highlight)
+    document.location.hash = `#highlight-${highlight.id}`
+
   });
+
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   const scrollToHighlightFromHash = useCallback(() => {
     const highlight = getHighlightById(parseIdFromHash());
     if (highlight) {
@@ -114,6 +121,9 @@ export function PDFAnnotator() {
   }
   const { highlights } = data;
 
+  const getHighlightById = (id: string) => {
+    return highlights.find((highlight) => highlight.id === id);
+  };
   const handleResetHighlights = () => {
     resetHighlights(highlights);
   };
@@ -124,9 +134,6 @@ export function PDFAnnotator() {
     setUrl(newUrl);
   };
 
-  const getHighlightById = (id: string) => {
-    return highlights.find((highlight) => highlight.id === id);
-  };
 
   return (
     <div className="App" style={{ display: "flex", height: "100vh" }}>
@@ -205,7 +212,7 @@ export function PDFAnnotator() {
                   <Popup
                     popupContent={<HighlightPopup {...highlight} />}
                     onMouseOver={(popupContent) =>
-                      setTip(highlight, (highlight) => popupContent)
+                      setTip(highlight, () => popupContent)
                     }
                     onMouseOut={hideTip}
                     key={index}
@@ -240,6 +247,7 @@ function ClerkSignedInComponent() {
     );
   };
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Load only once on mount
   useEffect(() => {
     signInToInstantWithClerkToken();
   }, []);
@@ -257,6 +265,7 @@ function ClerkSignedInComponent() {
       <div>
         <p>Signed in</p>{" "}
         <button
+          type="button"
           onClick={() => {
             signOutFromDb().then(() => {
               signOutFromClerk();
@@ -270,7 +279,7 @@ function ClerkSignedInComponent() {
   }
   return (
     <div>
-      <button onClick={signInToInstantWithClerkToken}>Sign in</button>
+      <button type="button" onClick={signInToInstantWithClerkToken}>Sign in</button>
     </div>
   );
 }

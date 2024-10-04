@@ -223,10 +223,14 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
     const pageNumbers = new Set<number>();
     for (const highlight of allHighlights) {
       pageNumbers.add(highlight.position.pageNumber);
-      for (const rect of highlight.position.rects) {
-        if (rect.pageNumber) {
-          pageNumbers.add(rect.pageNumber);
+      if (highlight.position.rects) {
+        for (const rect of highlight.position.rects) {
+          if (rect.pageNumber) {
+            pageNumbers.add(rect.pageNumber);
+          }
         }
+      } else if (highlight.position.boundingRect.pageNumber) {
+        pageNumbers.add(highlight.position.boundingRect.pageNumber);
       }
     }
 
@@ -245,13 +249,18 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
           } as ScaledPosition,
         };
         let anyRectsOnPage = false;
-        for (const rect of highlight.position.rects) {
-          if (
-            pageNumber === (rect.pageNumber || highlight.position.pageNumber)
-          ) {
-            pageSpecificHighlight.position.rects.push(rect);
-            anyRectsOnPage = true;
+
+        if (highlight.position.rects) {
+          for (const rect of highlight.position.rects) {
+            if (
+              pageNumber === (rect.pageNumber || highlight.position.pageNumber)
+            ) {
+              pageSpecificHighlight.position.rects.push(rect);
+              anyRectsOnPage = true;
+            }
           }
+        } else if (highlight.position.boundingRect.pageNumber) {
+          anyRectsOnPage = true;
         }
         if (anyRectsOnPage || pageNumber === highlight.position.pageNumber) {
           groupedHighlights[pageNumber].push(pageSpecificHighlight);
