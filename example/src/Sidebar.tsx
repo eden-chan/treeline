@@ -1,17 +1,19 @@
 import { ClerkSignedInComponent } from './ClerkSignedInComponent';
 import { ClerkSignedOutComponent } from './ClerkSignedOutComponent';
-import type { IHighlight, Document } from "./react-pdf-highlighter";
+import type { IHighlight } from "./react-pdf-highlighter";
 import treeline from './treeline.png';
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import styles from './Sidebar.module.css';
 import { HighlightType } from "./utils/highlightTypes";
 import { ANONYMOUS_USER_ID, MAIN_ROOM_ID } from './utils/dbUtils';
+import type { Document } from './utils/dbUtils';
 import Chat from './TypingIndicator';
 import type { User } from '@instantdb/react';
 
 
+
 interface Props {
-  highlights: Array<IHighlight>;
+  documents: Document[];
   resetHighlights: () => void;
   toggleDocument: () => void;
   selectedHighlightTypes: HighlightType[];
@@ -25,8 +27,43 @@ const updateHash = (highlight: IHighlight) => {
   document.location.hash = `highlight-${highlight.id}`;
 };
 
+
+const CreateDocumentForm = () => {
+  return (
+    <form>
+      <input type="text" placeholder="Document Name" />
+      <input type="url" placeholder="PDF URL" />
+      <button type="submit">Create Document</button>
+    </form>
+  )
+}
+
+
+const DocumentList = ({ documents }: { documents: Document[] }) => {
+  if (!documents) return <div>No documents found</div>;
+
+  return (
+    <ul>
+
+      {documents.map((doc: Document) => (
+        <li key={doc.id}>
+          <pre>
+            <code>
+              {JSON.stringify(doc, null, 2)}
+            </code>
+          </pre>
+          <span>{doc.name}</span>
+          <a href={doc.sourceUrl} target="_blank" rel="noopener noreferrer">
+            {doc.sourceUrl}
+          </a>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 export function Sidebar({
-  highlights,
+  documents,
   toggleDocument,
   resetHighlights,
   selectedHighlightTypes,
@@ -44,6 +81,8 @@ export function Sidebar({
     );
   };
 
+  const highlights = currentDocument.highlights as IHighlight[]
+
   return (
     <div className={styles.sidebar}>
       <div className={styles.sidebarContent}>
@@ -57,6 +96,9 @@ export function Sidebar({
               Open in GitHub
             </a>
           </div>
+          <DocumentList documents={documents} />
+          <CreateDocumentForm />
+
 
           <div>
             <small>
@@ -91,7 +133,7 @@ export function Sidebar({
         </SignedIn>
 
         <ul className={styles.highlightsList}>
-          {highlights.map((highlight) => (
+          {highlights?.map((highlight) => (
             <li
               key={highlight.id}
               className={styles.highlightItem}
@@ -122,7 +164,7 @@ export function Sidebar({
           <button type="button" onClick={toggleDocument}>
             Toggle PDF document
           </button>
-          {highlights.length > 0 && (
+          {highlights?.length > 0 && (
             <button type="button" onClick={resetHighlights}>
               Reset highlights
             </button>

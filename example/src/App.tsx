@@ -18,7 +18,7 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { addHighlight, updateHighlight, resetHighlights, useHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID } from "./utils/dbUtils";
+import { addHighlight, updateHighlight, resetHighlights, getHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocuments } from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
 import InstantCursors from './Cursor';
@@ -68,10 +68,14 @@ export function PDFAnnotator() {
   });
 
   const userColor = useMemo(() => randomDarkColor, []);
-  const { isLoading, error, data } = useHighlights();
+
+  const { data, isLoading: isLoadingDocuments, error: errorDocuments } = getDocuments();
+  const highlights = data?.documents[0].highlights
+
   const getHighlightById = useCallback((id: string) => {
-    return data?.highlights.find((highlight) => highlight.id === id);
-  }, [data]);
+    return []
+    // return data?.highlights.find((highlight) => highlight.id === id);
+  }, []);
   const { user } = useDbAuth();
 
   useEffect(() => {
@@ -92,13 +96,13 @@ export function PDFAnnotator() {
     };
   }, [getHighlightById]);
 
-  if (isLoading) {
+  if (isLoadingDocuments) {
     return <Spinner />
   }
-  if (error) {
-    return <div>Error fetching data: {error.message}</div>;
+  if (errorDocuments) {
+    return <div>Error fetching data: {errorDocuments.message}</div>;
   }
-  const { highlights } = data;
+  // const { highlights } = documents;
 
   const getHighlightType = (highlightUserId: string): HighlightType => {
     if (highlightUserId === user?.id) {
@@ -110,9 +114,10 @@ export function PDFAnnotator() {
     return HighlightType.OTHER_REGISTERED_USER;
   };
 
-  const filteredHighlights = highlights.filter(highlight =>
-    selectedHighlightTypes.includes(getHighlightType(highlight.userId))
-  );
+  const filteredHighlights = []
+  // highlights.filter(highlight =>
+  //   selectedHighlightTypes.includes(getHighlightType(highlight.userId))
+  // );
 
   const handleResetHighlights = () => {
     resetHighlights(highlights);
@@ -124,25 +129,25 @@ export function PDFAnnotator() {
     setUrl(newUrl);
   };
 
-  const currentDocument = {
-    id: "1",
-    name: "Document 1",
-    sourceUrl: url,
-    highlights: highlights as IHighlight[],
-    chatSection: highlights[0].comments,
-  }
+  // const currentDocument = {
+  //   id: "1",
+  //   name: "Document 1",
+  //   sourceUrl: url,
+  //   highlights: highlights as IHighlight[],
+  //   chatSection: highlights[0].comments,
+  // }
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
       <div className="App" style={{ display: "flex", height: "100vh" }}>
         <Sidebar
-          highlights={filteredHighlights}
+          documents={data?.documents}
           resetHighlights={handleResetHighlights}
           toggleDocument={toggleDocument}
           selectedHighlightTypes={selectedHighlightTypes}
           setSelectedHighlightTypes={setSelectedHighlightTypes}
           currentUser={user ?? null}
           currentUserColor={userColor}
-          currentDocument={currentDocument}
+          currentDocument={data?.documents[0]}
         />
         <div
           style={{
@@ -179,14 +184,28 @@ export function PDFAnnotator() {
                     onOpen={transformSelection}
                     onConfirm={(comment) => {
                       console.log('[App] user making highlight', user)
-                      const highlightUserId = user?.id ?? ANONYMOUS_USER_ID
-                      const highlightUserName = user?.email ?? ANONYMOUS_USER_ID
+                      // const highlightUserId = user?.id ?? ANONYMOUS_USER_ID
+                      // const highlightUserName = user?.email ?? ANONYMOUS_USER_ID
+                      // const highlightDraft = {
+                      //   content,
+                      //   position,
+                      // }
 
-                      addHighlight({
-                        content,
-                        position,
-                        comments: [comment],
-                      } as NewHighlight, highlightUserId, highlightUserName);
+                      // const commentDraft = {
+                      //   text: comment.text,
+                      //   emoji: comment.emoji,
+                      //   userId: highlightUserId,
+                      //   userName: highlightUserName,
+                      // }
+
+                      // const documentHighlightDraft = {
+                      //   highlight: highlightDraft,
+                      //   comment: commentDraft,
+                      // }
+
+                      // addHighlight({
+
+                      // } as NewHighlight, highlightUserId, highlightUserName);
                       hideTipAndSelection();
                     }}
                   />

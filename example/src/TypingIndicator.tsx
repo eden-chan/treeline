@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { MAIN_ROOM_ID, useRoom } from './utils/dbUtils';
 import styles from './TypingIndicator.module.css';
-import type { Comment, Document } from "./react-pdf-highlighter";
+import type { Comment } from "./react-pdf-highlighter";
+import type { Document } from "./utils/dbUtils";
 
 
 
@@ -71,14 +72,14 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, document 
                 })}
             </div>
             <div className={styles.chatMessages}>
-                {document?.chatSection?.map((comment: Comment) => (
+                {/* {document?.chatSection?.map((comment: Comment) => (
                     <div
                         key={crypto.randomUUID()}
                         className={`${styles.message} ${comment.userId === username ? styles.myMessage : styles.otherMessage}`}
                     >
                         <strong>{comment.userId}: </strong>{comment.text}
                     </div>
-                ))}
+                ))} */}
             </div>
             <div key="main" className={styles.mainContainer}>
                 <textarea

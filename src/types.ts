@@ -60,6 +60,8 @@ export interface HighlightCommentSection {
 
 export interface NewHighlight extends HighlightContent, HighlightCommentSection {
   position: ScaledPosition;
+  // content 
+  //  comments 
 }
 
 export interface IHighlight extends NewHighlight {
@@ -92,5 +94,27 @@ export interface Document {
   name: string;
   sourceUrl: string; // PDF content
   highlights: IHighlight[];
-  chatSection: Comment[]; // Document-level comment thread
+  comments: Comment[]; // Document-level comment thread
+}
+
+export type CommentDraft = Omit<Comment, 'replies'> // text + emoji
+export type HighlightDraft = Omit<NewHighlight, 'comments'> // content + position
+
+// Creating a new document 
+export interface DocumentHighlightDraft  {
+    highlight: HighlightDraft; //  + position
+    // comment: CommentDraft; // text + emoji
+    userId: string;
+    userName: string;
+    documentId?: string;
+
+}
+
+export interface CreateDocumentDraft {
+  name: string;
+  sourceUrl: string;
+}
+
+export interface DocumentWithId extends Document {
+  id: string;
 }
