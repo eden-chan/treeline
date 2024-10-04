@@ -1,0 +1,4 @@
+/* Override rpv box shadow */
+.rpv-core__page-layer::after {
+	box-shadow: none;
+}

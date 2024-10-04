@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "mongodb"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+type ParsedPaperText {
+  outline  String[]
+  sections ParsedPaperTextSections[]
+  title    String
+}
+
+type ParsedPaperTextSections {
+  facts ParsedPaperTextSectionsFacts[]
+  name  String
+  page  Int
+  text  String
+}
+
+type ParsedPaperTextSectionsFacts {
+  expectedInfo String
+  fact         String
+  nextSource   String
+  relevance    String
+}
+
+model CurriculumNode {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  prompt      String?
+  response    String?
+  timestamp   DateTime         @db.Date
+  parentId    String?          @db.ObjectId
+  parent      CurriculumNode?  @relation("SubNodes", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    CurriculumNode[] @relation("SubNodes")
+  highlightId String?          @unique @db.ObjectId
+  highlight   Highlight?       @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+}
+
+model AnnotatedPdf {
+  id         String      @id @default(auto()) @map("_id") @db.ObjectId
+  highlights Highlight[]
+  source     String
+  userId     String
+}
+
+model User {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  clerk_id   String
+  email      String
+  first_name String
+  followers  String[]
+  follows    String[]
+  handle     String
+  last_name  String
+}
+
+type ParsedPaperFacts {
+  expectedInfo String
+  fact         String
+  nextSource   String
+  relevance    String
+}
+
+type ParsedPaperSections {
+  metadata ParsedPaperSectionsMetadata
+  text     String
+}
+
+type ParsedPaperSectionsMetadata {
+  Header_1 String?
+  Header_2 String?
+  Header_3 String?
+  Header_4 String?
+  Header_5 String?
+}
+
+model ParsedPaper {
+  id               String                @id @default(auto()) @map("_id") @db.ObjectId
+  abstract         String
+  facts            ParsedPaperFacts[]
+  primary_category String
+  published        DateTime              @db.Date
+  sections         ParsedPaperSections[]
+  source           String
+  title            String
+  updated          DateTime              @db.Date
+}
+
+model Source {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  uploadedAt    DateTime      @db.Date
+  title         String
+  description   String
+  source        String        @unique
+  sourceGroupIDs String[]     @db.ObjectId
+  sourceGroups  SourceGroup[] @relation(fields: [sourceGroupIDs], references: [id])
+}
+
+model SourceGroup {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  title        String    @unique
+  description String
+  sourceIDs   String[]  @db.ObjectId
+  sources     Source[]  @relation(fields: [sourceIDs], references: [id])
+}
+
+type HighlightAreas {
+  height    Float
+  left      Float
+  pageIndex Int
+  top       Float
+  width     Float
+}
+
+model Highlight {
+  id             String                      @id @default(auto()) @map("_id") @db.ObjectId
+  highlightAreas HighlightAreas[]
+  comments       Comment[]
+  quote          String
+  node           CurriculumNode?
+  annotatedPdf   AnnotatedPdf                @relation(fields: [annotatedPdfId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  annotatedPdfId String                      @db.ObjectId
+}
+
+model Comment {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  text        String
+  timestamp   DateTime  @db.Date
+  userId      String
+  Highlight   Highlight @relation(fields: [highlightId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  highlightId String    @db.ObjectId
+}

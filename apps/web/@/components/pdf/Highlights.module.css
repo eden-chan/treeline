@@ -1,0 +1,32 @@
+.lastSelectedHighlight {
+  background-color: rgba(250, 204, 21, 0.1);
+  cursor: pointer;
+}
+
+.userHighlight {
+  background-color: rgba(250, 204, 21, 0.4);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  z-index: 10;
+}
+
+.userHighlightOnSelect {
+  pointer-events: 'none';
+  z-index: 0 !important;
+};
+
+.groupContainer {
+  z-index: 10;
+}
+
+.groupContainer:hover .userHighlight {
+  background-color: rgba(59, 130, 246, 0.4); /* Blue color */
+}
+
+.groupContainer .active {
+  background-color: rgba(59, 130, 246, 0.4) !important;
+}
+
+.groupContainer:hover .active {
+  background-color: rgba(59, 130, 246, 0.4) !important;
+}
