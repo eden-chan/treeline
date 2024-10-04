@@ -22,6 +22,7 @@ interface State {
   pdfDocument: PDFDocumentProxy | null;
   error: Error | null;
   failedAttempts: number;
+  bytes?: Uint8Array;
 }
 
 export class PdfLoader extends Component<Props, State> {
@@ -73,7 +74,7 @@ export class PdfLoader extends Component<Props, State> {
 
   load() {
     const { ownerDocument = document } = this.documentRef.current || {};
-    const { url, cMapUrl, cMapPacked, workerSrc } = this.props;
+    const { url, cMapUrl, cMapPacked, workerSrc, bytes } = this.props;
     const { pdfDocument: discardedDocument, failedAttempts } = this.state;
 
     if (failedAttempts >= 2) {
@@ -91,8 +92,8 @@ export class PdfLoader extends Component<Props, State> {
 
     Promise.resolve()
       .then(() => discardedDocument?.destroy())
-      .then(() => {
-        if (!url) {
+      .then(async () => {
+        if (!url && !bytes) {
           return;
         }
 
@@ -103,67 +104,47 @@ export class PdfLoader extends Component<Props, State> {
           cMapPacked,
         };
 
-
-        //  if url failed, try agani with different passing in bytes
-        //  if bytes failed, try by uploading to server and pulling that in
-        // NOTE: If a URL is used to fetch the PDF data a standard Fetch API call (or XHR as fallback) 
-        // is used, which means it must follow same origin rules, e.g. no cross-domain requests 
-        // without CORS.
-        return getDocument(document).promise.then((pdfDocument) => {
+        try {
+          let pdfDocument: PDFDocumentProxy;
+          if (bytes) {
+            pdfDocument = await getDocument({ data: bytes }).promise;
+          } else {
+            pdfDocument = await getDocument(document).promise;
+          }
           this.setState({ pdfDocument, failedAttempts: 0 });
-        });
-      })
-      .catch(async (e) => {
-        this.componentDidCatch(e);
-        if (this.state.failedAttempts < 2) {
+        } catch (e) {
+          if (this.state.failedAttempts < 2) {
+            const firstTry = this.state.failedAttempts === 0;
+            const secondTry = this.state.failedAttempts === 1;
 
-          const firstTry = this.state.failedAttempts === 0
-          const secondTry = this.state.failedAttempts === 1
-
-          if (firstTry) {
-            // Server-side implementation to fetch bytes
-            const getBytes = async (url: string) => {
+            if (firstTry) {
               try {
-                const response = await fetch('/api/fetch-pdf', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({ url }),
-                });
-
+                const response = await fetch(`/api/pdf?url=${encodeURIComponent(url)}`);
                 if (!response.ok) {
                   throw new Error('Server failed to fetch PDF');
                 }
+                const data = await response.json();
+                const pdfBytes = new Uint8Array(data.data);
+                this.setState({ bytes: pdfBytes });
 
-                const arrayBuffer = await response.arrayBuffer();
-                return new Uint8Array(arrayBuffer);
+                // Attempt to load the PDF with the new bytes
+                const pdfDocument = await getDocument({ data: pdfBytes }).promise;
+                this.setState({ pdfDocument, failedAttempts: 0 });
+                return; // Exit the function if successful
               } catch (error) {
                 console.error('Error fetching bytes from server:', error);
-                throw error;
               }
-            };
-
-            let bytes: Uint8Array | null = null;
-            try {
-              bytes = await getBytes(url);
-            } catch (error) {
-              console.error('Error getting bytes on first retry, so next try will be to upload pdf to server and pull that in instead', error);
-              // throw error;
+            } else if (secondTry) {
+              // Implement second retry logic here if needed
+              console.log('second retry logic not implemented');
             }
-            console.log('first retry is to get bytes of pdf', url, bytes);
 
-            // get the bytes of the pdf and pass that in instead
-          } else if (secondTry) {
-            // upload the pdf to server and pull that in instead
-            const uploadUrl = 'https://api.uploadthing.com/v2/upload';
-            console.log('second retry is to uploadUrl to server ', this.props.url, uploadUrl);
+            console.log(`Retrying PDF load. Attempt ${this.state.failedAttempts + 1}`);
+            this.setState(prevState => ({ failedAttempts: prevState.failedAttempts + 1 }));
+            setTimeout(() => this.load(), 1000); // Retry after 1 second
+          } else {
+            this.componentDidCatch(e as Error);
           }
-
-          console.log(`Retrying PDF load. Attempt ${this.state.failedAttempts + 1}`);
-
-          // get the bytes of the pdf and pass that in instead
-          setTimeout(() => this.load(), 1000); // Retry after 1 second
         }
       });
   }
