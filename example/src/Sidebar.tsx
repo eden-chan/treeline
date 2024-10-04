@@ -5,6 +5,9 @@ import treeline from './treeline.png';
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import styles from './Sidebar.module.css';
 import { HighlightType } from "./utils/highlightTypes";
+import { ANONYMOUS_USER_ID, MAIN_ROOM_ID } from './utils/dbUtils';
+import InstantTypingIndicator from './TypingIndicator';
+import type { User } from '@instantdb/react';
 
 interface Props {
   highlights: Array<IHighlight>;
@@ -12,6 +15,8 @@ interface Props {
   toggleDocument: () => void;
   selectedHighlightTypes: HighlightType[];
   setSelectedHighlightTypes: React.Dispatch<React.SetStateAction<HighlightType[]>>;
+  currentUser: User | null;
+  currentUserColor: string;
 }
 
 const updateHash = (highlight: IHighlight) => {
@@ -23,8 +28,11 @@ export function Sidebar({
   toggleDocument,
   resetHighlights,
   selectedHighlightTypes,
-  setSelectedHighlightTypes
+  setSelectedHighlightTypes,
+  currentUser,
+  currentUserColor
 }: Props) {
+
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes(prev =>
       prev.includes(type)
@@ -121,6 +129,9 @@ export function Sidebar({
           </button>
         </div>
       ) : null}
+
+      <InstantTypingIndicator roomId={MAIN_ROOM_ID} username={currentUser?.email ?? ANONYMOUS_USER_ID} color={currentUserColor} />
+
     </div>
   );
 }

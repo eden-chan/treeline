@@ -1,8 +1,7 @@
 import { useRoom } from './utils/dbUtils';
 import styles from './AvatarStack.module.css';
-import { randomDarkColor } from './utils/utils';
 
-export default function InstantAvatarStack({ roomId, userId }: { roomId: string, userId: string }) {
+export default function InstantAvatarStack({ roomId, username, color }: { roomId: string, username: string, color: string }) {
     const room = useRoom(roomId);
 
     const presence = room.usePresence({
@@ -10,8 +9,8 @@ export default function InstantAvatarStack({ roomId, userId }: { roomId: string,
     });
 
     room.useSyncPresence({
-        name: userId,
-        color: randomDarkColor,
+        name: username,
+        color: color,
     });
 
     return (

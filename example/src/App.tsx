@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 
 import {
   AreaHighlight,
@@ -24,6 +24,7 @@ import { HighlightType } from "./utils/highlightTypes";
 import InstantCursors from './Cursor';
 import InstantAvatarStack from './AvatarStack';
 import InstantTopics from './Emoji';
+import { randomDarkColor } from './utils/utils';
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -123,6 +124,8 @@ export function PDFAnnotator() {
     setUrl(newUrl);
   };
 
+  const userColor = useMemo(() => randomDarkColor, []);
+
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
       <div className="App" style={{ display: "flex", height: "100vh" }}>
@@ -132,6 +135,8 @@ export function PDFAnnotator() {
           toggleDocument={toggleDocument}
           selectedHighlightTypes={selectedHighlightTypes}
           setSelectedHighlightTypes={setSelectedHighlightTypes}
+          currentUser={user ?? null}
+          currentUserColor={userColor}
         />
         <div
           style={{
@@ -233,7 +238,7 @@ export function PDFAnnotator() {
           </PdfLoader>
 
           <InstantTopics roomId={MAIN_ROOM_ID} />
-          <InstantAvatarStack roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} />
+          <InstantAvatarStack roomId={MAIN_ROOM_ID} username={user?.email ?? ANONYMOUS_USER_ID} color={userColor} />
 
         </div>
       </div>

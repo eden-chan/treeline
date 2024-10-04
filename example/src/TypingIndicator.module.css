@@ -1,0 +1,61 @@
+.container {
+  display: flex;
+  height: 400px;
+
+  padding: 20px;
+}
+
+.sideContainer {
+  display: flex;
+  width: 2.5rem;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.avatarContainer {
+  position: relative;
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border-width: 4px;
+  background-color: white;
+}
+
+.typingIndicator {
+  position: absolute;
+  right: -0.25rem;
+  bottom: 0;
+  border-radius: 0.125rem;
+  background-color: black;
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
+  line-height: 0.75rem;
+  color: white;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.mainContainer {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.textarea {
+  width: 100%;
+  border-radius: 0.375rem;
+  border-color: #d1d5db;
+  padding: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.typingInfo {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
