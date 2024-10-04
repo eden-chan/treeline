@@ -1,20 +1,70 @@
 {
-  "name": "my-space",
-  "private": true,
+  "name": "treeline",
+  "version": "0.0.1",
+  "description": "Set of React components for Collaborative PDF annotation",
+  "author": "Eden Chan <edenchan717@gmail.com>",
+  "license": "MIT",
+  "keywords": [
+    "pdf",
+    "highlight",
+    "annotator",
+    "react-component",
+    "collaborative",
+    "instantdb",
+    "collaborative-pdf-annotation",
+    "react-pdf-highlighter"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "main": "./dist/src/index.js",
+  "style": "./dist/style.css",
   "scripts": {
-    "build": "turbo build",
-    "dev": "turbo dev",
-    "lint": "turbo lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "start": "npm run dev",
+    "dev": "vite build && (cd ./example && vite)",
+    "build": "npm run clean && npm run compile && vite build && npm run build:example",
+    "compile": "tsc --noEmit",
+    "build:example": "vite build && (cd ./example && vite build)",
+    "test": "npm run build && npm run lint && npm run test:e2e",
+    "test:e2e": "playwright test",
+    "format": "biome format --write",
+    "lint": "biome check",
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  },
+  "dependencies": {
+    "@instantdb/react": "^0.14.12",
+    "pdfjs-dist": "4.4.168",
+    "react-rnd": "^10.4.11",
+    "ts-debounce": "^4.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eden-chan/treeline.git"
+  },
+  "bugs": {
+    "url": "https://github.com/eden-chan/treeline/issues"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "prettier": "^3.2.5",
-    "turbo": "latest"
+    "@biomejs/biome": "1.9.0",
+    "@playwright/test": "^1.45.1",
+    "@types/node": "^20.14.10",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "@vitejs/plugin-react": "^4.3.1",
+    "playwright": "^1.45.1",
+    "postcss-import": "^16.1.0",
+    "typescript": "^5.6.2",
+    "vite": "^5.3.3",
+    "vite-plugin-dts": "^4.1.1"
   },
-  "packageManager": "pnpm@8.9.0",
-  "engines": {
-    "node": ">=18"
-  }
+  "homepage": "https://github.com/eden-chan/treeline#readme"
 }
