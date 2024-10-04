@@ -91,6 +91,7 @@ export function PDFAnnotator() {
       );
     };
   }, [getHighlightById]);
+  const userColor = useMemo(() => randomDarkColor, []);
 
   if (isLoading) {
     return <Spinner />
@@ -124,7 +125,6 @@ export function PDFAnnotator() {
     setUrl(newUrl);
   };
 
-  const userColor = useMemo(() => randomDarkColor, []);
 
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >

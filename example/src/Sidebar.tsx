@@ -44,17 +44,17 @@ export function Sidebar({
   return (
     <div className='sidebar' style={{ width: '25vw' }}>
       <div className={styles.header}>
-        <h2 className={styles.headerText}>
+        <div className={styles.headerText}>
           Treeline
           <img src={treeline} alt="Treeline" className={styles.logo} />
-        </h2>
-        <p style={{ fontSize: "0.7rem" }}>
+        </div>
+        <div style={{ fontSize: "0.7rem" }}>
           <a href="https://github.com/eden-chan/treeline">
             Open in GitHub
           </a>
-        </p>
+        </div>
 
-        <p>
+        <div>
           <small>
             To create area highlight hold ⌥ Option key (Alt), then click and
             drag. Try opening this in another tab, or ask a friend to join you!
@@ -77,7 +77,7 @@ export function Sidebar({
               </div>
             ))}
           </div>
-        </p>
+        </div>
       </div>
       <SignedOut>
         <ClerkSignedOutComponent />
