@@ -151,6 +151,7 @@ export class PdfLoader extends Component<Props, State> {
               console.error('Error getting bytes on first retry, so next try will be to upload pdf to server and pull that in instead', error);
               // throw error;
             }
+            console.log('first retry is to get bytes of pdf', url, bytes);
 
             // get the bytes of the pdf and pass that in instead
           } else if (secondTry) {

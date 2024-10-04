@@ -1,6 +1,10 @@
-import { HighlightType } from '../../example/src/utils/highlightTypes.js';
 import styles from "../style/Highlight.module.css";
 import type { LTWHP } from "../types.js";
+export enum HighlightType {
+  CURRENT_USER = 'currentUser',
+  ANONYMOUS_USER = 'anonymousUser',
+  OTHER_REGISTERED_USER = 'otherRegisteredUser'
+}
 
 interface Props {
   position: {

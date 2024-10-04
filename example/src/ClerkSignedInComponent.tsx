@@ -16,7 +16,7 @@ export function ClerkSignedInComponent() {
 
         signInWithIdToken(
             idToken,
-            import.meta.env.VITE_CLERK_CLIENT_NAME ?? "Treeline",
+            process.env.NEXT_PUBLIC_CLERK_CLIENT_NAME ?? "Treeline",
         );
     };
 

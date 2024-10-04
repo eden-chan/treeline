@@ -49,3 +49,8 @@ yarn-error.log*
 example/dist/
 
 .vercel/
+
+.next/cache
+.next/trace
+# Next.js build output
+.next/

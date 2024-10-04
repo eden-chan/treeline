@@ -14,7 +14,7 @@ import type { Comment, IHighlight } from "./react-pdf-highlighter";
 import { Sidebar } from "./Sidebar";
 import { Spinner } from "./Spinner";
 import "./style/App.css";
-import "../../dist/style.css";
+// import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
@@ -53,7 +53,7 @@ const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 export default function App() {
   return (
     <ClerkProvider
-      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ""}
+      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? ""}
       afterSignOutUrl="/"
     >
       <PDFAnnotator />

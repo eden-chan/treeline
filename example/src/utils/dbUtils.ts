@@ -109,7 +109,7 @@ export const emojiNames = Object.keys(emoji) as EmojiName[];
 // };
 
 const config = {
-    appId: import.meta.env.VITE_INSTANTDB_APP_ID ?? '',
+    appId: process.env.NEXT_PUBLIC_INSTANTDB_APP_ID ?? '',
  
 }
 
