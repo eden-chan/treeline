@@ -31,7 +31,7 @@ import type {
 import { HighlightLayer } from "./HighlightLayer";
 import { MouseSelection } from "./MouseSelection";
 import { TipContainer } from "./TipContainer";
-import { HighlightResponseType } from '../../example/src/utils/dbUtils';
+import type { HighlightResponseType } from '../../example/src/utils/dbUtils';
 
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
 
