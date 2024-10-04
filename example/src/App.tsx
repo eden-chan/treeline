@@ -50,7 +50,7 @@ const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
 const searchParams = new URLSearchParams(document.location.search);
 const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 
-export function ViewManager() {
+export default function App() {
   return (
     <ClerkProvider
       publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ""}
