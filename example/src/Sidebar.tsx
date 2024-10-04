@@ -21,7 +21,7 @@ export function Sidebar({
   resetHighlights,
 }: Props) {
   return (
-    <div className={styles.sidebar}>
+    <div className='sidebar' style={{ width: '25vw' }}>
       <div className={styles.header}>
         <h2 className={styles.headerText}>
           Treeline
@@ -64,7 +64,7 @@ export function Sidebar({
       </SignedIn>
 
       <ul className="sidebar__highlights">
-        {highlights.map((highlight, index) => (
+        {highlights.map((highlight) => (
           <li
             key={highlight.id}
             className="sidebar__highlight"
