@@ -22,6 +22,7 @@ import { addHighlight, updateHighlight, resetHighlights, useHighlights, ANONYMOU
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
 import InstantCursors from './Cursor';
+import InstantAvatarStack from './AvatarStack';
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -138,6 +139,7 @@ export function PDFAnnotator() {
             position: "relative",
           }}
         >
+
           <PdfLoader url={url} beforeLoad={<Spinner />}>
             {(pdfDocument) => (
               <PdfHighlighter
@@ -228,6 +230,9 @@ export function PDFAnnotator() {
               />
             )}
           </PdfLoader>
+
+          <InstantAvatarStack roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} />
+
         </div>
       </div>
     </InstantCursors>

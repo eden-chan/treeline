@@ -8,7 +8,7 @@ type Schema = {
 // Provide a room schema to get typings for presence!
 type RoomSchema = {
   chat: {
-    presence: { name: string };
+    presence: { name: string, color: string };
   };
 }
 

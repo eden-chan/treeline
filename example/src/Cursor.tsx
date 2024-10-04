@@ -1,6 +1,7 @@
 import { Cursors } from '@instantdb/react';
 import { MAIN_ROOM_ID, useRoom } from './utils/dbUtils';
 import styles from './Cursor.module.css';
+import { randomDarkColor } from './utils/utils';
 
 function CustomCursor({ color, name }: { color?: string; name: string }) {
     return (
@@ -20,6 +21,7 @@ export default function InstantCursors({ children, roomId = MAIN_ROOM_ID, userId
     const room = useRoom(roomId);
     room.useSyncPresence({
         name: userId,
+        color: randomDarkColor,
     });
 
     return (
@@ -37,10 +39,3 @@ export default function InstantCursors({ children, roomId = MAIN_ROOM_ID, userId
 }
 
 
-const randomDarkColor = `#${[0, 0, 0]
-    .map(() =>
-        Math.floor(Math.random() * 200)
-            .toString(16)
-            .padStart(2, '0')
-    )
-    .join('')}`;
