@@ -1,6 +1,6 @@
 
 "use client";
-import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 import {
   AreaHighlight,
@@ -80,7 +80,7 @@ export function PDFAnnotator() {
   const [url, setUrl] = useState(initialUrl);
   const scrollViewerTo = useRef((highlight: IHighlight) => {
     // Implement scrolling logic here
-    // console.log('[App] scrollViewerTo', highlight)
+    console.log('[App] scrollViewerTo', highlight)
     // document.location.hash = `#highlight-${highlight.id}`
 
   });
