@@ -157,7 +157,7 @@ export const addHighlightWithComment = ({ highlight, documentId, comment }: AddH
     if (comment) {
         const commentId = id()
 
-        console.log("Adding highlight with comment", highlightId, commentId)
+        console.debug("Adding highlight with comment", highlightId, commentId)
         return db.transact(
            [ tx.highlights[highlightId].update({...highlight}).link({documents: documentId}),
             tx.comments[commentId].update({...comment}).link({highlights: highlightId})
@@ -165,7 +165,7 @@ export const addHighlightWithComment = ({ highlight, documentId, comment }: AddH
         );
     }
 
-    console.log("Adding highlight without comment", highlightId)
+    console.debug("Adding highlight without comment", highlightId)
     // No comment is passed in 
     return db.transact(
         tx.highlights[highlightId].update({...highlight}).link({documents: documentId}),
@@ -174,7 +174,7 @@ export const addHighlightWithComment = ({ highlight, documentId, comment }: AddH
 }
 
 export const addHighlight = ( highlight: CreateHighlightSchemaDraft) => {
-    console.log("Saving highlight with addHighlight", highlight);
+    console.debug("Saving highlight with addHighlight", highlight);
     const highlightId = id()
     return db.transact(
         tx.highlights[highlightId].update({...highlight}),
@@ -186,17 +186,17 @@ export const updateHighlight = (
     position: Partial<ScaledPosition>,
     content: Partial<Content>,
 ) => {
-    console.log("Updating highlight", highlightId, position, content);
+    console.debug("Updating highlight", highlightId, position, content);
     return db.transact(tx.highlights[highlightId].update({ position, content }));
 };
 
 export const deleteHighlight = (highlightId: string) => {
-    console.log("Deleting highlight", highlightId);
+    console.debug("Deleting highlight", highlightId);
     return db.transact(tx.highlights[highlightId].delete());
 };
 
 export const resetHighlights = (highlights: HighlightResponseType[]) => {
-    console.log("Resetting all highlights");
+    console.debug("Resetting all highlights");
     return db.transact(highlights.map(h => tx.highlights[h.id].delete()));
 };
 
@@ -260,17 +260,17 @@ export const addComment = (comment: CreateCommentDraft, commentId?: string) => {
 }
 
 export const deleteComment = (commentId: string) => {
-    console.log("Deleting comment", commentId);
+    console.debug("Deleting comment", commentId);
     return db.transact(tx.comments[commentId].delete());
 };
 
 export const updateComment = (commentId: string, text: string) => {
-    console.log("Updating comment", commentId, text);
+    console.debug("Updating comment", commentId, text);
     return db.transact(tx.comments[commentId].update({text}));
 };
 
 export const resetComments = () => {
-    console.log("Resetting all comments");
+    console.debug("Resetting all comments");
     const {data}= db.useQuery(commentsQuery);
     if (data?.comments) {
         return db.transact(data.comments.map(c => tx.comments[c.id].delete()));
@@ -282,7 +282,7 @@ export const resetComments = () => {
 // Documents
 // =========
 export const addDocument = (document: CreateDocumentDraft) => {
-    console.log("Saving document", document);
+    console.debug("Saving document", document);
     const documentId = id()
     return db.transact(
         tx.documents[documentId].update({

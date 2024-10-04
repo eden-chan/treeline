@@ -24,6 +24,11 @@ interface Props {
 
 const updateHash = (highlight: HighlightResponseType) => {
   document.location.hash = `highlight-${highlight.id}`;
+  // scroll to the hash
+  const element = document.getElementById(`highlight-${highlight.id}`);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth' });
+  }
 };
 
 const CreateDocumentForm = () => {

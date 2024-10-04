@@ -31,6 +31,7 @@ import type {
 import { HighlightLayer } from "./HighlightLayer";
 import { MouseSelection } from "./MouseSelection";
 import { TipContainer } from "./TipContainer";
+import { HighlightResponseType } from '../../example/src/utils/dbUtils';
 
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
 
@@ -66,7 +67,7 @@ interface Props<T_HT> {
   ) => JSX.Element;
   highlights: Array<T_HT>;
   onScrollChange: () => void;
-  scrollRef: (scrollTo: (highlight: T_HT) => void) => void;
+  scrollRef: (scrollTo: (highlight: HighlightResponseType) => void) => void;
   pdfDocument: PDFDocumentProxy;
   pdfScaleValue: string;
   onSelectionFinished: (
@@ -424,7 +425,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
 
     this.handleScaleValue();
 
-    scrollRef(this.scrollTo);
+    scrollRef(this.scrollTo as (highlight: HighlightResponseType) => void);
   };
 
   onSelectionChange = () => {
@@ -622,7 +623,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
                     { image },
                     () => this.hideTipAndSelection(),
                     () => {
-                      console.log("setting ghost highlight", scaledPosition);
+                      console.debug("setting ghost highlight", scaledPosition);
                       this.setState(
                         {
                           ghostHighlight: {

@@ -64,8 +64,8 @@ export function ViewManager() {
 export function PDFAnnotator() {
   const [url, setUrl] = useState(initialUrl);
   const [selectedHighlightTypes, setSelectedHighlightTypes] = useState<HighlightType[]>(Object.values(HighlightType));
-  const scrollViewerTo = useRef((highlight: IHighlight) => {
-    console.log('[App] scrollViewerTo', highlight)
+  const scrollViewerTo = useRef((_: IHighlight) => {
+    // noop
   });
 
   const userColor = useMemo(() => randomDarkColor, []);
@@ -76,7 +76,6 @@ export function PDFAnnotator() {
   // Fetch displayed Document
   const currentDocument: DocumentWithHighlightsAndComments | undefined = documentData?.documents.find(doc => doc.sourceUrl === url)
 
-  console.log('[App] currentDocument', currentDocument)
   // Fetch Highlights
   // const { data: highlightData, error: errorHighlights } = getHighlightsByDocument(url);
   const highlights = currentDocument?.highlights
@@ -89,7 +88,7 @@ export function PDFAnnotator() {
       const highlightId = parseIdFromHash();
       const highlight = highlights?.find(highlight => highlight.id === highlightId);
       if (highlight) {
-        // scrollViewerTo.current(highlight as IHighlight);
+        scrollViewerTo.current(highlight);
       }
     };
 
@@ -169,13 +168,11 @@ export function PDFAnnotator() {
                 onScrollChange={resetHash}
 
                 scrollRef={(scrollTo) => {
-                  // scrollViewerTo.current = scrollTo;
-                  console.log(scrollTo)
+                  scrollViewerTo.current = scrollTo;
                   const highlightId = parseIdFromHash();
                   const highlight = highlights?.find(highlight => highlight.id === highlightId);
-                  console.log('[App] clicked highlight', highlight)
                   if (highlight) {
-                    scrollViewerTo.current(highlight as IHighlight);
+                    scrollViewerTo.current(highlight);
                   }
 
                 }}
@@ -231,7 +228,6 @@ export function PDFAnnotator() {
                   isScrolledTo,
                 ) => {
 
-                  console.log('%c[App] rendered highlight', 'color: red', highlight)
                   const isTextHighlight = !highlight.content?.image;
 
                   const highlightType = getHighlightType(highlight.userId);

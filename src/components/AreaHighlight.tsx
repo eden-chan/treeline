@@ -29,7 +29,6 @@ export function AreaHighlight({
   }
 
 
-  console.log('[AreaHighlight] highlightType', highlightType, highlightClass)
   return (
     <div
       className={`${styles.areaHighlight} ${isScrolledTo ? styles.scrolledTo : ""
