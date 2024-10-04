@@ -41,6 +41,7 @@
     "react-dom": ">=18.0.0"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.11.0",
     "@instantdb/react": "^0.14.12",
     "pdfjs-dist": "4.4.168",
     "react-rnd": "^10.4.11",

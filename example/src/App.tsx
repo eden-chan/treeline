@@ -24,6 +24,8 @@ import "./style/App.css";
 import "../../dist/style.css";
 
 import { init, tx, id } from '@instantdb/react'
+import { SignInButton, SignedIn, SignedOut, useAuth } from '@clerk/clerk-react';
+import { ClerkProvider } from '@clerk/clerk-react';
 
 // Optional: Declare your schema for intellisense!
 type Schema = {
@@ -56,7 +58,21 @@ const SECONDARY_PDF_URL = "https://arxiv.org/pdf/1604.02480";
 const searchParams = new URLSearchParams(document.location.search);
 const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 
-export function App() {
+export function ViewManager() {
+    return (
+        <ClerkProvider publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ''} afterSignOutUrl="/">
+            <SignedOut>
+                <SignInButton />
+            </SignedOut>
+            <SignedIn>
+                <ClerkSignedInComponent />
+            </SignedIn>
+            <PDFAnnotator />
+        </ClerkProvider>
+    )
+}
+
+export function PDFAnnotator() {
     const [url, setUrl] = useState(initialUrl);
     const scrollViewerTo = useRef((highlight: IHighlight) => {
         // Implement scrolling logic here
@@ -212,4 +228,63 @@ export function App() {
 }
 
 
+function ClerkSignedInComponent() {
+    const { getToken, signOut } = useAuth();
 
+    const signInToInstantWithClerkToken = async () => {
+        // getToken gets the jwt from Clerk for your signed in user.
+        const idToken = await getToken();
+
+        if (!idToken) {
+            // No jwt, can't sign in to instant
+            return;
+        }
+
+        // Create a long-lived session with Instant for your clerk user
+        // It will look up the user by email or create a new user with
+        // the email address in the session token.
+        console.log('[App] Signing in to Instant with Clerk token', idToken)
+        db.auth.signInWithIdToken({
+            clientName: import.meta.env.VITE_CLERK_CLIENT_NAME ?? 'Treeline',
+            idToken: idToken,
+        });
+    };
+
+    useEffect(() => {
+        signInToInstantWithClerkToken();
+    }, []);
+
+    const { isLoading, user, error } = db.useAuth();
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    if (error) {
+        return <div>Error signing in! {error.message}</div>;
+    }
+    if (user) {
+        return (
+            <div>
+                <p>Signed in</p>{" "}
+                <button
+                    onClick={() => {
+                        // First sign out of Instant to clear the Instant session.
+                        db.auth.signOut().then(() => {
+                            // Then sign out of Clerk to clear the Clerk session.
+                            signOut();
+                        });
+                    }}
+                >
+                    Sign out
+                </button>
+            </div>
+        );
+    }
+    return (
+        <div>
+            <button onClick={signInToInstantWithClerkToken}>
+                Sign in
+            </button>
+        </div>
+    );
+}
