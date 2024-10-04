@@ -656,11 +656,14 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
       } else {
         const highlightLayer = this.findOrCreateHighlightLayer(pageNumber);
         if (highlightLayer) {
-          const reactRoot = createRoot(highlightLayer);
-          this.highlightRoots[pageNumber] = {
-            reactRoot,
-            container: highlightLayer,
-          };
+          let reactRoot = this.highlightRoots[pageNumber]?.reactRoot;
+          if (!reactRoot) {
+            reactRoot = createRoot(highlightLayer);
+            this.highlightRoots[pageNumber] = {
+              reactRoot,
+              container: highlightLayer,
+            };
+          }
           this.renderHighlightLayer(reactRoot, pageNumber);
         }
       }
