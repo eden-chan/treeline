@@ -57,7 +57,7 @@ export function Sidebar({
         <p>
           <small>
             To create area highlight hold ⌥ Option key (Alt), then click and
-            drag.
+            drag. Try opening this in another tab, or ask a friend to join you!
           </small>
 
           <div className={styles.legend}>
@@ -131,7 +131,6 @@ export function Sidebar({
       ) : null}
 
       <InstantTypingIndicator roomId={MAIN_ROOM_ID} username={currentUser?.email ?? ANONYMOUS_USER_ID} color={currentUserColor} />
-
     </div>
   );
 }
