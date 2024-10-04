@@ -18,9 +18,10 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { addHighlight, updateHighlight, resetHighlights, useHighlights, ANONYMOUS_USER_ID } from "./utils/dbUtils";
+import { addHighlight, updateHighlight, resetHighlights, useHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID } from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
+import InstantCursors from './Cursor';
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -55,6 +56,8 @@ export function ViewManager() {
     </ClerkProvider>
   );
 }
+
+
 
 export function PDFAnnotator() {
   const [url, setUrl] = useState(initialUrl);
@@ -118,110 +121,113 @@ export function PDFAnnotator() {
   };
 
   return (
-    <div className="App" style={{ display: "flex", height: "100vh" }}>
-      <Sidebar
-        highlights={highlights}
-        resetHighlights={handleResetHighlights}
-        toggleDocument={toggleDocument}
-      />
-      <div
-        style={{
-          height: "100vh",
-          width: "75vw",
-          position: "relative",
-        }}
-      >
-        <PdfLoader url={url} beforeLoad={<Spinner />}>
-          {(pdfDocument) => (
-            <PdfHighlighter
-              pdfDocument={pdfDocument}
-              enableAreaSelection={(event) => event.altKey}
-              onScrollChange={resetHash}
+    <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
+      <div className="App" style={{ display: "flex", height: "100vh" }}>
+        <Sidebar
+          highlights={highlights}
+          resetHighlights={handleResetHighlights}
+          toggleDocument={toggleDocument}
+        />
+        <div
+          style={{
+            height: "100vh",
+            width: "75vw",
+            position: "relative",
+          }}
+        >
+          <PdfLoader url={url} beforeLoad={<Spinner />}>
+            {(pdfDocument) => (
+              <PdfHighlighter
+                pdfDocument={pdfDocument}
+                enableAreaSelection={(event) => event.altKey}
+                onScrollChange={resetHash}
 
-              scrollRef={(scrollTo) => {
-                scrollViewerTo.current = scrollTo;
-                console.log(scrollTo)
-                const highlight = getHighlightById(parseIdFromHash());
-                console.log('[App] clicked highlight', highlight)
-                if (highlight) {
-                  scrollViewerTo.current(highlight);
-                }
+                scrollRef={(scrollTo) => {
+                  scrollViewerTo.current = scrollTo;
+                  console.log(scrollTo)
+                  const highlight = getHighlightById(parseIdFromHash());
+                  console.log('[App] clicked highlight', highlight)
+                  if (highlight) {
+                    scrollViewerTo.current(highlight);
+                  }
 
-              }}
-              onSelectionFinished={(
-                position,
-                content,
-                hideTipAndSelection,
-                transformSelection,
-              ) => (
-                <Tip
-                  onOpen={transformSelection}
-                  onConfirm={(comment) => {
-                    console.log('[App] user making highlight', user)
-                    const highlightUserId = user?.id ?? ANONYMOUS_USER_ID
-                    addHighlight({
-                      content,
-                      position,
-                      comment,
-                    } as NewHighlight, highlightUserId);
-                    hideTipAndSelection();
-                  }}
-                />
-              )}
-              highlightTransform={(
-                highlight,
-                index,
-                setTip,
-                hideTip,
-                viewportToScaled,
-                screenshot,
-                isScrolledTo,
-              ) => {
-                const isTextHighlight = !highlight.content?.image;
-
-                const highlightType = getHighlightType(highlight.userId);
-
-                const component = isTextHighlight ? (
-                  <Highlight
-                    isScrolledTo={isScrolledTo}
-                    position={highlight.position}
-                    comment={highlight.comment}
-                    highlightType={highlightType}
-                  />
-                ) : (
-                  <AreaHighlight
-                    isScrolledTo={isScrolledTo}
-                    highlight={highlight}
-                    onChange={(boundingRect) => {
-                      updateHighlight(
-                        highlight.id,
-                        { boundingRect: viewportToScaled(boundingRect) },
-                        { image: screenshot(boundingRect) },
-                      );
+                }}
+                onSelectionFinished={(
+                  position,
+                  content,
+                  hideTipAndSelection,
+                  transformSelection,
+                ) => (
+                  <Tip
+                    onOpen={transformSelection}
+                    onConfirm={(comment) => {
+                      console.log('[App] user making highlight', user)
+                      const highlightUserId = user?.id ?? ANONYMOUS_USER_ID
+                      addHighlight({
+                        content,
+                        position,
+                        comment,
+                      } as NewHighlight, highlightUserId);
+                      hideTipAndSelection();
                     }}
-                    highlightType={highlightType}
                   />
-                );
+                )}
+                highlightTransform={(
+                  highlight,
+                  index,
+                  setTip,
+                  hideTip,
+                  viewportToScaled,
+                  screenshot,
+                  isScrolledTo,
+                ) => {
+                  const isTextHighlight = !highlight.content?.image;
 
-                return (
-                  <Popup
-                    popupContent={<HighlightPopup {...highlight} />}
-                    onMouseOver={(popupContent) =>
-                      setTip(highlight, () => popupContent)
-                    }
-                    onMouseOut={hideTip}
-                    key={index}
-                  >
-                    {component}
-                  </Popup>
-                );
-              }}
-              highlights={highlights}
-            />
-          )}
-        </PdfLoader>
+                  const highlightType = getHighlightType(highlight.userId);
+
+                  const component = isTextHighlight ? (
+                    <Highlight
+                      isScrolledTo={isScrolledTo}
+                      position={highlight.position}
+                      comment={highlight.comment}
+                      highlightType={highlightType}
+                    />
+                  ) : (
+                    <AreaHighlight
+                      isScrolledTo={isScrolledTo}
+                      highlight={highlight}
+                      onChange={(boundingRect) => {
+                        updateHighlight(
+                          highlight.id,
+                          { boundingRect: viewportToScaled(boundingRect) },
+                          { image: screenshot(boundingRect) },
+                        );
+                      }}
+                      highlightType={highlightType}
+                    />
+                  );
+
+                  return (
+                    <Popup
+                      popupContent={<HighlightPopup {...highlight} />}
+                      onMouseOver={(popupContent) =>
+                        setTip(highlight, () => popupContent)
+                      }
+                      onMouseOut={hideTip}
+                      key={index}
+                    >
+                      {component}
+                    </Popup>
+                  );
+                }}
+                highlights={highlights}
+              />
+            )}
+          </PdfLoader>
+        </div>
       </div>
-    </div>
+    </InstantCursors>
+
   );
 }
 

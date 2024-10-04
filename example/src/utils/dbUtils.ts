@@ -1,11 +1,30 @@
 import { init, tx, id } from '@instantdb/react';
 import type { IHighlight, NewHighlight, ScaledPosition, Content } from "../react-pdf-highlighter";
-
 type Schema = {
-    highlights: IHighlight
+    highlights: IHighlight,
+    
 }
 
-export const db = init<Schema>({ appId: import.meta.env.VITE_INSTANTDB_APP_ID ?? '' });
+// Provide a room schema to get typings for presence!
+type RoomSchema = {
+  chat: {
+    presence: { name: string };
+  };
+}
+
+// Generic type for room schemas.
+// type RoomSchemaShape = {
+//   [roomType: string]: {
+//     presence?: { [k: string]: any };
+//     topics?: {
+//       [topic: string]: {
+//         [k: string]: any;
+//       };
+//     };
+//   };
+// };
+
+export const db = init<Schema, RoomSchema>({ appId: import.meta.env.VITE_INSTANTDB_APP_ID ?? '' });
 export const ANONYMOUS_USER_ID = "anonymous";
 
 export const addHighlight = (highlight: NewHighlight, userId: string = ANONYMOUS_USER_ID) => {
@@ -48,6 +67,12 @@ export const signInWithIdToken = (idToken: string, clientName: string) => {
     });
 };
 
+export const MAIN_ROOM_ID = 'MAIN'
+export const useRoom = (roomId = MAIN_ROOM_ID) => {
+    const room = db.room('chat', roomId);
+    return room;
+
+}
 export const signOut = () => {
     return db.auth.signOut();
 };
