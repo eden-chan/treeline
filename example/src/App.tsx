@@ -1,4 +1,3 @@
-
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 
@@ -18,22 +17,11 @@ import { Spinner } from "./Spinner";
 import "./style/App.css";
 import "../../dist/style.css";
 
-import {
-  SignInButton,
-  SignedIn,
-  SignedOut,
-  useAuth as useClerkAuth,
-} from "@clerk/clerk-react";
-import { ClerkProvider } from "@clerk/clerk-react";
-import {
-  addHighlight,
-  updateHighlight,
-  resetHighlights,
-  useHighlights,
-  signInWithIdToken,
-  signOut as signOutFromDb,
-  useAuth as useDbAuth,
-} from "./utils/dbUtils";
+import { ClerkProvider, SignedIn, SignedOut } from "@clerk/clerk-react";
+import { ClerkSignedInComponent } from "./ClerkSignedInComponent";
+import { ClerkSignedOutComponent } from "./ClerkSignedOutComponent";
+
+import { addHighlight, updateHighlight, resetHighlights, useHighlights } from "./utils/dbUtils";
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -65,12 +53,12 @@ export function ViewManager() {
       publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ""}
       afterSignOutUrl="/"
     >
-      <SignedOut>
-        <SignInButton />
-      </SignedOut>
       <SignedIn>
         <ClerkSignedInComponent />
       </SignedIn>
+      <SignedOut>
+        <ClerkSignedOutComponent />
+      </SignedOut>
       <PDFAnnotator />
     </ClerkProvider>
   );
@@ -79,15 +67,8 @@ export function ViewManager() {
 export function PDFAnnotator() {
   const [url, setUrl] = useState(initialUrl);
   const scrollViewerTo = useRef((highlight: IHighlight) => {
-    // Implement scrolling logic here
     console.log('[App] scrollViewerTo', highlight)
-    // document.location.hash = `#highlight-${highlight.id}`
-
   });
-
-
-
-
 
   const { isLoading, error, data } = useHighlights();
 
@@ -236,55 +217,3 @@ export function PDFAnnotator() {
   );
 }
 
-function ClerkSignedInComponent() {
-  const { getToken, signOut: signOutFromClerk } = useClerkAuth();
-
-  const signInToInstantWithClerkToken = async () => {
-    const idToken = await getToken();
-
-    if (!idToken) {
-      return;
-    }
-
-    signInWithIdToken(
-      idToken,
-      import.meta.env.VITE_CLERK_CLIENT_NAME ?? "Treeline",
-    );
-  };
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Load only once on mount
-  useEffect(() => {
-    signInToInstantWithClerkToken();
-  }, []);
-
-  const { isLoading, user, error } = useDbAuth();
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-  if (error) {
-    return <div>Error signing in! {error.message}</div>;
-  }
-  if (user) {
-    return (
-      <div>
-        <p>Signed in</p>{" "}
-        <button
-          type="button"
-          onClick={() => {
-            signOutFromDb().then(() => {
-              signOutFromClerk();
-            });
-          }}
-        >
-          Sign out
-        </button>
-      </div>
-    );
-  }
-  return (
-    <div>
-      <button type="button" onClick={signInToInstantWithClerkToken}>Sign in</button>
-    </div>
-  );
-}

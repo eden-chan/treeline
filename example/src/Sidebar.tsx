@@ -1,6 +1,12 @@
+import { ClerkSignedInComponent } from './ClerkSignedInComponent';
+import { ClerkSignedOutComponent } from './ClerkSignedOutComponent';
 import type { IHighlight } from "./react-pdf-highlighter";
 import treeline from './treeline.png';
+import {
+  SignedIn,
+  SignedOut,
 
+} from "@clerk/clerk-react";
 interface Props {
   highlights: Array<IHighlight>;
   resetHighlights: () => void;
@@ -36,6 +42,12 @@ export function Sidebar({
           </small>
         </p>
       </div>
+      <SignedOut>
+        <ClerkSignedOutComponent />
+      </SignedOut>
+      <SignedIn>
+        <ClerkSignedInComponent />
+      </SignedIn>
 
       <ul className="sidebar__highlights">
         {highlights.map((highlight, index) => (
