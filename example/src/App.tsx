@@ -18,7 +18,7 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights as getDocumentsWithHighlightsAndComments, addHighlightWithComment } from "./utils/dbUtils";
+import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights, addHighlightWithComment } from "./utils/dbUtils";
 import type { Document, DocumentWithHighlightsAndComments } from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
@@ -71,7 +71,7 @@ export function PDFAnnotator() {
   const userColor = useMemo(() => randomDarkColor, []);
 
   // Fetch Documents
-  const { data: documentData, isLoading: isLoadingDocuments, error: errorDocuments } = getDocumentsWithHighlightsAndComments();
+  const { data: documentData, isLoading: isLoadingDocuments, error: errorDocuments } = getDocumentsWithHighlights();
 
   // Fetch displayed Document
   const currentDocument: DocumentWithHighlightsAndComments | undefined = documentData?.documents.find(doc => doc.sourceUrl === url)
@@ -137,7 +137,7 @@ export function PDFAnnotator() {
     selectedHighlightTypes.includes(getHighlightType(highlight.userId))
   ).map(highlight => ({ ...highlight, content: { text: highlight.content.text, image: highlight.content.image } as IHighlight['content'] })) ?? []
 
-
+  console.log("Current document", currentDocument)
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
       <div className="App" style={{ display: "flex", height: "100vh" }}>

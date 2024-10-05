@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MAIN_ROOM_ID, useRoom } from './utils/dbUtils';
+import { type DocumentWithHighlightsAndComments, type Comment, type CreateCommentDraft, MAIN_ROOM_ID, useRoom, addDocumentComment } from './utils/dbUtils';
+
 import styles from './TypingIndicator.module.css';
 
 
@@ -8,15 +9,18 @@ interface ChatProps {
     roomId: string;
     username: string;
     color: string;
+    currentDocument?: DocumentWithHighlightsAndComments;
 
 }
 
-export default function Chat({ roomId = MAIN_ROOM_ID, username, color }: ChatProps) {
+export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDocument }: ChatProps) {
     const room = useRoom(roomId);
     const user = {
         name: username,
         color: color
     }
+
+
 
     room.useSyncPresence(user);
 
@@ -33,22 +37,21 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color }: ChatPro
 
     const handleSendMessage = () => {
         if (message.trim()) {
-            // const newComment: Comment = {
-            //     text: message,
-            //     emoji: "💬", // You can change this or make it dynamic
-            //     userId: username
-            // };
-            // const updatedDocument = {
-            //     ...document,
-            //     chatSection: [...document.chatSection, newComment]
-            // };
-            // onUpdateDocument(updatedDocument);
+            const newComment: CreateCommentDraft = {
+                text: message,
+                emoji: "💬", // You can change this or make it dynamic
+                userId: username,
+                userName: username
+            };
+
+            addDocumentComment(newComment, currentDocument?.id);
             setMessage('');
         }
     };
 
     return (
         <div className={styles.container}>
+            {currentDocument?.name ?? 'untitled document'}
             <div className={styles.sideContainer} key={crypto.randomUUID()}>
                 {peers.map((peer) => {
                     return (
@@ -70,14 +73,14 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color }: ChatPro
                 })}
             </div>
             <div className={styles.chatMessages}>
-                {/* {document?.chatSection?.map((comment: Comment) => (
+                {currentDocument?.comments?.map((comment: Comment) => (
                     <div
                         key={crypto.randomUUID()}
                         className={`${styles.message} ${comment.userId === username ? styles.myMessage : styles.otherMessage}`}
                     >
                         <strong>{comment.userId}: </strong>{comment.text}
                     </div>
-                ))} */}
+                ))}
             </div>
             <div key="main" className={styles.mainContainer}>
                 <textarea
@@ -89,6 +92,7 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color }: ChatPro
                         inputProps.onKeyDown(e);
                         if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
+                            console.log("Sending message", message)
                             handleSendMessage();
                         }
                     }}

@@ -5,3 +5,7 @@ export const randomDarkColor = `#${[0, 0, 0]
             .padStart(2, '0')
     )
     .join('')}`;
+
+export const getCurrentDate = (): number => {
+    return Date.now();
+};

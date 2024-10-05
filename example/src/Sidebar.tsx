@@ -181,6 +181,7 @@ export function Sidebar({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const highlights = currentDocument?.highlights;
 
+
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes(prev =>
       prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
@@ -238,6 +239,7 @@ export function Sidebar({
           roomId={MAIN_ROOM_ID}
           username={currentUser?.email ?? ANONYMOUS_USER_ID}
           color={currentUserColor}
+          currentDocument={currentDocument}
         />
       </div>
     </div>

@@ -8,6 +8,7 @@ import {
 } from "@instantdb/react";
 
 import type { ScaledPosition, Content, CreateDocumentDraft } from "../react-pdf-highlighter";
+import { getCurrentDate } from './utils';
 
 
 const schema = i.graph(
@@ -15,18 +16,21 @@ const schema = i.graph(
     documents: i.entity({
       name: i.string(),
       sourceUrl: i.string(),
+      createdAt: i.number(),
     }),
     highlights: i.entity({
       content: i.json(),
       position: i.json(),
       userId: i.string(),
       userName: i.string(),
+      createdAt: i.number(),
     }),
     comments: i.entity({
       text: i.string(),
       emoji: i.string(),
       userId: i.string(),
       userName: i.string(),
+      createdAt: i.number(),
     }),
   },
    {
@@ -159,8 +163,8 @@ export const addHighlightWithComment = ({ highlight, documentId, comment }: AddH
 
         console.debug("Adding highlight with comment", highlightId, commentId)
         return db.transact(
-           [ tx.highlights[highlightId].update({...highlight}).link({documents: documentId}),
-            tx.comments[commentId].update({...comment}).link({highlights: highlightId})
+           [ tx.highlights[highlightId].update({...highlight, createdAt: getCurrentDate()}).link({documents: documentId}),
+            tx.comments[commentId].update({...comment, createdAt: getCurrentDate()}).link({highlights: highlightId})
         ]
         );
     }
@@ -177,7 +181,7 @@ export const addHighlight = ( highlight: CreateHighlightSchemaDraft) => {
     console.debug("Saving highlight with addHighlight", highlight);
     const highlightId = id()
     return db.transact(
-        tx.highlights[highlightId].update({...highlight}),
+        tx.highlights[highlightId].update({...highlight, createdAt: getCurrentDate()}),
     );
 };
 
@@ -246,16 +250,17 @@ const commentsQuery = {
 
 export type Comment = InstantEntity<DB, "comments">;
 
-type CreateCommentDraft = {
+export type CreateCommentDraft = {
     text: string,
     emoji: string,
     userId: string,
     userName: string,
 }
-export const addComment = (comment: CreateCommentDraft, commentId?: string) => {
+export const addDocumentComment = (comment: CreateCommentDraft, documentId?: string) => {
+    console.log("Adding document comment", comment, documentId)
     // If we want to batch create comment with the highlight, we need to generate the id ahead of time
     return db.transact(
-        tx.comments[commentId ?? id()].update({...comment}),
+        tx.comments[id()].update({...comment, createdAt: getCurrentDate()}).link({documents: documentId}),
     );
 }
 
@@ -287,6 +292,7 @@ export const addDocument = (document: CreateDocumentDraft) => {
     return db.transact(
         tx.documents[documentId].update({
             ...document,
+            createdAt: getCurrentDate(),
             id: documentId,
         })
     );

@@ -68,6 +68,7 @@ export interface IHighlight extends NewHighlight {
   id: string;
   userId: string;
   userName: string;
+  createdAt: number; // timestamp only used for rendering.
 }
 
 export interface ViewportHighlight extends HighlightContent, HighlightCommentSection {
