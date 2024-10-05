@@ -1,0 +1,11 @@
+.app {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.mainContent {
+  height: 100vh;
+  width: 75vw;
+  position: relative;
+}

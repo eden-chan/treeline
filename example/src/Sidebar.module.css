@@ -1,264 +1,43 @@
 .sidebar {
-  width: 25vw;
+  width: 300px;
+  height: 100vh;
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  background-color: #f8fafc;
+  border-right: 1px solid #e2e8f0;
+  font-family: "Inter", sans-serif;
+}
+
+.header {
+  padding: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.headerText {
+  font-size: 1.25rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  width: 1.5rem;
+  height: 1.5rem;
+  margin-left: 0.5rem;
+}
+
+.githubLink {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.githubLink a {
+  color: #3b82f6;
+  text-decoration: none;
 }
 
 .sidebarContent {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
-}
-
-.header {
-  padding: 1rem;
-}
-
-.headerText {
-  margin-bottom: 1rem;
-}
-
-.logo {
-  width: 2.5rem;
-  height: 2.5rem;
-}
-
-/* Document list styles */
-.documentList {
-  list-style-type: none;
-  padding-left: 0;
-  margin-left: 0;
-}
-
-.documentItem {
-  margin-bottom: 0.5rem;
-  position: relative;
-}
-
-.documentButton {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  font-size: 1rem;
-  color: #333;
-  padding: 0.25rem 0;
   width: 100%;
-  text-align: left;
-}
-
-.documentButton:hover {
-  background-color: #f0f0f0;
-}
-
-.documentButton::before {
-  content: "📄";
-  margin-right: 0.5rem;
-}
-
-.documentLink {
-  position: absolute;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 0.8rem;
-  color: #666;
-  text-decoration: none;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.documentItem:hover .documentLink {
-  opacity: 1;
-}
-
-.documentLink:hover {
-  text-decoration: underline;
-}
-
-/* Existing styles */
-.currentUser {
-  background: rgba(255, 226, 143, 1);
-}
-
-.anonymousUser {
-  background: rgba(173, 216, 230, 0.8);
-}
-
-.otherRegisteredUser {
-  background: rgba(144, 238, 144, 0.8);
-}
-
-.legend {
-  margin-top: 20px;
-  padding: 10px;
-  background-color: #f0f0f0;
-  border-radius: 5px;
-}
-
-.legendItem {
-  display: flex;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.legendItem input[type="checkbox"] {
-  margin-right: 10px;
-}
-
-.legendColor {
-  width: 20px;
-  height: 20px;
-  margin-right: 10px;
-  border-radius: 3px;
-}
-
-.legendText {
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.highlightsList {
-  list-style-type: none;
-  padding: 0;
-}
-
-.highlightItem {
-  margin-bottom: 1rem;
-  cursor: pointer;
-}
-
-.highlightQuote {
-  margin-top: 0.5rem;
-  font-style: italic;
-}
-
-.highlightImage {
-  margin-top: 0.5rem;
-}
-
-.highlightInfo {
-  font-size: 0.8rem;
-  color: #666;
-}
-
-.buttonContainer {
-  margin-top: 1rem;
-}
-
-.chatContainer {
-  border-top: 1px solid #ccc;
-}
-
-/* New styles for create document form */
-.createDocumentForm {
-  margin-bottom: 1rem;
-}
-
-.inputField {
-  width: 100%;
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.submitButton {
-  width: 100%;
-  padding: 0.5rem;
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
-.submitButton:hover {
-  background-color: #45a049;
-}
-
-/* New styles for modal */
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-.modal {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  width: 80%;
-  max-width: 500px;
-}
-
-.modalButtons {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 1rem;
-}
-
-.submitButton,
-.cancelButton {
-  flex: 1;
-  padding: 0.5rem 1rem;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background-color 0.3s ease;
-  max-width: 150px; /* Adjust this value as needed */
-}
-
-.submitButton {
-  background-color: #4caf50;
-  color: white;
-}
-
-.submitButton:hover {
-  background-color: #45a049;
-}
-
-.cancelButton {
-  background-color: #f44336;
-  color: white;
-}
-
-.cancelButton:hover {
-  background-color: #d32f2f;
-}
-
-.documentListHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.addButton {
-  background-color: #4caf50;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  font-size: 1.5rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-}
-
-.addButton:hover {
-  background-color: #45a049;
 }

@@ -26,6 +26,7 @@ import InstantCursors from './Cursor';
 import InstantAvatarStack from './AvatarStack';
 import InstantTopics from './Emoji';
 import { randomDarkColor } from './utils/utils';
+import styles from './App.module.css';
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -140,7 +141,7 @@ export function PDFAnnotator() {
   console.log("Current document", currentDocument)
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
-      <div className="App" style={{ display: "flex", height: "100vh" }}>
+      <div className={styles.app}>
         <Sidebar
           documents={documentData?.documents}
           resetHighlights={handleResetHighlights}
@@ -151,14 +152,7 @@ export function PDFAnnotator() {
           currentUserColor={userColor}
           currentDocument={currentDocument}
         />
-        <div
-          style={{
-            height: "100vh",
-            width: "75vw",
-            position: "relative",
-          }}
-        >
-
+        <div className={styles.mainContent}>
           <PdfLoader url={url} beforeLoad={<Spinner />}>
             {(pdfDocument) => (
               <PdfHighlighter

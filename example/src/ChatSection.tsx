@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { type DocumentWithHighlightsAndComments, type Comment, type CreateCommentDraft, MAIN_ROOM_ID, useRoom, addDocumentComment } from './utils/dbUtils';
 
-import styles from './TypingIndicator.module.css';
+import styles from './ChatSection.module.css';
+import { timeSince } from './utils/utils';
 
 
 
@@ -19,8 +20,6 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
         name: username,
         color: color
     }
-
-
 
     room.useSyncPresence(user);
 
@@ -79,6 +78,7 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
                         className={`${styles.message} ${comment.userId === username ? styles.myMessage : styles.otherMessage}`}
                     >
                         <strong>{comment.userId}: </strong>{comment.text}
+                        <span className={styles.timestamp}>{timeSince(comment.createdAt)}</span>
                     </div>
                 ))}
             </div>

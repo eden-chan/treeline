@@ -1,0 +1,60 @@
+.documentListHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.addButton {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  font-size: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.addButton:hover {
+  background-color: #45a049;
+}
+
+.documentList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.documentItem {
+  display: flex;
+  align-items: center;
+}
+
+.documentButton {
+  flex-grow: 1;
+  padding: 0.5rem;
+  background-color: #f1f5f9;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #1e293b;
+  transition: background-color 0.2s;
+}
+
+.documentButton:hover {
+  background-color: #e2e8f0;
+}
+
+.documentLink {
+  margin-left: 0.5rem;
+  color: #3b82f6;
+  transition: color 0.2s;
+}
+
+.documentLink:hover {
+  color: #2563eb;
+}

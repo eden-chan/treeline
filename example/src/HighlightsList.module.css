@@ -1,0 +1,24 @@
+.highlightsList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.highlightItem {
+  margin-bottom: 1rem;
+  cursor: pointer;
+}
+
+.highlightQuote {
+  margin-top: 0.5rem;
+  font-style: italic;
+}
+
+.highlightImage {
+  margin-top: 0.5rem;
+}
+
+.highlightInfo {
+  font-size: 0.8rem;
+  color: #666;
+}
