@@ -5,7 +5,6 @@ import React, { Component } from "react";
 interface Props {
   /** See `GlobalWorkerOptionsType`. */
   workerSrc: string;
-
   url: string;
   beforeLoad: JSX.Element;
   errorMessage?: JSX.Element;
@@ -18,12 +17,16 @@ interface Props {
 interface State {
   pdfDocument: PDFDocumentProxy | null;
   error: Error | null;
+  retryCount: number;
+  currentUrl: string;
 }
 
 export class PdfLoader extends Component<Props, State> {
   state: State = {
     pdfDocument: null,
     error: null,
+    retryCount: 0,
+    currentUrl: this.props.url,
   };
 
   static defaultProps = {
@@ -33,7 +36,7 @@ export class PdfLoader extends Component<Props, State> {
   documentRef = React.createRef<HTMLElement>();
 
   componentDidMount() {
-    this.load();
+    this.load(this.props.url);
   }
 
   componentWillUnmount() {
@@ -43,27 +46,26 @@ export class PdfLoader extends Component<Props, State> {
     }
   }
 
-  componentDidUpdate({ url }: Props) {
-    if (this.props.url !== url) {
-      this.load();
+  componentDidUpdate(prevProps: Props) {
+    if (this.props.url !== prevProps.url) {
+      this.setState({ retryCount: 0 }, () => this.load(this.props.url));
     }
   }
 
   componentDidCatch(error: Error) {
     const { onError } = this.props;
-
     if (onError) {
       onError(error);
     }
-
     this.setState({ pdfDocument: null, error });
   }
 
-  load() {
+  load(url: string) {
     const { ownerDocument = document } = this.documentRef.current || {};
-    const { url, cMapUrl, cMapPacked, workerSrc } = this.props;
-    const { pdfDocument: discardedDocument } = this.state;
-    this.setState({ pdfDocument: null, error: null });
+    const { cMapUrl, cMapPacked, workerSrc } = this.props;
+    const { pdfDocument: discardedDocument, retryCount } = this.state;
+
+    this.setState({ pdfDocument: null, error: null, currentUrl: url });
 
     if (typeof workerSrc === "string") {
       GlobalWorkerOptions.workerSrc = workerSrc;
@@ -73,31 +75,48 @@ export class PdfLoader extends Component<Props, State> {
       .then(() => discardedDocument?.destroy())
       .then(() => {
         if (!url) {
+          console.error('No URL to load');
           return;
         }
-
         const document = {
-          ...this.props,
+          url,
           ownerDocument,
           cMapUrl,
           cMapPacked,
         };
-
         return getDocument(document).promise.then((pdfDocument) => {
-          this.setState({ pdfDocument });
+          this.setState({ pdfDocument, retryCount: 0 });
         });
       })
-      .catch((e) => this.componentDidCatch(e));
+      .catch((e) => {
+        if (retryCount === 0) {
+          this.fetchHostedPdfUrl();
+        } else {
+          this.componentDidCatch(e);
+        }
+      });
+  }
+
+  fetchHostedPdfUrl() {
+    fetch(`${import.meta.env.VITE_SERVER_URL}/get-hosted-pdf-url?url=${encodeURIComponent(this.props.url)}`)
+      .then(response => response.json())
+      .then(data => data.url)
+      .then(url => this.load(url))
+      .catch(error => {
+        console.error('Error fetching hosted PDF URL:', error);
+        this.componentDidCatch(error);
+      });
   }
 
   render() {
     const { children, beforeLoad } = this.props;
-    const { pdfDocument, error } = this.state;
+    const { pdfDocument, error, currentUrl } = this.state;
+
     return (
       <>
         <span ref={this.documentRef} />
         {error
-          ? this.renderError()
+          ? this.renderError(currentUrl)
           : !pdfDocument || !children
             ? beforeLoad
             : children(pdfDocument)}
@@ -105,12 +124,35 @@ export class PdfLoader extends Component<Props, State> {
     );
   }
 
-  renderError() {
-    const { errorMessage } = this.props;
-    if (errorMessage) {
-      return React.cloneElement(errorMessage, { error: this.state.error });
-    }
+  renderError(url: string) {
+    const errorStyle: React.CSSProperties = {
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      height: '100%',
+      flexDirection: 'column',
+    };
 
-    return null;
+    const linkStyle: React.CSSProperties = {
+      color: 'blue',
+      textDecoration: 'none',
+      display: 'flex',
+      alignItems: 'center',
+      marginTop: '10px',
+    };
+
+    return (
+      <div style={errorStyle}>
+        <p>Failed to load PDF</p>
+        <a href={url} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+            <title>Access PDF</title>
+          </svg>
+          <span style={{ marginLeft: '5px' }}>Access PDF</span>
+        </a>
+      </div>
+    );
   }
 }

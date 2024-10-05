@@ -1,0 +1,19 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "S3 file server using Bun and Hono",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "start": "bun run index.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.665.0",
+    "@aws-sdk/s3-request-presigner": "^3.665.0",
+    "hono": "^4.6.3"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.1.10",
+    "bun-types": "latest"
+  }
+}
