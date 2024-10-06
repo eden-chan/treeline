@@ -15,7 +15,7 @@ export const HighlightLegend: React.FC<Props> = ({ selectedHighlightTypes, handl
                 <input
                     type="checkbox"
                     id={`filter-${type}`}
-                    checked={selectedHighlightTypes.includes(type)}
+                    checked={selectedHighlightTypes?.includes(type)}
                     onChange={() => handleFilterChange(type)}
                 />
                 <div className={`${styles.legendColor} ${styles[type]}`} />

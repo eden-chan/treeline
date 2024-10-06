@@ -6,7 +6,6 @@ import { ClerkSignedInComponent } from './ClerkSignedInComponent';
 import { ClerkSignedOutComponent } from './ClerkSignedOutComponent';
 import { DocumentList } from './DocumentList';
 import { CreateDocumentModal } from './CreateDocumentModal.tsx';
-import { HighlightLegend } from './HighlightLegend';
 import { HighlightsList } from './HighlightsList.tsx';
 import type { HighlightType } from "./utils/highlightTypes";
 import type { Document, DocumentWithHighlightsAndComments } from './utils/dbUtils';
@@ -80,13 +79,10 @@ export function Sidebar({
               To create area highlight hold ⌥ Option key (Alt), then click and
               drag. Try opening this in another tab, or ask a friend to join you!
             </small>
-            <HighlightLegend
-              selectedHighlightTypes={selectedHighlightTypes}
-              handleFilterChange={handleFilterChange}
-            />
+
           </div>
         </div>
-        <HighlightsList highlights={highlights} />
+        <HighlightsList highlights={highlights} selectedHighlightTypes={selectedHighlightTypes} handleFilterChange={handleFilterChange} />
         <div className={styles.buttonContainer}>
           {highlights && highlights.length > 0 && (
             <button type="button" onClick={resetHighlights}>

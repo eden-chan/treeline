@@ -1,5 +1,4 @@
 import styles from './HighlightsView.module.css';
-import { HighlightLegend } from './HighlightLegend';
 import { HighlightsList } from './HighlightsList';
 import type { HighlightType } from './utils/highlightTypes';
 import type { HighlightResponseTypeWithComments } from './utils/dbUtils';
@@ -26,11 +25,11 @@ export function HighlightsView({
 
     return (
         <div className={styles.highlightsView}>
-            <HighlightLegend
+            <HighlightsList
+                highlights={highlights}
                 selectedHighlightTypes={selectedHighlightTypes}
                 handleFilterChange={handleFilterChange}
             />
-            <HighlightsList highlights={highlights} />
             {highlights && highlights.length > 0 && (
                 <button type="button" className={styles.resetButton} onClick={resetHighlights}>
                     Reset highlights
