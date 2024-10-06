@@ -16,7 +16,7 @@ interface Props {
   ) => void;
   onDragStart: () => void;
   onDragEnd: () => void;
-  shouldStart: (event: MouseEvent) => boolean;
+  shouldStart: (event: MouseEvent | TouchEvent) => boolean;
   onChange: (isVisible: boolean) => void;
 }
 
@@ -87,6 +87,8 @@ export function MouseSelection({
       };
     };
 
+    // Mouse event handlers
+
     const mouseMoveHandler = (event: MouseEvent) => {
       if (!startRef.current || lockedRef.current) {
         return;
@@ -146,14 +148,86 @@ export function MouseSelection({
       }
     };
 
+
+
+    // Touch event handlers
+    const handleTouchStart = (event: TouchEvent) => {
+      if (!shouldStart(event)) {
+        reset();
+        return;
+      }
+
+      const startTarget = event.target as HTMLElement;
+      if (!(startTarget instanceof Element) || !isHTMLElement(startTarget)) {
+        return;
+      }
+
+      onDragStart();
+      const touch = event.touches[0];
+      const coords = containerCoords(touch.pageX, touch.pageY);
+      setStart(coords);
+      setEnd(null);
+      setLocked(false);
+
+      console.log('Touch selection started:', coords);
+    };
+
+    const handleTouchMove = (event: TouchEvent) => {
+      if (!startRef.current || lockedRef.current) {
+        return;
+      }
+
+      const touch = event.touches[0];
+      const coords = containerCoords(touch.pageX, touch.pageY);
+      setEnd(coords);
+
+      console.log('Touch selection moving:', coords);
+    };
+
+    const handleTouchEnd = (event: TouchEvent) => {
+      if (!startRef.current) {
+        return;
+      }
+
+      const endTarget = event.changedTouches[0].target as HTMLElement;
+      if (!(endTarget instanceof Element) || !isHTMLElement(endTarget)) {
+        return;
+      }
+
+      const touch = event.changedTouches[0];
+      const coords = containerCoords(touch.pageX, touch.pageY);
+      setEnd(coords);
+      setLocked(true);
+
+      const boundingRect = getBoundingRect(startRef.current, coords);
+
+      if (!container.contains(endTarget) || !shouldRender(boundingRect)) {
+        reset();
+        return;
+      }
+
+      console.log('Touch selection ended:', coords, 'Bounding rect:', boundingRect, 'End target:', endTarget);
+
+      onSelection(endTarget, boundingRect, reset);
+      onDragEnd();
+    };
+
+    // Add event listeners
     container.addEventListener("mousemove", mouseMoveHandler);
     container.addEventListener("mousedown", mouseDownHandler);
+    container.addEventListener("touchstart", handleTouchStart);
+    container.addEventListener("touchmove", handleTouchMove);
+    container.addEventListener("touchend", handleTouchEnd);
 
+    // Remove event listeners on cleanup
     return () => {
-      container.removeEventListener("mousemove", mouseMoveHandler);
       container.removeEventListener("mousedown", mouseDownHandler);
+      container.removeEventListener("mousemove", mouseMoveHandler);
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchend", handleTouchEnd);
     };
-  }, [shouldStart, onDragStart, onDragEnd, onSelection, reset]);
+  }, [onDragStart, onDragEnd, onSelection, reset, shouldStart]);
 
   return (
     <div ref={rootRef}>

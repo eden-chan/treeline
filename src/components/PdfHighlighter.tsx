@@ -583,15 +583,18 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
                 this.setState({ isAreaSelectionInProgress: isVisible })
               }
               shouldStart={(event) =>
-                enableAreaSelection(event) &&
+                enableAreaSelection(event as MouseEvent) &&
                 event.target instanceof Element &&
                 isHTMLElement(event.target) &&
                 Boolean(event.target.closest(".page"))
               }
               onSelection={(startTarget, boundingRect, resetSelection) => {
-                const page = getPageFromElement(startTarget);
 
+                console.log("%c onSelectionArea selection started", "color: red", boundingRect, 'startTarget', startTarget)
+                const page = getPageFromElement(startTarget);
+                console.log("%c page", "color: red", page)
                 if (!page) {
+                  console.log("%c exiting !page", "color: red", page)
                   return;
                 }
 
@@ -615,6 +618,8 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
                   pageBoundingRect,
                   pageBoundingRect.pageNumber,
                 );
+
+                console.log("%c Area selection started", "color: green", scaledPosition)
 
                 this.setTip(
                   viewportPosition,

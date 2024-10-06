@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 import {
   AreaHighlight,
@@ -75,6 +75,8 @@ export function PDFAnnotator() {
 
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useMediaQuery({ maxWidth: 768 });
+  const [isAreaSelectionEnabled, setIsAreaSelectionEnabled] = useState(false);
+  const [touchStartPosition, setTouchStartPosition] = useState<{ x: number; y: number } | null>(null);
 
   // Fetch Documents
   const { data: documentData, isLoading: isLoadingDocuments, error: errorDocuments } = getDocumentsWithHighlights();
@@ -88,6 +90,38 @@ export function PDFAnnotator() {
 
   const { user } = useDbAuth();
 
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    console.log("Touch start", e)
+    if (isMobile && isAreaSelectionEnabled) {
+      setTouchStartPosition({
+        x: e.touches[0].clientX,
+        y: e.touches[0].clientY
+      });
+    }
+  }, [isMobile, isAreaSelectionEnabled]);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (isMobile && isAreaSelectionEnabled) {
+      // Prevent scrolling when area selection is enabled
+      e.preventDefault();
+
+      if (touchStartPosition) {
+        const currentX = e.touches[0].clientX;
+        const currentY = e.touches[0].clientY;
+        const deltaX = Math.abs(currentX - touchStartPosition.x);
+        const deltaY = Math.abs(currentY - touchStartPosition.y);
+
+        if (deltaX > 5 || deltaY > 5) {
+          // The user has moved their finger enough to consider it a selection
+          console.log("Area selection started");
+        }
+      }
+    }
+  }, [isMobile, isAreaSelectionEnabled, touchStartPosition]);
+
+  const handleTouchEnd = useCallback(() => {
+    setTouchStartPosition(null);
+  }, []);
 
   useEffect(() => {
     const scrollToHighlightFromHash = () => {
@@ -115,7 +149,6 @@ export function PDFAnnotator() {
     return <div>Error fetching data: {errorDocuments.message}</div>;
   }
 
-
   const getHighlightType = (highlightUserId: string): HighlightType => {
     if (highlightUserId === user?.id) {
       return HighlightType.CURRENT_USER;
@@ -125,8 +158,6 @@ export function PDFAnnotator() {
     }
     return HighlightType.OTHER_REGISTERED_USER;
   };
-
-
 
   const handleResetHighlights = () => {
     if (highlights) {
@@ -166,13 +197,20 @@ export function PDFAnnotator() {
         )}
         {!isMobile && <PanelResizeHandle className={styles.panelResizeHandle} />}
         <Panel className={styles.viewerPanel} defaultSize={isMobile ? 100 : 70} minSize={isMobile ? 100 : 70}>
-          <div className={styles.mainContent}>
+          <div
+            className={styles.mainContent}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
             <PdfLoader url={url} beforeLoad={<Spinner />}>
               {(pdfDocument) => (
                 <PdfHighlighter
                   highlights={renderedFilterHighlights}
                   pdfDocument={pdfDocument}
-                  enableAreaSelection={(event) => event.altKey}
+                  enableAreaSelection={(event) =>
+                    event.altKey || (isMobile && isAreaSelectionEnabled)
+                  }
                   onScrollChange={resetHash}
 
                   scrollRef={(scrollTo) => {
@@ -287,18 +325,36 @@ export function PDFAnnotator() {
       </PanelGroup>
 
       {isMobile && (
-        <button
-          className={styles.sidebarToggle}
-          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          type="button"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-label="Open">
-            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
-            <title>Open</title>
-          </svg>
-        </button>
+        <div className={styles.mobileButtons}>
+          <button
+            className={`${styles.mobileButton} ${styles.areaSelectionToggle} ${isAreaSelectionEnabled ? styles.active : ''}`}
+            onClick={() => setIsAreaSelectionEnabled(!isAreaSelectionEnabled)}
+            type="button"
+          >
+            {isAreaSelectionEnabled ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-label="Area Selection Enabled">
+                <path d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h10v10H7V7zm2 2h6v6H9V9z" />
+                <title>Area Selection Enabled</title>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-label="Area Selection Disabled">
+                <path d="M3 3h18v18H3V3zm16 16V5H5v14h14zM7 7h10v10H7V7z" />
+                <title>Area Selection Disabled</title>
+              </svg>
+            )}
+          </button>
+          <button
+            className={`${styles.mobileButton} ${styles.sidebarToggle}`}
+            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            type="button"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-label="Open Sidebar">
+              <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+              <title>Open Sidebar</title>
+            </svg>
+          </button>
+        </div>
       )}
     </InstantCursors>
   );
 }
-
