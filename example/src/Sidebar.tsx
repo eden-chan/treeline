@@ -22,6 +22,8 @@ type Props = {
   currentUser: User | null;
   currentUserColor: string;
   currentDocument?: DocumentWithHighlightsAndComments;
+  isMobile: boolean;
+  closeSidebar: () => void;
 }
 
 export function Sidebar({
@@ -33,6 +35,8 @@ export function Sidebar({
   currentUser,
   currentUserColor,
   currentDocument,
+  isMobile,
+  closeSidebar,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const highlights = currentDocument?.highlights;
@@ -44,7 +48,7 @@ export function Sidebar({
   };
 
   return (
-    <div className={styles.sidebar}>
+    <div className={`${styles.sidebar} ${isMobile ? styles.mobileSidebar : ''}`}>
       <div className={styles.sidebarContent}>
         <div className={styles.header}>
           <div className={styles.headerTop}>
@@ -52,6 +56,14 @@ export function Sidebar({
               Treeline
               <img src={treeline} alt="Treeline" className={styles.logo} />
             </div>
+            {isMobile && (
+              <button className={styles.closeButton} onClick={closeSidebar} type="button">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-label="Close">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                  <title>Close</title>
+                </svg>
+              </button>
+            )}
             <div className={styles.authButtons}>
               <SignedOut>
                 <ClerkSignedOutComponent />
@@ -60,9 +72,6 @@ export function Sidebar({
                 <ClerkSignedInComponent />
               </SignedIn>
             </div>
-          </div>
-          <div className={styles.githubLink}>
-            <a href="https://github.com/eden-chan/treeline">Open in GitHub</a>
           </div>
           <DocumentList
             documents={documents}

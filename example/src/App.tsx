@@ -28,6 +28,7 @@ import InstantTopics from './Emoji';
 import { randomDarkColor } from './utils/utils';
 import styles from './App.module.css';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
+import { useMediaQuery } from 'react-responsive';
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -71,6 +72,9 @@ export function PDFAnnotator() {
   });
 
   const userColor = useMemo(() => randomDarkColor, []);
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const isMobile = useMediaQuery({ maxWidth: 768 });
 
   // Fetch Documents
   const { data: documentData, isLoading: isLoadingDocuments, error: errorDocuments } = getDocumentsWithHighlights();
@@ -141,28 +145,27 @@ export function PDFAnnotator() {
 
   console.log("Current document", currentDocument)
 
-
-
-
-
-
   return (
-    <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
-      < PanelGroup direction="horizontal" >
-        <Panel  >
-          <Sidebar
-            documents={documentData?.documents}
-            resetHighlights={handleResetHighlights}
-            toggleDocument={toggleDocument}
-            selectedHighlightTypes={selectedHighlightTypes}
-            setSelectedHighlightTypes={setSelectedHighlightTypes}
-            currentUser={user ?? null}
-            currentUserColor={userColor}
-            currentDocument={currentDocument}
-          />
-        </Panel>
-        <PanelResizeHandle className={styles.panelResizeHandle} />
-        <Panel className={styles.viewerPanel} defaultSize={70} minSize={70}>
+    <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID}>
+      <PanelGroup direction={isMobile ? "vertical" : "horizontal"}>
+        {(!isMobile || isSidebarOpen) && (
+          <Panel>
+            <Sidebar
+              documents={documentData?.documents}
+              resetHighlights={handleResetHighlights}
+              toggleDocument={toggleDocument}
+              selectedHighlightTypes={selectedHighlightTypes}
+              setSelectedHighlightTypes={setSelectedHighlightTypes}
+              currentUser={user ?? null}
+              currentUserColor={userColor}
+              currentDocument={currentDocument}
+              isMobile={isMobile}
+              closeSidebar={() => setIsSidebarOpen(false)}
+            />
+          </Panel>
+        )}
+        {!isMobile && <PanelResizeHandle className={styles.panelResizeHandle} />}
+        <Panel className={styles.viewerPanel} defaultSize={isMobile ? 100 : 70} minSize={isMobile ? 100 : 70}>
           <div className={styles.mainContent}>
             <PdfLoader url={url} beforeLoad={<Spinner />}>
               {(pdfDocument) => (
@@ -190,7 +193,6 @@ export function PDFAnnotator() {
                     <Tip
                       onOpen={transformSelection}
                       onConfirm={(comment) => {
-                        console.trace('[App] user making highlight', user, 'with comment', comment)
 
                         if (!currentDocument) {
                           console.error('[Confirm Highlight] failed - no current document')
@@ -282,8 +284,20 @@ export function PDFAnnotator() {
           </div>
         </Panel>
 
-      </PanelGroup >
+      </PanelGroup>
 
+      {isMobile && (
+        <button
+          className={styles.sidebarToggle}
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          type="button"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" aria-label="Open">
+            <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+            <title>Open</title>
+          </svg>
+        </button>
+      )}
     </InstantCursors>
   );
 }
