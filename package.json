@@ -43,6 +43,7 @@
   "dependencies": {
     "@clerk/clerk-react": "^5.11.0",
     "@instantdb/react": "^0.14.12",
+    "lucide-react": "^0.447.0",
     "pdfjs-dist": "4.4.168",
     "react-resizable-panels": "^2.1.4",
     "react-rnd": "^10.4.11",

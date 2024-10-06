@@ -38,7 +38,6 @@ export function Sidebar({
   const [isModalOpen, setIsModalOpen] = useState(false);
   const highlights = currentDocument?.highlights;
 
-
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes(prev =>
       prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
@@ -49,17 +48,28 @@ export function Sidebar({
     <div className={styles.sidebar}>
       <div className={styles.sidebarContent}>
         <div className={styles.header}>
-          <div className={styles.headerText}>
-            Treeline
-            <img src={treeline} alt="Treeline" className={styles.logo} />
+          <div className={styles.headerTop}>
+            <div className={styles.headerText}>
+              Treeline
+              <img src={treeline} alt="Treeline" className={styles.logo} />
+            </div>
+            <div className={styles.authButtons}>
+              <SignedOut>
+                <ClerkSignedOutComponent />
+              </SignedOut>
+              <SignedIn>
+                <ClerkSignedInComponent />
+              </SignedIn>
+            </div>
           </div>
-          <div style={{ fontSize: "0.7rem" }}>
+          <div className={styles.githubLink}>
             <a href="https://github.com/eden-chan/treeline">Open in GitHub</a>
           </div>
           <DocumentList
             documents={documents}
             toggleDocument={toggleDocument}
             onAddNew={() => setIsModalOpen(true)}
+            selectedDocument={currentDocument}
           />
           <CreateDocumentModal
             isOpen={isModalOpen}
@@ -76,12 +86,6 @@ export function Sidebar({
             />
           </div>
         </div>
-        <SignedOut>
-          <ClerkSignedOutComponent />
-        </SignedOut>
-        <SignedIn>
-          <ClerkSignedInComponent />
-        </SignedIn>
         <HighlightsList highlights={highlights} />
         <div className={styles.buttonContainer}>
           {highlights && highlights.length > 0 && (

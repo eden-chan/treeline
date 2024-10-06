@@ -1,0 +1,14 @@
+.smallButton {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background-color: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.smallButton:hover {
+  background-color: #2563eb;
+}

@@ -9,7 +9,7 @@ type Props = {
 
 export const HighlightLegend: React.FC<Props> = ({ selectedHighlightTypes, handleFilterChange }) => (
     <div className={styles.legend}>
-        <h3>Highlight Legend</h3>
+        <h3>Filter highlights by user</h3>
         {Object.values(HighlightType).map(type => (
             <div key={type} className={styles.legendItem}>
                 <input

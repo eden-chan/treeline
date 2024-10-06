@@ -4,7 +4,7 @@ import styles from "../style/AreaHighlight.module.css";
 import type { LTWHP, ViewportHighlight } from "../types";
 import { HighlightType } from '../../example/src/utils/highlightTypes';
 
-interface Props {
+type Props = {
   highlight: ViewportHighlight;
   onChange: (rect: LTWHP) => void;
   isScrolledTo: boolean;

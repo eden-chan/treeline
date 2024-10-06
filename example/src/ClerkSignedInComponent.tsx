@@ -35,31 +35,28 @@ export function ClerkSignedInComponent() {
     }
     if (user) {
         return (
-            <div className={styles.container}>
-                <p className={styles.signedInMessage}>Signed in as {user.email} </p>
-                <button
-                    className={styles.button}
-                    type="button"
-                    onClick={() => {
-                        signOutFromDb().then(() => {
-                            signOutFromClerk();
-                        });
-                    }}
-                >
-                    Sign out
-                </button>
-            </div>
-        );
-    }
-    return (
-        <div className={styles.container}>
+
             <button
                 className={styles.button}
                 type="button"
-                onClick={signInToInstantWithClerkToken}
+                onClick={() => {
+                    signOutFromDb().then(() => {
+                        signOutFromClerk();
+                    });
+                }}
             >
-                Sign in
+                Sign out
             </button>
-        </div>
+
+        );
+    }
+    return (
+        <button
+            className={styles.button}
+            type="button"
+            onClick={signInToInstantWithClerkToken}
+        >
+            Sign in
+        </button>
     );
 }

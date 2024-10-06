@@ -14,9 +14,14 @@
   border-bottom: 1px solid #e2e8f0;
 }
 
+.headerTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
 .headerText {
-  font-size: 1.25rem;
-  font-weight: 600;
   display: flex;
   align-items: center;
 }
@@ -27,9 +32,14 @@
   margin-left: 0.5rem;
 }
 
+.authButtons {
+  display: flex;
+  align-items: center;
+}
+
 .githubLink {
-  font-size: 0.75rem;
-  margin-top: 0.5rem;
+  font-size: 0.7rem;
+  margin-bottom: 0.5rem;
 }
 
 .githubLink a {
