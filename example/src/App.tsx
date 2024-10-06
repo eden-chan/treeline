@@ -27,6 +27,7 @@ import InstantAvatarStack from './AvatarStack';
 import InstantTopics from './Emoji';
 import { randomDarkColor } from './utils/utils';
 import styles from './App.module.css';
+import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -139,137 +140,150 @@ export function PDFAnnotator() {
   ).map(highlight => ({ ...highlight, content: { text: highlight.content.text, image: highlight.content.image } as IHighlight['content'] })) ?? []
 
   console.log("Current document", currentDocument)
+
+
+
+
+
+
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID} >
-      <div className={styles.app}>
-        <Sidebar
-          documents={documentData?.documents}
-          resetHighlights={handleResetHighlights}
-          toggleDocument={toggleDocument}
-          selectedHighlightTypes={selectedHighlightTypes}
-          setSelectedHighlightTypes={setSelectedHighlightTypes}
-          currentUser={user ?? null}
-          currentUserColor={userColor}
-          currentDocument={currentDocument}
-        />
-        <div className={styles.mainContent}>
-          <PdfLoader url={url} beforeLoad={<Spinner />}>
-            {(pdfDocument) => (
-              <PdfHighlighter
-                highlights={renderedFilterHighlights}
-                pdfDocument={pdfDocument}
-                enableAreaSelection={(event) => event.altKey}
-                onScrollChange={resetHash}
+      < PanelGroup direction="horizontal" >
+        <Panel  >
+          <Sidebar
+            documents={documentData?.documents}
+            resetHighlights={handleResetHighlights}
+            toggleDocument={toggleDocument}
+            selectedHighlightTypes={selectedHighlightTypes}
+            setSelectedHighlightTypes={setSelectedHighlightTypes}
+            currentUser={user ?? null}
+            currentUserColor={userColor}
+            currentDocument={currentDocument}
+          />
+        </Panel>
+        <PanelResizeHandle className={styles.panelResizeHandle} />
+        <Panel className={styles.viewerPanel} defaultSize={70} minSize={70}>
+          <div className={styles.mainContent}>
+            <PdfLoader url={url} beforeLoad={<Spinner />}>
+              {(pdfDocument) => (
+                <PdfHighlighter
+                  highlights={renderedFilterHighlights}
+                  pdfDocument={pdfDocument}
+                  enableAreaSelection={(event) => event.altKey}
+                  onScrollChange={resetHash}
 
-                scrollRef={(scrollTo) => {
-                  scrollViewerTo.current = scrollTo;
-                  const highlightId = parseIdFromHash();
-                  const highlight = highlights?.find(highlight => highlight.id === highlightId);
-                  if (highlight) {
-                    scrollViewerTo.current(highlight);
-                  }
+                  scrollRef={(scrollTo) => {
+                    scrollViewerTo.current = scrollTo;
+                    const highlightId = parseIdFromHash();
+                    const highlight = highlights?.find(highlight => highlight.id === highlightId);
+                    if (highlight) {
+                      scrollViewerTo.current(highlight);
+                    }
 
-                }}
-                onSelectionFinished={(
-                  position,
-                  content,
-                  hideTipAndSelection,
-                  transformSelection,
-                ) => (
-                  <Tip
-                    onOpen={transformSelection}
-                    onConfirm={(comment) => {
-                      console.trace('[App] user making highlight', user, 'with comment', comment)
+                  }}
+                  onSelectionFinished={(
+                    position,
+                    content,
+                    hideTipAndSelection,
+                    transformSelection,
+                  ) => (
+                    <Tip
+                      onOpen={transformSelection}
+                      onConfirm={(comment) => {
+                        console.trace('[App] user making highlight', user, 'with comment', comment)
 
-                      if (!currentDocument) {
-                        console.error('[Confirm Highlight] failed - no current document')
-                        return
-                      }
-                      const userId = user?.id ?? ANONYMOUS_USER_ID;
-                      const userName = user?.email ?? ANONYMOUS_USER_ID;
-
-
-
-                      const commentDraft = comment.text || comment.emoji ? {
-                        text: comment.text,
-                        emoji: comment.emoji,
-                        userId,
-                        userName,
-                      } : undefined
+                        if (!currentDocument) {
+                          console.error('[Confirm Highlight] failed - no current document')
+                          return
+                        }
+                        const userId = user?.id ?? ANONYMOUS_USER_ID;
+                        const userName = user?.email ?? ANONYMOUS_USER_ID;
 
 
-                      const highlightDraft = {
-                        position,
-                        content,
-                        userId,
-                        userName,
-                      }
 
-                      // addHighlight(newHighlightDraft)
-                      addHighlightWithComment({ highlight: highlightDraft, documentId: currentDocument.id, comment: commentDraft })
+                        const commentDraft = comment.text || comment.emoji ? {
+                          text: comment.text,
+                          emoji: comment.emoji,
+                          userId,
+                          userName,
+                        } : undefined
 
-                      hideTipAndSelection();
-                    }}
-                  />
-                )}
-                highlightTransform={(
-                  highlight,
-                  index,
-                  setTip,
-                  hideTip,
-                  viewportToScaled,
-                  screenshot,
-                  isScrolledTo,
-                ) => {
 
-                  const isTextHighlight = !highlight.content?.image;
+                        const highlightDraft = {
+                          position,
+                          content,
+                          userId,
+                          userName,
+                        }
 
-                  const highlightType = getHighlightType(highlight.userId);
+                        // addHighlight(newHighlightDraft)
+                        addHighlightWithComment({ highlight: highlightDraft, documentId: currentDocument.id, comment: commentDraft })
 
-                  const component = isTextHighlight ? (
-                    <Highlight
-                      isScrolledTo={isScrolledTo}
-                      position={highlight.position}
-                      comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }}
-                      highlightType={highlightType}
-                    />
-                  ) : (
-                    <AreaHighlight
-                      isScrolledTo={isScrolledTo}
-                      highlight={highlight}
-                      onChange={(boundingRect) => {
-                        updateHighlight(
-                          highlight.id,
-                          { boundingRect: viewportToScaled(boundingRect) },
-                          { image: screenshot(boundingRect) },
-                        );
+                        hideTipAndSelection();
                       }}
-                      highlightType={highlightType}
                     />
-                  );
+                  )}
+                  highlightTransform={(
+                    highlight,
+                    index,
+                    setTip,
+                    hideTip,
+                    viewportToScaled,
+                    screenshot,
+                    isScrolledTo,
+                  ) => {
 
-                  return (
-                    <Popup
-                      popupContent={<HighlightPopup {...highlight} comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }} />}
-                      onMouseOver={(popupContent) =>
-                        setTip(highlight, () => popupContent)
-                      }
-                      onMouseOut={hideTip}
-                      key={index}
-                    >
-                      {component}
-                    </Popup>
-                  );
-                }}
-              />
-            )}
-          </PdfLoader>
+                    const isTextHighlight = !highlight.content?.image;
 
-          <InstantTopics roomId={MAIN_ROOM_ID} />
-          <InstantAvatarStack roomId={MAIN_ROOM_ID} username={user?.email ?? ANONYMOUS_USER_ID} color={userColor} />
+                    const highlightType = getHighlightType(highlight.userId);
 
-        </div>
-      </div>
+                    const component = isTextHighlight ? (
+                      <Highlight
+                        isScrolledTo={isScrolledTo}
+                        position={highlight.position}
+                        comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }}
+                        highlightType={highlightType}
+                      />
+                    ) : (
+                      <AreaHighlight
+                        isScrolledTo={isScrolledTo}
+                        highlight={highlight}
+                        onChange={(boundingRect) => {
+                          updateHighlight(
+                            highlight.id,
+                            { boundingRect: viewportToScaled(boundingRect) },
+                            { image: screenshot(boundingRect) },
+                          );
+                        }}
+                        highlightType={highlightType}
+                      />
+                    );
+
+                    return (
+                      <Popup
+                        popupContent={<HighlightPopup {...highlight} comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }} />}
+                        onMouseOver={(popupContent) =>
+                          setTip(highlight, () => popupContent)
+                        }
+                        onMouseOut={hideTip}
+                        key={index}
+                      >
+                        {component}
+                      </Popup>
+                    );
+                  }}
+                />
+              )}
+            </PdfLoader>
+
+            <InstantTopics roomId={MAIN_ROOM_ID} />
+            <InstantAvatarStack roomId={MAIN_ROOM_ID} username={user?.email ?? ANONYMOUS_USER_ID} color={userColor} />
+
+          </div>
+        </Panel>
+
+      </PanelGroup >
+
     </InstantCursors>
   );
 }
