@@ -20,5 +20,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["./src", "./example/src"]
+  "include": ["./src", "./example/src"],
+  "exclude": ["example/src/utils/debounce.js"]
 }

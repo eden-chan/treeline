@@ -432,6 +432,10 @@ export type CreateTagSchema = {
     documentIds: string[],
 }
 
+export type UpdateTagSchema = {
+    id: string,
+} & Partial<CreateTagSchema>;
+
 const tagsQuery = { 
     tags: {
         documents: {},
@@ -441,6 +445,11 @@ const tagsQuery = {
 export const getTags = () => {
     return db.useQuery(tagsQuery);
 }
+
+export const updateTag = (tagId: string, updates: Partial<CreateTagSchema>) => {
+  console.debug("Updating tag", tagId, updates);
+  return db.transact(tx.tags[tagId].update(updates));
+};
 
 export const addTag = (tag: CreateTagSchema & { documentIds?: string[] }) => {
   console.debug("Saving tag", tag);
@@ -452,8 +461,17 @@ export const addTag = (tag: CreateTagSchema & { documentIds?: string[] }) => {
   if (tag.documentIds && tag.documentIds.length > 0) {
     transaction.push(tx.tags[tagId].link({ documents: tag.documentIds }));
   }
-  
   return db.transact(transaction);
+};
+
+export const deleteTag = (tagId: string) => {
+  console.debug("Deleting tag", tagId);
+  return db.transact(tx.tags[tagId].delete());
+};
+
+export const unlinkDocumentFromTag = (tagId: string, documentId: string) => {
+  console.debug("Unlinking document from tag", tagId, documentId);
+  return db.transact(tx.tags[tagId].unlink({ documents: documentId }));
 };
 
 // =========

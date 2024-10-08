@@ -8,7 +8,7 @@ import { DocumentList } from './DocumentList';
 import { CreateDocumentModal } from './CreateDocumentModal.tsx';
 import { HighlightsList } from './HighlightsList.tsx';
 import type { HighlightType } from "./utils/highlightTypes";
-import { addBundle, addTag, Bundle, Tag, type Document, type DocumentWithHighlightsAndComments } from './utils/dbUtils';
+import type { Document, DocumentWithHighlightsAndComments, BundleWithDocuments, TagWithDocuments } from './utils/dbUtils';
 import treeline from './treeline.png';
 import styles from './Sidebar.module.css';
 import { ChatView } from './ChatView.tsx';
@@ -28,8 +28,8 @@ type Props = {
   currentDocument?: DocumentWithHighlightsAndComments;
   isMobile: boolean;
   closeSidebar: () => void;
-  tags?: Tag[];
-  bundles?: Bundle[];
+  tags?: TagWithDocuments[];
+  bundles?: BundleWithDocuments[];
 }
 
 export function Sidebar({
@@ -53,16 +53,6 @@ export function Sidebar({
     setSelectedHighlightTypes(prev =>
       prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
     );
-  };
-
-  const handleTagAdded = () => {
-    // Refresh tags (you might want to implement this function)
-    // refreshTags();
-  };
-
-  const handleBundleAdded = () => {
-    // Refresh bundles (you might want to implement this function)
-    // refreshBundles();
   };
 
   return (
@@ -105,11 +95,11 @@ export function Sidebar({
           <div className={styles.tagsAndBundles}>
             <h3>Tags</h3>
             <AddTag onTagAdded={handleTagAdded} documents={documents} />
-            <TagList tagsWithDocuments={tags || []} />
+            <TagList tagsWithDocuments={tags ?? []} />
 
             <h3>Bundles</h3>
             <AddBundle onBundleAdded={handleBundleAdded} documents={documents} />
-            <BundleList bundlesWithDocuments={bundles || []} />
+            <BundleList bundlesWithDocuments={bundles ?? []} />
           </div>
 
           <div>

@@ -89,10 +89,10 @@ export function PDFAnnotator() {
   const highlights = currentDocument?.highlights
 
   // Fetch Tags
-  const { data: tagData, isLoading: isLoadingTags, error: errorTags } = getTags();
+  const { data: tagData, } = getTags();
 
   // Fetch Bundles
-  const { data: bundleData, isLoading: isLoadingBundles, error: errorBundles } = getBundles();
+  const { data: bundleData } = getBundles();
 
   // Fetch Tags
   const { user } = useDbAuth();
