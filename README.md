@@ -19,6 +19,9 @@ The bundled CSS include the CSS for pdfjs.
 import "treeline/dist/style.css";
 ```
 
+## Stack
+Vite + Bun + Biome (formatter) + InstantDB
+
 ## Example
 
 See demo https://treeline.vercel.app/.
@@ -26,8 +29,9 @@ See demo https://treeline.vercel.app/.
 To run the example app locally:
 
 ```bash
-npm install
-npm start
+npm install bun # install bun
+bun i # install deps
+bun run dev # start server
 ```
 
 ## Install
