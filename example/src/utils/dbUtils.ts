@@ -13,9 +13,14 @@ import { getCurrentDate } from './utils';
 
 const schema = i.graph(
   {
+    bundles: i.entity({
+      description: i.string(),
+      name: i.string(),
+      createdAt: i.number(),
+    }),
     documents: i.entity({
       name: i.string(),
-      sourceUrl: i.string(),
+      sourceUrl: i.string().unique(),
       createdAt: i.number(),
     }),
     highlights: i.entity({
@@ -32,8 +37,36 @@ const schema = i.graph(
       userName: i.string(),
       createdAt: i.number(),
     }),
+    tags: i.entity({
+      description: i.string(),
+      name: i.string().unique().indexed(),
+    }),
   },
-   {
+    {
+    "bundlesChildren": {
+      "forward": {
+        "on": "bundles",
+        "has": "many",
+        "label": "children"
+      },
+      "reverse": {
+        "on": "bundles",
+        "has": "one",
+        "label": "parent"
+      }
+    },
+    "bundlesDocuments": {
+      "forward": {
+        "on": "bundles",
+        "has": "many",
+        "label": "documents"
+      },
+      "reverse": {
+        "on": "documents",
+        "has": "many",
+        "label": "bundles"
+      }
+    },
     "documentsComments": {
       "forward": {
         "on": "documents",
@@ -69,8 +102,20 @@ const schema = i.graph(
         "has": "one",
         "label": "highlights"
       }
+    },
+    "tagsDocuments": {
+      "forward": {
+        "on": "tags",
+        "has": "many",
+        "label": "documents"
+      },
+      "reverse": {
+        "on": "documents",
+        "has": "many",
+        "label": "tags"
+      }
     }
-  },
+  }
 );
 
 // 
@@ -123,8 +168,6 @@ export const presenceDb = init<typeof schema, RoomSchema>(config);
 export const db = init_experimental<typeof schema>({...config,
   schema,
 });
-
-
 
 
 type DB = typeof db;
@@ -333,6 +376,89 @@ const documentQueryWithHighlights = {
 export const getDocumentsWithHighlights = () => {
     return db.useQuery(documentQueryWithHighlights);
 };
+
+// =========
+// Bundles
+// ========= 
+
+export type Bundle = InstantEntity<DB, "bundles">;
+export type BundleWithDocuments = InstantEntity<DB, "bundles"> & {
+    documents: Document[];
+};
+
+export type CreateBundleSchema = {
+    name: string,
+    description: string,
+    documentIds: string[],
+}
+
+export const addBundle = (bundle: CreateBundleSchema & { documentIds?: string[] }) => {
+  console.debug("Saving bundle", bundle);
+  const bundleId = id();
+  const transaction = [
+    tx.bundles[bundleId].update({ ...bundle, createdAt: getCurrentDate(), id: bundleId }),
+  ];
+  
+  if (bundle.documentIds && bundle.documentIds.length > 0) {
+    transaction.push(tx.bundles[bundleId].link({ documents: bundle.documentIds }));
+  }
+  
+  return db.transact(transaction);
+};
+
+const bundlesQuery = { 
+    bundles: {
+        documents: {},
+    },
+} satisfies InstantQuery<DB>;
+
+export const getBundles = () => {
+    return db.useQuery(bundlesQuery);
+}
+
+
+// =========
+// Tags
+// =========
+
+export type Tag = InstantEntity<DB, "tags">;
+export type TagWithDocuments = InstantEntity<DB, "tags"> & {
+    documents: Document[];
+};
+
+export type CreateTagSchema = {
+    name: string,
+    description: string,
+    documentIds: string[],
+}
+
+const tagsQuery = { 
+    tags: {
+        documents: {},
+    },
+} satisfies InstantQuery<DB>;
+
+export const getTags = () => {
+    return db.useQuery(tagsQuery);
+}
+
+export const addTag = (tag: CreateTagSchema & { documentIds?: string[] }) => {
+  console.debug("Saving tag", tag);
+  const tagId = id();
+  const transaction = [
+    tx.tags[tagId].update({ ...tag, createdAt: getCurrentDate(), id: tagId }),
+  ];
+  
+  if (tag.documentIds && tag.documentIds.length > 0) {
+    transaction.push(tx.tags[tagId].link({ documents: tag.documentIds }));
+  }
+  
+  return db.transact(transaction);
+};
+
+// =========
+// Auth 
+// =========
 
 export const signInWithIdToken = (idToken: string, clientName: string) => {
     return db.auth.signInWithIdToken({

@@ -8,10 +8,14 @@ import { DocumentList } from './DocumentList';
 import { CreateDocumentModal } from './CreateDocumentModal.tsx';
 import { HighlightsList } from './HighlightsList.tsx';
 import type { HighlightType } from "./utils/highlightTypes";
-import type { Document, DocumentWithHighlightsAndComments } from './utils/dbUtils';
+import { addBundle, addTag, Bundle, Tag, type Document, type DocumentWithHighlightsAndComments } from './utils/dbUtils';
 import treeline from './treeline.png';
 import styles from './Sidebar.module.css';
 import { ChatView } from './ChatView.tsx';
+import { AddTag } from './components/AddTag';
+import { TagList } from './components/TagList';
+import { AddBundle } from './components/AddBundle';
+import { BundleList } from './components/BundleList';
 
 type Props = {
   documents: Document[];
@@ -24,6 +28,8 @@ type Props = {
   currentDocument?: DocumentWithHighlightsAndComments;
   isMobile: boolean;
   closeSidebar: () => void;
+  tags?: Tag[];
+  bundles?: Bundle[];
 }
 
 export function Sidebar({
@@ -37,6 +43,8 @@ export function Sidebar({
   currentDocument,
   isMobile,
   closeSidebar,
+  tags,
+  bundles,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const highlights = currentDocument?.highlights;
@@ -45,6 +53,16 @@ export function Sidebar({
     setSelectedHighlightTypes(prev =>
       prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
     );
+  };
+
+  const handleTagAdded = () => {
+    // Refresh tags (you might want to implement this function)
+    // refreshTags();
+  };
+
+  const handleBundleAdded = () => {
+    // Refresh bundles (you might want to implement this function)
+    // refreshBundles();
   };
 
   return (
@@ -83,6 +101,17 @@ export function Sidebar({
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
           />
+
+          <div className={styles.tagsAndBundles}>
+            <h3>Tags</h3>
+            <AddTag onTagAdded={handleTagAdded} documents={documents} />
+            <TagList tagsWithDocuments={tags || []} />
+
+            <h3>Bundles</h3>
+            <AddBundle onBundleAdded={handleBundleAdded} documents={documents} />
+            <BundleList bundlesWithDocuments={bundles || []} />
+          </div>
+
           <div>
             <small>
               To create area highlight hold ⌥ Option key (Alt), then click and

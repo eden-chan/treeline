@@ -18,7 +18,7 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights, addHighlightWithComment } from "./utils/dbUtils";
+import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights, addHighlightWithComment, getTags, getBundles } from "./utils/dbUtils";
 import type { Document, DocumentWithHighlightsAndComments } from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
@@ -88,6 +88,13 @@ export function PDFAnnotator() {
   // const { data: highlightData, error: errorHighlights } = getHighlightsByDocument(url);
   const highlights = currentDocument?.highlights
 
+  // Fetch Tags
+  const { data: tagData, isLoading: isLoadingTags, error: errorTags } = getTags();
+
+  // Fetch Bundles
+  const { data: bundleData, isLoading: isLoadingBundles, error: errorBundles } = getBundles();
+
+  // Fetch Tags
   const { user } = useDbAuth();
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
@@ -192,6 +199,8 @@ export function PDFAnnotator() {
               currentDocument={currentDocument}
               isMobile={isMobile}
               closeSidebar={() => setIsSidebarOpen(false)}
+              tags={tagData?.tags}
+              bundles={bundleData?.bundles}
             />
           </Panel>
         )}
