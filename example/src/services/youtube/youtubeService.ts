@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import { YoutubeTranscript } from "./youtubeTranscript";
-
+import 'reflect-metadata';
 
 export const IYoutubeService = "youtubeService";
 
@@ -24,8 +24,8 @@ export class YoutubeService implements IYoutubeService {
   
 
       if (this.transcriptCache.has(videoId)) {
-    
-        return this.transcriptCache.get(videoId) ?? null;
+        console.log("[YoutubeService] Not returning cached transcript for videoId:", this.transcriptCache.get(videoId));
+        // return this.transcriptCache.get(videoId) ?? null;
       }
 
       return await this.fetchAndProcessTranscript(videoId);
@@ -44,6 +44,8 @@ export class YoutubeService implements IYoutubeService {
     const transcript = await YoutubeTranscript.fetchTranscriptIfAvailable(
       videoId
     );
+
+    console.log("[YoutubeService] Fetched transcript and now processing:", transcript);
     if (!transcript) return null;
 
     let result = "";

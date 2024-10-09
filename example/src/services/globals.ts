@@ -1,6 +1,5 @@
 import type { inject, injectable, interfaces } from "inversify";
 import { Container } from "inversify";
-import "reflect-metadata";
 import {
   IYoutubeService,
   YoutubeService,

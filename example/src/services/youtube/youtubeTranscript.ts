@@ -81,10 +81,12 @@ export class YoutubeTranscript {
     // biome-ignore lint: reason
     if (this.cache.has(cacheKey)) {
       console.log(
-        `[YoutubeTranscript] Returning cached transcript for ${videoId}`
+        `[YoutubeTranscript] Not Returning cached transcript for ${videoId}`
       );
       // biome-ignore lint: reason
-      return this.cache.get(cacheKey)!;
+      console.log(this.cache.get(cacheKey));
+      // biome-ignore lint: reason
+      // return this.cache.get(cacheKey)!;
     }
 
     try {

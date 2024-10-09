@@ -1,6 +1,5 @@
 import { bucket } from "./storage";
 
-// export const api = new sst.aws.ApiGatewayV2("Api");
 // Create the API
 export const api = new sst.aws.ApiGatewayV2("Api", {
   transform: {
