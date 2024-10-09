@@ -13,6 +13,8 @@ import treeline from './treeline.png';
 import styles from './Sidebar.module.css';
 import { ChatView } from './ChatView.tsx';
 import { BundleSection } from './components/BundleSection';
+import { useService } from './App.tsx';
+import { IYoutubeService } from './services/youtube/youtubeService.ts';
 
 type Props = {
   documents: Document[];
@@ -43,12 +45,27 @@ export function Sidebar({
   bundles,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const highlights = currentDocument?.highlights;
 
+  const youtubeService = useService(IYoutubeService);
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes(prev =>
       prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]
     );
+  };
+
+  const handleFetchTranscript = async () => {
+    if (!youtubeUrl) {
+      console.error('Please enter a YouTube URL');
+      return;
+    }
+    try {
+      const transcript = await youtubeService.getTranscript(youtubeUrl);
+      console.log('Transcript:', transcript);
+    } catch (error) {
+      console.error('Error fetching transcript:', error);
+    }
   };
 
   return (
@@ -77,7 +94,18 @@ export function Sidebar({
               </SignedIn>
             </div>
           </div>
-
+          <div className={styles.youtubeTranscript}>
+            <input
+              type="text"
+              value={youtubeUrl}
+              onChange={(e) => setYoutubeUrl(e.target.value)}
+              placeholder="Enter YouTube URL"
+              className={styles.youtubeInput}
+            />
+            <button type="button" onClick={handleFetchTranscript} className={styles.fetchButton}>
+              Fetch transcript
+            </button>
+          </div>
 
           <div className={styles.tagsAndBundles}>
             <BundleSection documents={documents} bundlesWithDocuments={bundles ?? []} toggleDocument={toggleDocument} selectedDocument={currentDocument} />

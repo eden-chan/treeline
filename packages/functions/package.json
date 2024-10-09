@@ -1,0 +1,11 @@
+{
+  "name": "@monorepo-template/functions",
+  "version": "0.0.0",
+  "dependencies": {
+    "node-fetch": "^3.3.2",
+    "sst": "*"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.137"
+  }
+}

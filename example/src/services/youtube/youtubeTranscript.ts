@@ -75,9 +75,8 @@ export class YoutubeTranscript {
     config?: TranscriptConfig
   ): Promise<TranscriptResponse[]> {
     console.log(
-      `[YoutubeTranscript] Fetching transcript for video ID: ${videoId}`
+      `\x1b[31m[YoutubeTranscript] Fetching transcript for video ID: ${videoId} with config ${JSON.stringify(config)}\x1b[0m`
     );
-
     const cacheKey = `${videoId}_${config?.lang || "default"}`;
     // biome-ignore lint: reason
     if (this.cache.has(cacheKey)) {
@@ -89,35 +88,48 @@ export class YoutubeTranscript {
     }
 
     try {
-      const response = await fetch(
-        `https://www.youtube.com/watch?v=${videoId}`
-      );
-      const html = await response.text();
 
-      const match = html.match(/"captions":(\{.*?\}),"videoDetails"/);
-      if (!match) {
-        throw new YoutubeTranscriptError("Could not find captions data");
-      }
+      //  need to bypass cors so we use a serverless function to make the fetch
+      console.log(`\x1b[31mFetching from: ${import.meta.env.VITE_AWS_BASE_URL}\x1b[0m`);
 
-      const captionsData = JSON.parse(match[1]);
-      const captionTracks =
-        captionsData.playerCaptionsTracklistRenderer.captionTracks;
+      const response = await fetch(`${import.meta.env.VITE_AWS_BASE_URL}/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ videoId }),
+      });
 
-      if (!captionTracks || captionTracks.length === 0) {
-        throw new YoutubeTranscriptNotAvailableError(videoId);
-      }
 
-      let selectedTrack = captionTracks[0];
-      if (config?.lang) {
-        selectedTrack =
-        // biome-ignore lint: reason
-          captionTracks.find((track: any) => track.languageCode === config.lang) ||
-          selectedTrack;
-      }
+      // const html = await response.text();
 
-      const transcriptResponse = await fetch(selectedTrack.baseUrl);
-      const transcriptText = await transcriptResponse.text();
+      // const match = html.match(/"captions":(\{.*?\}),"videoDetails"/);
+      // if (!match) {
+      //   throw new YoutubeTranscriptError("Could not find captions data");
+      // }
 
+      // const captionsData = JSON.parse(match[1]);
+      // const captionTracks =
+      //   captionsData.playerCaptionsTracklistRenderer.captionTracks;
+
+      // if (!captionTracks || captionTracks.length === 0) {
+      //   throw new YoutubeTranscriptNotAvailableError(videoId);
+      // }
+
+      // let selectedTrack = captionTracks[0];
+      // if (config?.lang) {
+      //   selectedTrack =
+      //   // biome-ignore lint: reason
+      //     captionTracks.find((track: any) => track.languageCode === config.lang) ||
+      //     selectedTrack;
+      // }
+
+      // const transcriptResponse = await fetch(selectedTrack.baseUrl);
+      // const transcriptText = await transcriptResponse.text();
+
+      console.log( 'got data from fetch request', response);
+      const transcriptText = await response.text();
+      console.log( 'got transcript text', transcriptText);
       const transcript = YoutubeTranscript.parseTranscript(transcriptText);
 
       YoutubeTranscript.cache.set(cacheKey, transcript);
@@ -168,6 +180,7 @@ export class YoutubeTranscript {
     }
     const matchId = videoId.match(RE_YOUTUBE);
     if (matchId?.length) {
+      console.log("getting videoId from youtube url", matchId[1])
       return matchId[1];
     }
     throw new YoutubeTranscriptError(

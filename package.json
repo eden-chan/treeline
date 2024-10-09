@@ -24,17 +24,17 @@
   "main": "./dist/src/index.js",
   "style": "./dist/style.css",
   "scripts": {
-    "start": "npm run dev",
-    "dev": "vite build && (cd ./example && vite)",
     "build": "npm run clean && npm run compile && vite build && npm run build:example",
-    "compile": "tsc --noEmit",
     "build:example": "vite build && (cd ./example && vite build)",
-    "test": "npm run build && npm run lint && npm run test:e2e",
-    "test:e2e": "playwright test",
+    "clean": "rm -rf dist",
+    "compile": "tsc --noEmit",
+    "dev": "vite build && (cd ./example && vite)",
     "format": "biome format --write",
     "lint": "biome check",
-    "clean": "rm -rf dist",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "start": "npm run dev",
+    "test": "npm run build && npm run lint && npm run test:e2e",
+    "test:e2e": "playwright test"
   },
   "peerDependencies": {
     "react": ">=18.0.0",
@@ -50,6 +50,7 @@
     "react-responsive": "^10.0.0",
     "react-rnd": "^10.4.11",
     "reflect-metadata": "^0.2.2",
+    "sst": "3.1.71",
     "ts-debounce": "^4.0.0"
   },
   "repository": {
@@ -62,6 +63,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.0",
     "@playwright/test": "^1.45.1",
+    "@types/aws-lambda": "8.10.145",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

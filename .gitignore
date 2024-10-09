@@ -49,3 +49,6 @@ yarn-error.log*
 example/dist/
 
 .vercel/
+
+# sst
+.sst

@@ -31,7 +31,6 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { useMediaQuery } from 'react-responsive';
 import type { ServiceIdentifier, ServiceType } from './services/globals';
 import { serviceContextContainer, ServicesContext } from './services/globals';
-import { IYoutubeService } from './services/youtube/youtubeService';
 
 export function useService<T extends ServiceIdentifier>(
   serviceIdentifier: T
@@ -86,8 +85,6 @@ export function PDFAnnotator() {
     // noop
   });
 
-  const youtubeService = useService(IYoutubeService);
-  console.log("youtubeService", youtubeService, youtubeService.getTranscript("https://www.youtube.com/watch?v=dQw4w9WgXcQ"))
 
 
   const userColor = useMemo(() => randomDarkColor, []);

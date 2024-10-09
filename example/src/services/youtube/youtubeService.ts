@@ -5,7 +5,7 @@ import { YoutubeTranscript } from "./youtubeTranscript";
 export const IYoutubeService = "youtubeService";
 
 export interface IYoutubeService {
-  getTranscript(videoId: string): Promise<string | null>;
+  getTranscript(url: string): Promise<string | null>;
   startTranscriptPrecalculation(): void;
 }
 
@@ -21,14 +21,10 @@ export class YoutubeService implements IYoutubeService {
   async getTranscript(url: string): Promise<string | null> {
     try {
       const videoId = YoutubeTranscript.retrieveVideoId(url);
-      console.log(
-        `[YoutubeService] Retrieving transcript for video ID: ${videoId}`
-      );
+  
 
       if (this.transcriptCache.has(videoId)) {
-        console.log(
-          `[YoutubeService] Returning cached transcript for ${videoId}`
-        );
+    
         return this.transcriptCache.get(videoId) ?? null;
       }
 
