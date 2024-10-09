@@ -12,10 +12,7 @@ import type { Document, DocumentWithHighlightsAndComments, BundleWithDocuments, 
 import treeline from './treeline.png';
 import styles from './Sidebar.module.css';
 import { ChatView } from './ChatView.tsx';
-import { AddTag } from './components/AddTag';
-import { TagList } from './components/TagList';
-import { AddBundle } from './components/AddBundle';
-import { BundleList } from './components/BundleList';
+import { BundleSection } from './components/BundleSection';
 
 type Props = {
   documents: Document[];
@@ -43,7 +40,6 @@ export function Sidebar({
   currentDocument,
   isMobile,
   closeSidebar,
-  tags,
   bundles,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -81,6 +77,12 @@ export function Sidebar({
               </SignedIn>
             </div>
           </div>
+
+
+          <div className={styles.tagsAndBundles}>
+            <BundleSection documents={documents} bundlesWithDocuments={bundles ?? []} toggleDocument={toggleDocument} selectedDocument={currentDocument} />
+          </div>
+
           <DocumentList
             documents={documents}
             toggleDocument={toggleDocument}
@@ -91,16 +93,6 @@ export function Sidebar({
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
           />
-
-          <div className={styles.tagsAndBundles}>
-            <h3>Tags</h3>
-            <AddTag onTagAdded={handleTagAdded} documents={documents} />
-            <TagList tagsWithDocuments={tags ?? []} />
-
-            <h3>Bundles</h3>
-            <AddBundle onBundleAdded={handleBundleAdded} documents={documents} />
-            <BundleList bundlesWithDocuments={bundles ?? []} />
-          </div>
 
           <div>
             <small>

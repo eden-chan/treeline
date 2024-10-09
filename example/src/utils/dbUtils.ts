@@ -329,17 +329,24 @@ export const resetComments = () => {
 // =========
 // Documents
 // =========
-export const addDocument = (document: CreateDocumentDraft) => {
+export const addDocument = (document: CreateDocumentDraft, bundleId?: string) => {
     console.debug("Saving document", document);
     const documentId = id()
-    return db.transact(
+    const transaction = [
         tx.documents[documentId].update({
             ...document,
             createdAt: getCurrentDate(),
             id: documentId,
         })
-    );
+    ];
+
+    if (bundleId) {
+        transaction.push(tx.documents[documentId].link({ bundles: bundleId }));
+    }
+
+    return db.transact(transaction);
 }
+
 
 
 const documentQuery = { 
@@ -406,6 +413,16 @@ export const addBundle = (bundle: CreateBundleSchema & { documentIds?: string[] 
   return db.transact(transaction);
 };
 
+export const addToBundle = (bundleId: string, documentId: string) => {
+  console.debug("Adding to bundle", bundleId, documentId);
+  const transaction = [
+    tx.bundles[bundleId].link({ documents: documentId }),
+  ];
+  
+  return db.transact(transaction);
+};
+
+
 const bundlesQuery = { 
     bundles: {
         documents: {},
@@ -416,6 +433,20 @@ export const getBundles = () => {
     return db.useQuery(bundlesQuery);
 }
 
+export const updateBundle = (bundleId: string, updates: Partial<CreateBundleSchema>) => {
+  console.debug("Updating bundle", bundleId, updates);
+  return db.transact(tx.bundles[bundleId].update(updates));
+};
+
+export const deleteBundle = (bundleId: string) => {
+  console.debug("Deleting bundle", bundleId);
+  return db.transact(tx.bundles[bundleId].delete());
+};
+
+export const unlinkDocumentFromBundle = (bundleId: string, documentId: string) => {
+  console.debug("Unlinking document from bundle", bundleId, documentId);
+  return db.transact(tx.bundles[bundleId].unlink({ documents: documentId }));
+};
 
 // =========
 // Tags

@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { addBundle, type Document } from '../utils/dbUtils';
 
 type AddBundleProps = {
-    onBundleAdded: () => void;
+
     documents: Document[];
 };
 
-export function AddBundle({ onBundleAdded, documents }: AddBundleProps) {
+export function AddBundle({ documents }: AddBundleProps) {
     const [newBundleName, setNewBundleName] = useState('');
     const [newBundleDescription, setNewBundleDescription] = useState('');
     const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
@@ -22,7 +22,6 @@ export function AddBundle({ onBundleAdded, documents }: AddBundleProps) {
             setNewBundleName('');
             setNewBundleDescription('');
             setSelectedDocumentIds([]);
-            onBundleAdded();
         }
     };
 

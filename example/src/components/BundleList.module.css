@@ -1,0 +1,148 @@
+.bundleListContainer {
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.bundleListHeader {
+  display: flex;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #f8fafc;
+}
+
+.bundleListHeader h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.bundleList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.bundleItem {
+  border-top: 1px solid #e2e8f0;
+}
+
+.bundleContent {
+  padding: 0.75rem 1rem;
+  background-color: #fff;
+  transition: background-color 0.2s ease;
+}
+
+.bundleContent:hover {
+  background-color: #f1f5f9;
+}
+
+.bundleName {
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: #333;
+  margin-bottom: 0.25rem;
+}
+
+.bundleDescription {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-bottom: 0.5rem;
+}
+
+.documentList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0 0 0 1rem;
+}
+
+.documentItem {
+  font-size: 0.75rem;
+  color: #4a5568;
+  padding: 0.25rem 0;
+  display: flex;
+  align-items: center;
+}
+
+.documentItem::before {
+  content: "📄";
+  margin-right: 0.5rem;
+}
+
+.unlinkButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #e53e3e;
+  font-size: 0.75rem;
+  margin-left: auto;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.unlinkButton:hover {
+  opacity: 1;
+}
+
+.deleteButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #e53e3e;
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.deleteButton:hover {
+  text-decoration: underline;
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.input:focus {
+  outline: none;
+  border-color: #4299e1;
+  box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.5);
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.documentLink {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+  color: inherit;
+  margin-left: auto;
+  padding: 4px;
+}
+
+.documentButton:hover .documentLink,
+.selectedDocument .documentLink {
+  opacity: 0.6;
+}
+
+.documentLink:hover {
+  opacity: 1;
+}
+
+.documentLink svg {
+  vertical-align: middle;
+}

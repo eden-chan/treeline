@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import { useState, useEffect, useRef, useMemo, useCallback, useContext } from "react";
 
 import {
   AreaHighlight,
@@ -29,6 +29,19 @@ import { randomDarkColor } from './utils/utils';
 import styles from './App.module.css';
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
 import { useMediaQuery } from 'react-responsive';
+import type { ServiceIdentifier, ServiceType } from './services/globals';
+import { serviceContextContainer, ServicesContext } from './services/globals';
+import { IYoutubeService } from './services/youtube/youtubeService';
+
+export function useService<T extends ServiceIdentifier>(
+  serviceIdentifier: T
+): ServiceType<T> {
+  const container = useContext(ServicesContext);
+  if (!container || !container.container) {
+    throw new Error('useService must be used within a ServicesContext');
+  }
+  return container.container.get<ServiceType<T>>(serviceIdentifier);
+}
 
 const parseIdFromHash = () =>
   document.location.hash.slice("#highlight-".length);
@@ -53,14 +66,16 @@ const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
 const searchParams = new URLSearchParams(document.location.search);
 const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 
-export function ViewManager() {
+export function AppWrapper() {
   return (
-    <ClerkProvider
-      publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ""}
-      afterSignOutUrl="/"
-    >
-      <PDFAnnotator />
-    </ClerkProvider>
+    <ServicesContext.Provider value={{ container: serviceContextContainer }}>
+      <ClerkProvider
+        publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ""}
+        afterSignOutUrl="/"
+      >
+        <PDFAnnotator />
+      </ClerkProvider>
+    </ServicesContext.Provider>
   );
 }
 
@@ -70,6 +85,10 @@ export function PDFAnnotator() {
   const scrollViewerTo = useRef((_: IHighlight) => {
     // noop
   });
+
+  const youtubeService = useService(IYoutubeService);
+  console.log("youtubeService", youtubeService, youtubeService.getTranscript("https://www.youtube.com/watch?v=dQw4w9WgXcQ"))
+
 
   const userColor = useMemo(() => randomDarkColor, []);
 
@@ -85,7 +104,7 @@ export function PDFAnnotator() {
   const currentDocument: DocumentWithHighlightsAndComments | undefined = documentData?.documents.find(doc => doc.sourceUrl === url)
 
   // Fetch Highlights
-  // const { data: highlightData, error: errorHighlights } = getHighlightsByDocument(url);
+  // const {data: highlightData, error: errorHighlights } = getHighlightsByDocument(url);
   const highlights = currentDocument?.highlights
 
   // Fetch Tags

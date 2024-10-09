@@ -1,0 +1,317 @@
+.bundleSectionContainer {
+  margin-bottom: 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+  overflow: hidden;
+}
+
+.bundleSectionHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background-color: #f8fafc;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+}
+
+.bundleSectionHeader h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1.25rem;
+  color: #64748b;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 0.75rem;
+  border-radius: 0.25rem;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.toggleButton:hover {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+.addNewButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #4caf50;
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+}
+
+.bundleSectionHeader:hover .addNewButton {
+  opacity: 1;
+}
+
+.addNewButton:hover {
+  background-color: #e8f5e9;
+}
+
+.addNewButton::before {
+  content: "+";
+  font-size: 1.2rem;
+  margin-right: 0.25rem;
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal h2,
+.modal h3 {
+  margin-bottom: 1rem;
+}
+
+.createDocumentForm {
+  margin-top: 1rem;
+}
+
+.documentList {
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+
+.documentItem {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.documentItem:last-child {
+  border-bottom: none;
+}
+
+.documentButton {
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.documentButton:hover {
+  background-color: #f8fafc;
+}
+
+.submitButton,
+.cancelButton {
+  flex: 1;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+  max-width: 150px;
+}
+
+.submitButton {
+  background-color: #4caf50;
+  color: white;
+}
+
+.submitButton:hover {
+  background-color: #45a049;
+}
+
+.cancelButton {
+  background-color: #f44336;
+  color: white;
+}
+
+.cancelButton:hover {
+  background-color: #d32f2f;
+}
+
+.inputField {
+  width: 100%;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.bundleList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.bundleItem {
+  border-top: 1px solid #e2e8f0;
+  padding: 1rem;
+}
+
+.bundleContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.bundleName {
+  font-weight: bold;
+}
+
+.documentList {
+  list-style-type: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.documentItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  transition: background-color 0.2s ease;
+}
+
+.documentItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+.documentButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #333;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.2s ease;
+}
+
+.documentButton:hover {
+  background-color: #f1f5f9;
+}
+.unlinkButton,
+.deleteButton {
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: background-color 0.3s ease;
+}
+
+.unlinkButton {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.unlinkButton:hover {
+  background-color: #e0e0e0;
+}
+
+.deleteButton {
+  background-color: #f44336;
+  color: white;
+}
+
+.deleteButton:hover {
+  background-color: #d32f2f;
+}
+
+.documentLink {
+  color: inherit;
+  margin-left: auto;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+.selectedDocument {
+  background-color: #e2e8f0;
+  font-weight: 600;
+}
+
+.linkedDocumentsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.addDocumentToBundleButton {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, background-color 0.2s ease;
+}
+
+.linkedDocumentsHeader:hover .addDocumentToBundleButton {
+  opacity: 1;
+}
+
+.addDocumentToBundleButton:hover {
+  background-color: #45a049;
+}

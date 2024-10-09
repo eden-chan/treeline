@@ -2,11 +2,11 @@ import { useState } from 'react';
 import { addTag, type Document } from '../utils/dbUtils';
 
 type AddTagProps = {
-    onTagAdded: () => void;
+
     documents: Document[];
 };
 
-export function AddTag({ onTagAdded, documents }: AddTagProps) {
+export function AddTag({ documents }: AddTagProps) {
     const [newTagName, setNewTagName] = useState('');
     const [newTagDescription, setNewTagDescription] = useState('');
     const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
@@ -22,7 +22,7 @@ export function AddTag({ onTagAdded, documents }: AddTagProps) {
             setNewTagName('');
             setNewTagDescription('');
             setSelectedDocumentIds([]);
-            onTagAdded();
+            ;
         }
     };
 

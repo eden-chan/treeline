@@ -3,12 +3,12 @@ import { deleteTag, unlinkDocumentFromTag, updateTag, type TagWithDocuments } fr
 // @ts-ignore
 import debounce from '../utils/debounce';
 
-type TagListProps = {
+type Props = {
     tagsWithDocuments: TagWithDocuments[];
 };
 
 const DEBOUNCE_TIME = 1000;// ms
-export function TagList({ tagsWithDocuments }: TagListProps) {
+export function TagList({ tagsWithDocuments }: Props) {
     const nameRefs = useRef<{ [key: string]: HTMLInputElement }>({});
     const descriptionRefs = useRef<{ [key: string]: HTMLInputElement }>({});
 
