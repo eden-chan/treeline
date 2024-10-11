@@ -347,6 +347,15 @@ export const addDocument = (document: CreateDocumentDraft, bundleId?: string) =>
     return db.transact(transaction);
 }
 
+export const editDocument = (documentId: string, document: Partial<CreateDocumentDraft>) => {
+    console.debug("Editing document", documentId, document);
+    return db.transact(tx.documents[documentId].update({...document}));
+};
+
+export const removeDocument = (documentId: string) => {
+    console.debug("Removing document", documentId);
+    return db.transact(tx.documents[documentId].delete());
+};
 
 
 const documentQuery = { 

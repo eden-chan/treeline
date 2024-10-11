@@ -147,3 +147,54 @@
   white-space: nowrap;
   border-width: 0;
 }
+
+.documentActions {
+  display: flex;
+  align-items: center;
+}
+
+.documentLink,
+.removeButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #666;
+  transition: color 0.2s ease;
+}
+
+.documentLink:hover,
+.removeButton:hover {
+  color: #000;
+}
+
+.removeButton {
+  color: #ff4d4f;
+}
+
+.removeButton:hover {
+  color: #ff7875;
+}
+
+.editButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-left: 8px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #1890ff;
+  transition: color 0.2s ease;
+}
+
+.editButton:hover {
+  color: #40a9ff;
+}

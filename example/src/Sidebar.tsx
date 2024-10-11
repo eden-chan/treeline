@@ -15,7 +15,8 @@ import { ChatView } from './ChatView.tsx';
 import { BundleSection } from './components/BundleSection';
 import { useService } from './App.tsx';
 import { IYoutubeService } from './services/youtube/youtubeService.ts';
-import { MobileComponent } from './components/MobileComponent';
+import MobileNavigation from './components/MobileNavigation.tsx';
+
 
 type Props = {
   documents: Document[];
@@ -46,9 +47,9 @@ export function Sidebar({
   bundles,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState('');
   const highlights = currentDocument?.highlights;
 
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const youtubeService = useService(IYoutubeService);
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes(prev =>
@@ -95,7 +96,7 @@ export function Sidebar({
               </SignedIn>
             </div>
           </div>
-          {isMobile && <MobileComponent />}
+          {isMobile && <MobileNavigation isAreaSelectionEnabled={false} setIsAreaSelectionEnabled={() => { }} setIsSidebarOpen={closeSidebar} />}
           <div className={styles.tagsAndBundles}>
             <BundleSection documents={documents} bundlesWithDocuments={bundles ?? []} toggleDocument={toggleDocument} selectedDocument={currentDocument} />
           </div>
@@ -127,6 +128,10 @@ export function Sidebar({
             </button>
           )}
         </div>
+
+        <input type="text" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} />
+        <button type="button" onClick={handleFetchTranscript}>Fetch</button>
+
         <ChatView
           roomId={currentDocument?.id ?? ''}
           username={currentUser?.email ?? ''}
