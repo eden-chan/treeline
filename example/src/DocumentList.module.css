@@ -70,6 +70,7 @@
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: space-between; /* Add this line */
   font-size: 0.875rem;
   color: #333;
   padding: 0.75rem 1rem;
@@ -154,23 +155,72 @@
 }
 
 .documentLink,
-.removeButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  margin-left: 8px;
+.settingsButton {
   background: none;
   border: none;
   cursor: pointer;
-  color: #666;
-  transition: color 0.2s ease;
+  padding: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  margin-left: auto;
+}
+
+.settingsButton:active,
+.settingsButton:focus,
+.settingsMenu:hover + .settingsButton,
+.documentButton:hover .settingsButton {
+  opacity: 1;
+}
+
+.documentButton:hover .documentLink,
+.documentButton:hover .settingsButton {
+  opacity: 1;
 }
 
 .documentLink:hover,
-.removeButton:hover {
+.settingsButton:hover {
   color: #000;
+}
+
+.settingsMenuOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: transparent;
+  z-index: 1000;
+}
+
+.settingsMenu {
+  position: fixed;
+  background-color: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.25rem;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+  min-width: 150px;
+}
+
+.settingsMenuItem {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+  color: #333;
+  transition: background-color 0.2s ease;
+}
+
+.settingsMenuItem:hover {
+  background-color: #f1f5f9;
+}
+
+.settingsMenuItem:not(:last-child) {
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .removeButton {
@@ -197,4 +247,22 @@
 
 .editButton:hover {
   color: #40a9ff;
+}
+
+.settingsButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  margin-left: auto;
+}
+
+.documentButton:hover .settingsButton {
+  opacity: 1;
+}
+
+.settingsButton:hover {
+  color: #000;
 }
