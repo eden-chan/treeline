@@ -27,7 +27,7 @@ export const FileList: React.FC<Props> = ({ localFiles, resourceLinks, setLocalF
         }
     }, [editingFile, editingLink]);
 
-    const handleFileNameChange = (index: number, newName: string) => {
+    const handleFileNameChange = (_: number, newName: string) => {
         setEditingFileName(newName);
     };
 

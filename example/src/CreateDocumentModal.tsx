@@ -50,7 +50,7 @@ export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
     const uploadFiles = async () => {
       try {
         const formData = new FormData();
-        files.forEach((file, index) => {
+        files.forEach((file, _) => {
           console.log('uploading file', file)
           formData.append('files', file);
         });

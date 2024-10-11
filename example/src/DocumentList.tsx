@@ -13,7 +13,7 @@ type Props = {
 
 }
 
-export const DocumentList: React.FC<Props> = ({ documents, toggleDocument, onAddNew, selectedDocument, onRemoveDocument }) => {
+export const DocumentList: React.FC<Props> = ({ documents, toggleDocument, onAddNew, selectedDocument }) => {
     const [isExpanded, setIsExpanded] = useState(true);
     const [editingDocument, setEditingDocument] = useState<Document | null>(null);
 

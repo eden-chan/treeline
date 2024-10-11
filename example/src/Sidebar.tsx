@@ -47,9 +47,9 @@ export function Sidebar({
   bundles,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [youtubeUrl, setYoutubeUrl] = useState('');
   const highlights = currentDocument?.highlights;
 
+  const [youtubeUrl, setYoutubeUrl] = useState('');
   const youtubeService = useService(IYoutubeService);
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes(prev =>
@@ -128,6 +128,10 @@ export function Sidebar({
             </button>
           )}
         </div>
+
+        <input type="text" value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} />
+        <button type="button" onClick={handleFetchTranscript}>Fetch</button>
+
         <ChatView
           roomId={currentDocument?.id ?? ''}
           username={currentUser?.email ?? ''}
