@@ -1,35 +1,43 @@
 // DocumentList.tsx
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { editDocument, removeDocument, type Document } from './utils/dbUtils';
 import styles from './DocumentList.module.css';
-import { Trash2, Edit } from 'lucide-react';
 import { EditDocumentModal } from './EditDocumentModal';
+import { DocumentSettingsMenu } from './components/DocumentSettingsMenu';
 
 type Props = {
     documents: Document[];
     toggleDocument: (doc: Document) => void;
     onAddNew: () => void;
     selectedDocument?: Document;
-
 }
 
 export const DocumentList: React.FC<Props> = ({ documents, toggleDocument, onAddNew, selectedDocument }) => {
     const [isExpanded, setIsExpanded] = useState(true);
     const [editingDocument, setEditingDocument] = useState<Document | null>(null);
+    const [settingsDocument, setSettingsDocument] = useState<Document | null>(null);
+    const [settingsPosition, setSettingsPosition] = useState({ top: 0, left: 0 });
 
-    const toggleExpand = () => {
-        setIsExpanded(!isExpanded);
-    };
+    const toggleExpand = () => setIsExpanded(!isExpanded);
 
     const openEditModal = (doc: Document) => {
-        setEditingDocument(doc);
+        setSettingsDocument(null);
+        setEditingDocument(doc)
+    };
+    const closeEditModal = () => setEditingDocument(null);
+
+    const toggleSettings = (e: React.MouseEvent, doc: Document) => {
+        e.stopPropagation();
+        const button = e.currentTarget as HTMLButtonElement;
+        const rect = button.getBoundingClientRect();
+        setSettingsPosition({
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX,
+        });
+        setSettingsDocument(settingsDocument?.id === doc.id ? null : doc);
     };
 
-
-
-    const closeEditModal = () => {
-        setEditingDocument(null);
-    };
+    const closeSettingsMenu = () => setSettingsDocument(null);
 
     return (
         <div className={styles.documentListContainer}>
@@ -56,49 +64,23 @@ export const DocumentList: React.FC<Props> = ({ documents, toggleDocument, onAdd
                     {documents.map((doc: Document) => (
                         <li key={doc.id} className={styles.documentItem}>
                             <div
-                                onClick={() => toggleDocument(doc)}
                                 className={`${styles.documentButton} ${selectedDocument && selectedDocument.id === doc.id ? styles.selectedDocument : ''}`}
                             >
-                                {doc?.name?.length > 20 ? `${doc.name.slice(0, 20)}...` : doc?.name}
-                                <div className={styles.documentActions}>
-                                    <a
-                                        href={doc?.sourceUrl}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        className={styles.documentLink}
-                                        aria-label={`Open ${doc.name} in new tab`}
-                                        onClick={(e) => e.stopPropagation()}
-                                    >
-                                        <span className={styles.srOnly}>Open in new tab</span>
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                                            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                                            <polyline points="15 3 21 3 21 9" />
-                                            <line x1="10" y1="14" x2="21" y2="3" />
-                                        </svg>
-                                    </a>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            openEditModal(doc);
-                                        }}
-                                        className={styles.editButton}
-                                        aria-label={`Edit ${doc.name}`}
-                                    >
-                                        <Edit size={18} />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            removeDocument(doc.id);
-                                        }}
-                                        className={styles.removeButton}
-                                        aria-label={`Remove ${doc.name}`}
-                                    >
-                                        <Trash2 size={18} />
-                                    </button>
-                                </div>
+                                <span onClick={() => toggleDocument(doc)}>
+                                    {doc?.name?.length > 20 ? `${doc.name.slice(0, 20)}...` : doc?.name}
+                                </span>
+                                <button
+                                    onClick={(e) => toggleSettings(e, doc)}
+                                    className={styles.settingsButton}
+                                    type="button"
+                                    aria-label="Document settings"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <title>settings</title>
+                                        <circle cx="12" cy="12" r="3" />
+                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                                    </svg>
+                                </button>
                             </div>
                         </li>
                     ))}
@@ -121,6 +103,18 @@ export const DocumentList: React.FC<Props> = ({ documents, toggleDocument, onAdd
                     onSave={(updatedDoc) => {
                         editDocument(editingDocument.id, updatedDoc);
                         closeEditModal();
+                    }}
+                />
+            )}
+            {settingsDocument && (
+                <DocumentSettingsMenu
+                    document={settingsDocument}
+                    position={settingsPosition}
+                    onClose={closeSettingsMenu}
+                    onEdit={() => openEditModal(settingsDocument)}
+                    onRemove={() => {
+                        removeDocument(settingsDocument.id);
+                        closeSettingsMenu();
                     }}
                 />
             )}
