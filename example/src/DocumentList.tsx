@@ -108,7 +108,6 @@ export const DocumentList: React.FC<Props> = ({ documents, toggleDocument, onAdd
             )}
             {settingsDocument && (
                 <DocumentSettingsMenu
-                    document={settingsDocument}
                     position={settingsPosition}
                     onClose={closeSettingsMenu}
                     onEdit={() => openEditModal(settingsDocument)}

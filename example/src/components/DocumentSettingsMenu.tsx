@@ -1,16 +1,12 @@
-import React from 'react';
 import styles from './DocumentSettingsMenu.module.css';
-import { Document } from '../utils/dbUtils';
-
 interface Props {
-    document: Document;
     position: { top: number; left: number };
     onClose: () => void;
     onEdit: () => void;
     onRemove: () => void;
 }
 
-export const DocumentSettingsMenu: React.FC<Props> = ({ document, position, onClose, onEdit, onRemove }) => {
+export const DocumentSettingsMenu: React.FC<Props> = ({ position, onClose, onEdit, onRemove }) => {
     const handleEdit = (e: React.MouseEvent) => {
         e.stopPropagation();
         onEdit();
