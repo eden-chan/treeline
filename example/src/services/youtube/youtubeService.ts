@@ -24,8 +24,8 @@ export class YoutubeService implements IYoutubeService {
   
 
       if (this.transcriptCache.has(videoId)) {
-        console.log("[YoutubeService] Not returning cached transcript for videoId:", this.transcriptCache.get(videoId));
-        // return this.transcriptCache.get(videoId) ?? null;
+        console.log("[YoutubeService] Now returning cached transcript for videoId:", this.transcriptCache.get(videoId));
+        return this.transcriptCache.get(videoId) ?? null;
       }
 
       return await this.fetchAndProcessTranscript(videoId);

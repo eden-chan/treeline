@@ -81,7 +81,7 @@ export class YoutubeTranscript {
     // biome-ignore lint: reason
     if (this.cache.has(cacheKey)) {
       console.log(
-        `[YoutubeTranscript] Not Returning cached transcript for ${videoId}`
+        `[YoutubeTranscript] Not Returning cached transcript for reliability ${videoId}`
       );
       // biome-ignore lint: reason
       console.log(this.cache.get(cacheKey));
@@ -92,8 +92,6 @@ export class YoutubeTranscript {
     try {
 
       //  need to bypass cors so we use a serverless function to make the fetch
-      console.log(`\x1b[31mFetching from: ${import.meta.env.VITE_AWS_BASE_URL}\x1b[0m`);
-
       const response = await fetch(`${import.meta.env.VITE_AWS_BASE_URL}/`, {
         method: 'POST',
         headers: {
@@ -128,10 +126,7 @@ export class YoutubeTranscript {
 
       // const transcriptResponse = await fetch(selectedTrack.baseUrl);
       // const transcriptText = await transcriptResponse.text();
-
-      console.log( 'got data from fetch request', response);
       const transcriptText = await response.text();
-      console.log( 'got transcript text', transcriptText);
       const transcript = YoutubeTranscript.parseTranscript(transcriptText);
 
       YoutubeTranscript.cache.set(cacheKey, transcript);

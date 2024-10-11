@@ -15,6 +15,7 @@ import { ChatView } from './ChatView.tsx';
 import { BundleSection } from './components/BundleSection';
 import { useService } from './App.tsx';
 import { IYoutubeService } from './services/youtube/youtubeService.ts';
+import { MobileComponent } from './components/MobileComponent';
 
 type Props = {
   documents: Document[];
@@ -94,19 +95,7 @@ export function Sidebar({
               </SignedIn>
             </div>
           </div>
-          <div className={styles.youtubeTranscript}>
-            <input
-              type="text"
-              value={youtubeUrl}
-              onChange={(e) => setYoutubeUrl(e.target.value)}
-              placeholder="Enter YouTube URL"
-              className={styles.youtubeInput}
-            />
-            <button type="button" onClick={handleFetchTranscript} className={styles.fetchButton}>
-              Fetch transcript
-            </button>
-          </div>
-
+          {isMobile && <MobileComponent />}
           <div className={styles.tagsAndBundles}>
             <BundleSection documents={documents} bundlesWithDocuments={bundles ?? []} toggleDocument={toggleDocument} selectedDocument={currentDocument} />
           </div>
