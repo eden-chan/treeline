@@ -46,3 +46,17 @@
 .removeButton:hover {
   background-color: #ff7875;
 }
+
+.fileItem input {
+  font-size: inherit;
+  font-family: inherit;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid #ccc;
+  margin-right: 10px;
+}
+
+.fileItem input:focus {
+  outline: none;
+  border-bottom-color: #007bff;
+}

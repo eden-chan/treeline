@@ -26,8 +26,6 @@ export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
     setResourceLinks([]);
     setFiles([]);
 
-
-
     for (const link of resourceLinks) {
       try {
         const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/get-hosted-pdf-url?url=${encodeURIComponent(link.sourceUrl)}`);
@@ -37,8 +35,6 @@ export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
           console.log('hosted url', data.url)
           const hostedUrl = new URL(data.url);
           const url = `${hostedUrl.origin}${hostedUrl.pathname}`;
-
-
           addDocument({
             name: link.name,
             sourceUrl: url,
@@ -50,8 +46,6 @@ export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
         console.error('Error processing link:', link.sourceUrl, error);
       }
     }
-
-
 
     const uploadFiles = async () => {
       try {
@@ -112,8 +106,6 @@ export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const addUrlToBatch = () => {
     if (urlInput) {
       // Create a new File object from the URL
-      // const urlFile = new File([urlInput], urlInput, { type: 'text/plain' });
-      // setFiles(prevFiles => [...prevFiles, urlFile]);
       setResourceLinks([...resourceLinks, { name, sourceUrl: urlInput }]);
       setUrlInput('');
       setName('');
