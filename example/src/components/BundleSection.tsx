@@ -123,3 +123,44 @@ export function BundleSection({ documents, bundlesWithDocuments, toggleDocument,
         </div>
     );
 }
+
+export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleChange, handleAddDocumentToBundle }: Props) {
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [settingsPosition, setSettingsPosition] = useState({ top: 0, left: 0 });
+    const [settingsButtonRef, setSettingsButtonRef] = useState<HTMLButtonElement | null>(null);
+
+    const toggleSettings = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const button = e.currentTarget as HTMLButtonElement;
+        const rect = button.getBoundingClientRect();
+        setSettingsPosition({
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX,
+        });
+        setIsSettingsOpen(!isSettingsOpen);
+        button.classList.toggle(styles.active);
+    };
+
+    return (
+        <li className={styles.bundleItem}>
+            <div className={styles.bundleHeader} onClick={toggleExpand}>
+                <button
+                    ref={settingsButtonRef}
+                    onClick={toggleSettings}
+                    className={`${styles.settingsButton} ${isSettingsOpen ? styles.active : ''}`}
+                    type="button"
+                    aria-label="Bundle settings"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <title>settings</title>
+                        <circle cx="12" cy="12" r="3" />
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                    </svg>
+                </button>
+            </div>
+            {/* ... (keep other existing code) ... */}
+        </li>
+    );
+}
+
+// ... (keep other existing code) ...
