@@ -162,7 +162,14 @@
   padding: 0.25rem;
   opacity: 0;
   transition: opacity 0.2s ease;
-  margin-left: auto; /* Add this line */
+  margin-left: auto;
+}
+
+.settingsButton:active,
+.settingsButton:focus,
+.settingsMenu:hover + .settingsButton,
+.documentButton:hover .settingsButton {
+  opacity: 1;
 }
 
 .documentButton:hover .documentLink,

@@ -475,14 +475,18 @@
   padding: 0.25rem;
   opacity: 0;
   transition: opacity 0.2s ease;
+  margin-left: auto;
 }
 
+.settingsButton:hover,
+.settingsButton:focus,
+.settingsButton:active,
 .bundleHeader:hover .settingsButton {
   opacity: 1;
 }
 
-.settingsButton:hover {
-  color: #4caf50;
+.settingsButton.active {
+  opacity: 1;
 }
 
 .settingsMenuOverlay {

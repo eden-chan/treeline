@@ -1,5 +1,5 @@
 // DocumentList.tsx
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { editDocument, removeDocument, type Document } from './utils/dbUtils';
 import styles from './DocumentList.module.css';
 import { EditDocumentModal } from './EditDocumentModal';

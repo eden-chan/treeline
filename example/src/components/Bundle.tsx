@@ -75,13 +75,12 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
 
     const toggleSettings = (e: React.MouseEvent) => {
         e.stopPropagation();
-        if (settingsButtonRef.current) {
-            const rect = settingsButtonRef.current.getBoundingClientRect();
-            setSettingsPosition({
-                top: rect.bottom + window.scrollY,
-                left: rect.left + window.scrollX,
-            });
-        }
+        const button = e.currentTarget as HTMLButtonElement;
+        const rect = button.getBoundingClientRect();
+        setSettingsPosition({
+            top: rect.bottom + window.scrollY,
+            left: rect.left + window.scrollX,
+        });
         setIsSettingsOpen(!isSettingsOpen);
     };
 
@@ -91,8 +90,6 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
         }
         setIsSettingsOpen(false);
     };
-
-
 
     return (
         <li className={styles.bundleItem}>
