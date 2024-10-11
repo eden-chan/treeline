@@ -2,53 +2,166 @@
 import { useState } from 'react';
 import styles from './CreateDocumentModal.module.css';
 import { addDocument } from './utils/dbUtils';
+import FileDropzone from './components/FileDropzone';
+import { FileList } from './components/FileList';
+import type { CreateDocumentDraft } from './react-pdf-highlighter';
+import { Modal } from './Modal';
 
-interface CreateDocumentModalProps {
+interface Props {
   isOpen: boolean;
   onClose: () => void;
 }
 
-export const CreateDocumentModal: React.FC<CreateDocumentModalProps> = ({ isOpen, onClose }) => {
+export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
   const [name, setName] = useState('');
-  const [sourceUrl, setSourceUrl] = useState('');
+  const [urlInput, setUrlInput] = useState('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [resourceLinks, setResourceLinks] = useState<CreateDocumentDraft[]>([]);
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const submitBatch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (name && sourceUrl) {
-      addDocument({ name, sourceUrl });
+
+    setName('');
+    setUrlInput('');
+    setResourceLinks([]);
+    setFiles([]);
+
+
+
+    for (const link of resourceLinks) {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/get-hosted-pdf-url?url=${encodeURIComponent(link.sourceUrl)}`);
+        const data = await response.json();
+        console.log(data);
+        if (data.url) {
+          console.log('hosted url', data.url)
+          const hostedUrl = new URL(data.url);
+          const url = `${hostedUrl.origin}${hostedUrl.pathname}`;
+
+
+          addDocument({
+            name: link.name,
+            sourceUrl: url,
+          })
+        } else {
+          console.error('Error getting hosted URL:', data.error);
+        }
+      } catch (error) {
+        console.error('Error processing link:', link.sourceUrl, error);
+      }
+    }
+
+
+
+    const uploadFiles = async () => {
+      try {
+        const formData = new FormData();
+        files.forEach((file, index) => {
+          console.log('uploading file', file)
+          formData.append('files', file);
+        });
+
+        console.log('uploading files', formData)
+        const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/upload-files`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        console.log('upload files', data);
+
+        if (data.files) {
+          for (const file of data.files) {
+            try {
+              const hostedUrl = new URL(file.url);
+              const url = `${hostedUrl.origin}${hostedUrl.pathname}`;
+              console.log('hosted url', url);
+              addDocument({
+                name: file.name,
+                sourceUrl: url,
+              });
+            } catch (error) {
+              console.error('Error uploading file:', file.name, error);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error uploading files:', error);
+      }
+    };
+
+    await uploadFiles();
+
+    onClose();
+
+  };
+
+  const addLocalFileToBatch = (newFiles: File[]) => {
+    setFiles(prevFiles => {
+      const uniqueNewFiles = newFiles.filter(newFile =>
+        !prevFiles.some(prevFile => prevFile.name === newFile.name && prevFile.size === newFile.size)
+      );
+      return [...prevFiles, ...uniqueNewFiles];
+    });
+  };
+
+  const addUrlToBatch = () => {
+    if (urlInput) {
+      // Create a new File object from the URL
+      // const urlFile = new File([urlInput], urlInput, { type: 'text/plain' });
+      // setFiles(prevFiles => [...prevFiles, urlFile]);
+      setResourceLinks([...resourceLinks, { name, sourceUrl: urlInput }]);
+      setUrlInput('');
       setName('');
-      setSourceUrl('');
-      onClose();
     }
   };
 
-  if (!isOpen) return null;
 
   return (
-    <div className={styles.modalOverlay}>
-      <div className={styles.modal}>
-        <h2>Add New Source</h2>
-        <form onSubmit={handleSubmit} className={styles.createDocumentForm}>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Document Name"
-            className={styles.inputField}
-          />
+    <Modal isOpen={isOpen} onClose={onClose} title="Create Document">
+      <form onSubmit={submitBatch} className={styles.createDocumentForm}>
+        <input
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Document Name"
+          className={styles.inputField}
+        />
+        <div className={styles.urlInputContainer}>
           <input
             type="url"
-            value={sourceUrl}
-            onChange={(e) => setSourceUrl(e.target.value)}
-            placeholder="PDF URL"
+            value={urlInput}
+            onChange={(e) => setUrlInput(e.target.value)}
+            placeholder="Enter URL"
             className={styles.inputField}
           />
-          <div className={styles.modalButtons}>
-            <button type="submit" className={styles.submitButton}>Add Document</button>
-            <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
+          <button type="button" onClick={addUrlToBatch} className={styles.addUrlButton}>
+            Add URL
+          </button>
+        </div>
+        <FileDropzone onFilesAdded={addLocalFileToBatch} setFiles={setFiles} />
+
+        {(files.length > 0 || resourceLinks.length > 0) && (
+          <div className={styles.fileListContainer}>
+            <h3 className={styles.fileListTitle}>Selected Files:</h3>
+            <FileList
+              localFiles={files}
+              resourceLinks={resourceLinks}
+              setLocalFiles={setFiles}
+              setResourceLinks={setResourceLinks}
+            />
           </div>
-        </form>
-      </div>
-    </div>
+        )}
+
+        <div className={styles.modalButtons}>
+          <button type="submit" className={styles.submitButton}>Upload</button>
+          <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
+        </div>
+      </form>
+    </Modal>
   );
 };

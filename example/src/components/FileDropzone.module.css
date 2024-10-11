@@ -1,0 +1,58 @@
+.container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.dropzone {
+  border: 3px dashed #cccccc;
+  border-radius: 8px;
+  padding: 40px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background-color: #f9f9f9;
+}
+
+.dropzone:hover {
+  border-color: #2196f3;
+  background-color: #e3f2fd;
+}
+
+.dragging {
+  border-color: #2196f3;
+  background-color: #bbdefb;
+}
+
+.dropzoneContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.uploadIcon {
+  color: #2196f3;
+  margin-bottom: 16px;
+}
+
+.dropzoneText {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.highlight {
+  color: #2196f3;
+  font-weight: bold;
+}
+
+.supportedFiles {
+  font-size: 14px;
+  color: #666666;
+}
+
+.fileInput {
+  display: none;
+}

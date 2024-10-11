@@ -15,7 +15,8 @@ import { ChatView } from './ChatView.tsx';
 import { BundleSection } from './components/BundleSection';
 import { useService } from './App.tsx';
 import { IYoutubeService } from './services/youtube/youtubeService.ts';
-import { MobileComponent } from './components/MobileComponent';
+import MobileNavigation from './components/MobileNavigation.tsx';
+
 
 type Props = {
   documents: Document[];
@@ -95,7 +96,7 @@ export function Sidebar({
               </SignedIn>
             </div>
           </div>
-          {isMobile && <MobileComponent />}
+          {isMobile && <MobileNavigation isAreaSelectionEnabled={false} setIsAreaSelectionEnabled={() => { }} setIsSidebarOpen={closeSidebar} />}
           <div className={styles.tagsAndBundles}>
             <BundleSection documents={documents} bundlesWithDocuments={bundles ?? []} toggleDocument={toggleDocument} selectedDocument={currentDocument} />
           </div>

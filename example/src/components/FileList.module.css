@@ -1,0 +1,48 @@
+.fileListContainer {
+  margin-top: 24px;
+}
+
+.fileListTitle {
+  font-size: 18px;
+  margin-bottom: 12px;
+  color: #333333;
+}
+
+.fileList {
+  list-style-type: none;
+  padding: 0;
+}
+
+.fileItem {
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  padding: 12px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.fileName {
+  font-weight: bold;
+  color: #333333;
+}
+
+.fileSize {
+  color: #666666;
+  font-size: 14px;
+}
+
+.removeButton {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.removeButton:hover {
+  background-color: #ff7875;
+}
