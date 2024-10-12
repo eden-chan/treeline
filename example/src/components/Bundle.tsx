@@ -24,19 +24,27 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
     const descriptionRef = useRef<string>(bundle.description);
 
 
+    const onRenderMarkdown = (markdown: string) => {
+        descriptionRef.current = markdown;
+        console.log('%c preserved markdown onRenderMarkdown', 'color: blue', markdown);
+        console.log('%c SAVE descriptionRef.current', 'color: red', descriptionRef.current);
+    };
 
+    // useEffect(() => {
+    //     descriptionRef.current = bundle.description;
+    //     console.log('%c SAVE descriptionRef.current', 'color: red', descriptionRef.current);
+    // }, [bundle.description]);
 
     const handleDescriptionChange = (editorState: EditorState) => {
 
-        // Todo preserve markdown state on save
+        // Todo preserve markdown state on save from 
         const textContent = editorState.read(() => $getRoot().getTextContent());
         const markdown = editorState.read(() => $convertToMarkdownString(CUSTOM_TRANSFORMERS, $getRoot(), true));
-        console.log('%chandleDescriptionChange root', 'color: red', markdown, textContent);
-        // const description = editorState.read(() => $convertToMarkdownString(CUSTOM_TRANSFORMERS, $getRoot(), true));
+        console.log('%chandleDescriptionChange root markdown', 'color: red', markdown, 'textContent', textContent);
         // console.log('description', description);
 
-        descriptionRef.current = markdown;
         handleBundleChange(bundle.id, bundle.name, markdown);
+        // descriptionRef.current = markdown;
     };
 
     const handleNameChange = (editorState: EditorState) => {
@@ -104,7 +112,7 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
             </div>
             {isExpanded && (
                 <div className={styles.bundleContent}>
-                    <Editor value={descriptionRef.current} onChange={handleDescriptionChange} className={styles.bundleDescription} />
+                    <Editor value={descriptionRef.current} onRenderMarkdown={onRenderMarkdown} onChange={handleDescriptionChange} className={styles.bundleDescription} />
                     <div className={styles.linkedDocumentsHeader}>
                         <span>Linked documents:</span>
                         <button

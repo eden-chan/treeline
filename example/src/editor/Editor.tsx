@@ -20,7 +20,7 @@ import { ListItemNode, ListNode } from '@lexical/list';
 import { TableNode } from '@lexical/table';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { CUSTOM_TRANSFORMERS } from './plugins/MyMarkdownTransformers';
-const editorConfig = ({ value }: { value: string }): InitialConfigType => {
+const editorConfig = ({ value, onRenderMarkdown }: { value: string, onRenderMarkdown?: (markdown: string) => void }): InitialConfigType => {
     return {
         namespace: "editor",
         onError: (error: Error) => console.error(error),
@@ -59,20 +59,23 @@ const editorConfig = ({ value }: { value: string }): InitialConfigType => {
 
             let lastIndex = 0;
             let match: RegExpExecArray | null;
+            let preservedText = '';
 
             while (true) {
                 match = mentionRegex.exec(value);
                 if (match === null) break;
                 // Add text before the mention
+
                 if (match.index > lastIndex) {
                     const textBefore = value.slice(lastIndex, match.index);
                     const textNode = $createTextNode(textBefore);
                     const paragraphNode = $createParagraphNode();
-                    // paragraphNode.append(textNode);
-                    console.log('%ctextBefore', 'color: green', textBefore);
-                    // $convertFromMarkdownString(textBefore, CUSTOM_TRANSFORMERS, paragraphNode, true);
-                    root.append(paragraphNode);
+                    paragraphNode.append(textNode);
+                    console.log('%c rendering as markdown textBefore', 'color: green', textBefore);
 
+                    // $convertFromMarkdownString(textBefore, CUSTOM_TRANSFORMERS, paragraphNode);
+                    root.append(paragraphNode);
+                    preservedText += textBefore;
                     // const markdown = $convertToMarkdownString(CUSTOM_TRANSFORMERS);
                     // root.clear().append($createCodeNode('markdown').append($createTextNode(markdown)));
 
@@ -83,7 +86,7 @@ const editorConfig = ({ value }: { value: string }): InitialConfigType => {
                 paragraph.append(mentionNode);
                 root.append(paragraph);
                 console.log('retrieving mentionNode', mentionNode);
-
+                preservedText += match[0];
                 lastIndex = match.index + match[0].length;
             }
 
@@ -95,11 +98,15 @@ const editorConfig = ({ value }: { value: string }): InitialConfigType => {
                 const paragraphNode = $createParagraphNode();
                 const remainingTextNode = $createTextNode(remainingText);
                 paragraphNode.append(remainingTextNode);
+                console.log('%c rendering as markdown remainingText', 'color: green', remainingText);
+
                 // $convertFromMarkdownString(remainingText, CUSTOM_TRANSFORMERS, paragraphNode, true);
                 root.append(paragraphNode);
+                preservedText += remainingText;
             }
 
 
+            onRenderMarkdown?.(preservedText);
         },
     };
 }
@@ -108,12 +115,13 @@ type Props = {
     value: string;
     onChange?: (editorState: EditorState) => void;
     onBlur?: (editorState: EditorState) => void;
+    onRenderMarkdown?: (markdown: string) => void;
     className?: string;
 }
 
-export function Editor({ value, onChange, onBlur, className }: Props) {
+export function Editor({ value, onChange, onBlur, onRenderMarkdown, className }: Props) {
     return (
-        <LexicalComposer initialConfig={editorConfig({ value })}>
+        <LexicalComposer initialConfig={editorConfig({ value, onRenderMarkdown })}>
             <RichTextPlugin
                 contentEditable={
                     <ContentEditable
