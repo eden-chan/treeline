@@ -16,34 +16,13 @@ type Props = {
 export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleChange, handleAddDocumentToBundle }: Props) {
 
     const [isExpanded, setIsExpanded] = useState(false);
-    const [isEditingName, setIsEditingName] = useState(false);
-    const [isEditingDescription, setIsEditingDescription] = useState(false);
-    const nameTextareaRef = useRef<HTMLTextAreaElement>(null);
-    const descriptionTextareaRef = useRef<HTMLTextAreaElement>(null);
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settingsPosition, setSettingsPosition] = useState({ top: 0, left: 0 });
     const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
-
-
-    useEffect(() => {
-        if (isEditingName && nameTextareaRef.current) {
-            nameTextareaRef.current.focus();
-        }
-    }, [isEditingName]);
-
-    useEffect(() => {
-        if (isEditingDescription && descriptionTextareaRef.current) {
-            descriptionTextareaRef.current.focus();
-        }
-    }, [isEditingDescription]);
-
-
-
     const handleNameBlur = (editorState: EditorState) => {
         const name = editorState.read(() => $getRoot().getTextContent());
         handleBundleChange(bundle.id, name, bundle.description);
-        setIsEditingName(false);
     };
 
     const handleDescriptionChange = (editorState: EditorState) => {
@@ -53,7 +32,6 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
     const handleDescriptionBlur = (editorState: EditorState) => {
         const description = editorState.read(() => $getRoot().getTextContent());
         handleBundleChange(bundle.id, bundle.name, description);
-        setIsEditingDescription(false);
     };
 
     const toggleExpand = (e: React.MouseEvent) => {
@@ -61,15 +39,6 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
         setIsExpanded(!isExpanded);
     };
 
-    const startEditingName = () => {
-        setIsEditingName(true);
-        setIsSettingsOpen(false);
-    };
-
-    const startEditingDescription = () => {
-        setIsEditingDescription(true);
-        setIsSettingsOpen(false);
-    };
 
     const toggleSettings = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -105,16 +74,8 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
                 >
                     {isExpanded ? '▼' : '▶'}
                 </button>
-                {isEditingName ? (
 
-                    <Editor value={bundle.name} onBlur={handleNameBlur} />
-
-                ) : (
-                    <div className={styles.bundleNameContainer}>
-                        <span className={styles.bundleName}>{bundle.name}</span>
-
-                    </div>
-                )}
+                <Editor value={bundle.name} onBlur={handleNameBlur} className={styles.bundleName} />
                 <button
                     ref={settingsButtonRef}
                     onClick={toggleSettings}
@@ -131,25 +92,7 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
             </div>
             {isExpanded && (
                 <div className={styles.bundleContent}>
-                    {isEditingDescription ? (
-                        <Editor value={bundle.description} onChange={handleDescriptionChange} onBlur={handleDescriptionBlur} />
-                    ) : (
-                        <div className={styles.descriptionContainer}>
-                            <span className={styles.bundleDescription}>{bundle.description || "No description"}</span>
-                            <button
-                                onClick={startEditingDescription}
-                                className={styles.editButton}
-                                type="button"
-                                aria-label="Edit bundle description"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                    <title>Edit</title>
-                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                </svg>
-                            </button>
-                        </div>
-                    )}
+                    <Editor value={bundle.description} onChange={handleDescriptionChange} onBlur={handleDescriptionBlur} className={styles.bundleDescription} />
                     <div className={styles.linkedDocumentsHeader}>
                         <span>Linked documents:</span>
                         <button
@@ -214,8 +157,6 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
                 isOpen={isSettingsOpen}
                 onClose={() => setIsSettingsOpen(false)}
                 position={settingsPosition}
-                onEditName={startEditingName}
-                onEditDescription={startEditingDescription}
                 onAddDocument={() => handleAddDocumentToBundle(bundle.id)}
                 onDeleteBundle={handleDeleteBundle}
             />

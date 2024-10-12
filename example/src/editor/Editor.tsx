@@ -28,16 +28,17 @@ type Props = {
     value: string;
     onChange?: (editorState: EditorState) => void;
     onBlur?: (editorState: EditorState) => void;
+    className?: string;
 }
 
-export function Editor({ value, onChange, onBlur }: Props) {
+export function Editor({ value, onChange, onBlur, className }: Props) {
     console.log('value', value);
     return (
         <LexicalComposer initialConfig={editorConfig({ value })}>
             <RichTextPlugin
                 contentEditable={
                     <ContentEditable
-                        className={styles.contentEditable} suppressContentEditableWarning
+                        className={`${styles.contentEditable} ${className}`} suppressContentEditableWarning
 
                     />
                 }
