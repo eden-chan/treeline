@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { unlinkDocumentFromBundle, deleteBundle, type Document, type BundleWithDocuments } from '../utils/dbUtils';
 import styles from './BundleSection.module.css';
 import { BundleSettingsMenu } from './BundleSettingsMenu';
+import { Editor } from '../editor/Editor';
 
 type Props = {
     bundle: BundleWithDocuments;
@@ -93,10 +94,16 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
     };
 
 
+    const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            handleNameBlur();
+        }
+    };
 
     return (
         <li className={styles.bundleItem}>
-            <div className={styles.bundleHeader} onClick={toggleExpand}>
+            <div className={styles.bundleHeader} onClick={toggleExpand} onKeyDown={handleKeyPress}>
                 <button
                     className={styles.toggleButton}
                     type="button"
@@ -105,15 +112,20 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
                     {isExpanded ? '▼' : '▶'}
                 </button>
                 {isEditingName ? (
-                    <textarea
-                        ref={nameTextareaRef}
-                        value={name}
-                        onChange={handleNameChange}
-                        onBlur={handleNameBlur}
-                        className={`${styles.input} ${styles.bundleName}`}
-                        rows={1}
-                        placeholder="Enter bundle name"
-                    />
+                    <>
+                        <textarea
+                            ref={nameTextareaRef}
+                            value={name}
+                            onChange={handleNameChange}
+                            onBlur={handleNameBlur}
+                            className={`${styles.input} ${styles.bundleName}`}
+                            rows={1}
+                            placeholder="Enter bundle name"
+                        />
+
+
+
+                    </>
                 ) : (
                     <div className={styles.bundleNameContainer}>
                         <span className={styles.bundleName}>{name}</span>
@@ -134,6 +146,8 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
                     </svg>
                 </button>
             </div>
+            <Editor />
+
             {isExpanded && (
                 <div className={styles.bundleContent}>
                     {isEditingDescription ? (

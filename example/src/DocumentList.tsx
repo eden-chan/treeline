@@ -66,7 +66,12 @@ export const DocumentList: React.FC<Props> = ({ documents, toggleDocument, onAdd
                             <div
                                 className={`${styles.documentButton} ${selectedDocument && selectedDocument.id === doc.id ? styles.selectedDocument : ''}`}
                             >
-                                <span onClick={() => toggleDocument(doc)}>
+                                <span onClick={() => toggleDocument(doc)} onKeyDown={(e) => {
+                                    if (e.key === 'Enter' || e.key === ' ') {
+                                        // toggleDocument(doc);
+                                        console.log('toggleDocument', doc);
+                                    }
+                                }}>
                                     {doc?.name?.length > 20 ? `${doc.name.slice(0, 20)}...` : doc?.name}
                                 </span>
                                 <button

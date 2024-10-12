@@ -1,0 +1,80 @@
+.editorContainer {
+  min-height: 100px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.editorPlaceholder {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  color: #aaa;
+  pointer-events: none;
+}
+
+/* Styles for @ mentions */
+.mentionDefault {
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
+.mentionFocused {
+  outline: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px
+    rgba(0, 0, 0, 0.06);
+}
+
+.mentionTrigger {
+  color: #2563eb;
+}
+
+.mentionValue {
+  color: #1d4ed8;
+}
+
+/* Styles for # mentions */
+.hashtagDefault {
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
+.hashtagFocused {
+  outline: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px
+    rgba(0, 0, 0, 0.06);
+}
+
+.hashtagTrigger {
+  color: #059669;
+}
+
+.hashtagValue {
+  color: #047857;
+}
+
+/* Styles for due: mentions */
+.dueMentionDefault {
+  padding-left: 4px;
+  padding-right: 4px;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
+.dueMentionFocused {
+  outline: none;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px
+    rgba(0, 0, 0, 0.06);
+}
+
+.dueMentionTrigger {
+  color: #3b82f6;
+}
+
+.dueMentionValue {
+  color: #f97316;
+}
