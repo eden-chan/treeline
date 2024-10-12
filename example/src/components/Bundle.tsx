@@ -101,6 +101,9 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
         }
     };
 
+    const candidateTexts = bundle.documents.map((doc) => doc.name);
+    console.log(candidateTexts);
+
     return (
         <li className={styles.bundleItem}>
             <div className={styles.bundleHeader} onClick={toggleExpand} onKeyDown={handleKeyPress}>
@@ -122,8 +125,6 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
                             rows={1}
                             placeholder="Enter bundle name"
                         />
-
-
 
                     </>
                 ) : (
