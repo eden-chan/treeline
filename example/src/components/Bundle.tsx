@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { unlinkDocumentFromBundle, deleteBundle, type Document, type BundleWithDocuments } from '../utils/dbUtils';
 import styles from './BundleSection.module.css';
 import { BundleSettingsMenu } from './BundleSettingsMenu';

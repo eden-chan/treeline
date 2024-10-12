@@ -1,5 +1,5 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { BundleWithDocuments } from '../types'; // Adjust the import path as needed
+import type { BundleWithDocuments } from '../utils/dbUtils';
 
 interface BundleContextType {
     bundlesWithDocuments: BundleWithDocuments[];
@@ -7,7 +7,7 @@ interface BundleContextType {
 
 const BundleContext = createContext<BundleContextType | undefined>(undefined);
 
-export function BundleProvider({ children, bundlesWithDocuments }: { children: ReactNode; bundlesWithDocuments: Bundle[] }) {
+export function BundleProvider({ children, bundlesWithDocuments }: { children: ReactNode; bundlesWithDocuments: BundleWithDocuments[] }) {
     return (
         <BundleContext.Provider value={{ bundlesWithDocuments }}>
             {children}

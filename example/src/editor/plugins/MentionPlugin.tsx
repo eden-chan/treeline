@@ -153,7 +153,6 @@ class MentionTypeaheadOption extends MenuOption {
 }
 
 function MentionsTypeaheadMenuItem({
-    index,
     isSelected,
     onClick,
     onMouseEnter,
