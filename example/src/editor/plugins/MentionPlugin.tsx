@@ -24,6 +24,8 @@ import type { Document } from '../../utils/dbUtils';
 
 const PUNCTUATION = '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;';
 const NAME = `\\b[A-Z][^\\s${PUNCTUATION}]`;
+export const mentionRegex = /@\[([^\]]+)\]<<([^>]+)>>/g;
+
 
 const DocumentMentionsRegex = {
     NAME,
@@ -225,7 +227,7 @@ export default function MentionPlugin(): JSX.Element | null {
             closeMenu: () => void,
         ) => {
             editor.update(() => {
-                const mentionNode = $createMentionNode(selectedOption.name);
+                const mentionNode = $createMentionNode(`@[${selectedOption.name}]<<${selectedOption.id}>>`);
                 if (nodeToReplace) {
                     nodeToReplace.replace(mentionNode);
                 }
