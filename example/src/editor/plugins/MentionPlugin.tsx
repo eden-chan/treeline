@@ -273,7 +273,7 @@ export default function MentionPlugin(): JSX.Element | null {
                                         onMouseEnter={() => {
                                             setHighlightedIndex(i);
                                         }}
-                                        key={option.key}
+                                        key={option.id}
                                         option={option}
                                     />
                                 ))}

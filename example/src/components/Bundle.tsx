@@ -3,6 +3,7 @@ import { unlinkDocumentFromBundle, deleteBundle, type Document, type BundleWithD
 import styles from './BundleSection.module.css';
 import { BundleSettingsMenu } from './BundleSettingsMenu';
 import { Editor } from '../editor/Editor';
+import { $getRoot, type EditorState } from 'lexical';
 
 type Props = {
     bundle: BundleWithDocuments;
@@ -13,8 +14,7 @@ type Props = {
 };
 
 export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleChange, handleAddDocumentToBundle }: Props) {
-    const [name, setName] = useState(bundle.name);
-    const [description, setDescription] = useState(bundle.description);
+
     const [isExpanded, setIsExpanded] = useState(false);
     const [isEditingName, setIsEditingName] = useState(false);
     const [isEditingDescription, setIsEditingDescription] = useState(false);
@@ -24,10 +24,7 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
     const [settingsPosition, setSettingsPosition] = useState({ top: 0, left: 0 });
     const settingsButtonRef = useRef<HTMLButtonElement>(null);
 
-    useEffect(() => {
-        setName(bundle.name);
-        setDescription(bundle.description);
-    }, [bundle]);
+
 
     useEffect(() => {
         if (isEditingName && nameTextareaRef.current) {
@@ -41,21 +38,21 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
         }
     }, [isEditingDescription]);
 
-    const handleNameChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setName(e.target.value);
-    };
 
-    const handleNameBlur = () => {
-        handleBundleChange(bundle.id, name, description);
+
+    const handleNameBlur = (editorState: EditorState) => {
+        const name = editorState.read(() => $getRoot().getTextContent());
+        handleBundleChange(bundle.id, name, bundle.description);
         setIsEditingName(false);
     };
 
-    const handleDescriptionChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setDescription(e.target.value);
+    const handleDescriptionChange = (editorState: EditorState) => {
+        console.log('handleDescriptionChange', editorState.read(() => $getRoot().getTextContent()));
     };
 
-    const handleDescriptionBlur = () => {
-        handleBundleChange(bundle.id, name, description);
+    const handleDescriptionBlur = (editorState: EditorState) => {
+        const description = editorState.read(() => $getRoot().getTextContent());
+        handleBundleChange(bundle.id, bundle.name, description);
         setIsEditingDescription(false);
     };
 
@@ -94,19 +91,13 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
     };
 
 
-    const handleKeyPress = (e: React.KeyboardEvent<HTMLDivElement>) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            handleNameBlur();
-        }
-    };
 
     const candidateTexts = bundle.documents.map((doc) => doc.name);
     console.log(candidateTexts);
 
     return (
         <li className={styles.bundleItem}>
-            <div className={styles.bundleHeader} onClick={toggleExpand} onKeyDown={handleKeyPress}>
+            <div className={styles.bundleHeader} onClick={toggleExpand}>
                 <button
                     className={styles.toggleButton}
                     type="button"
@@ -115,21 +106,12 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
                     {isExpanded ? '▼' : '▶'}
                 </button>
                 {isEditingName ? (
-                    <>
-                        <textarea
-                            ref={nameTextareaRef}
-                            value={name}
-                            onChange={handleNameChange}
-                            onBlur={handleNameBlur}
-                            className={`${styles.input} ${styles.bundleName}`}
-                            rows={1}
-                            placeholder="Enter bundle name"
-                        />
 
-                    </>
+                    <Editor value={bundle.name} onBlur={handleNameBlur} />
+
                 ) : (
                     <div className={styles.bundleNameContainer}>
-                        <span className={styles.bundleName}>{name}</span>
+                        <span className={styles.bundleName}>{bundle.name}</span>
 
                     </div>
                 )}
@@ -147,23 +129,13 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
                     </svg>
                 </button>
             </div>
-            <Editor />
-
             {isExpanded && (
                 <div className={styles.bundleContent}>
                     {isEditingDescription ? (
-                        <textarea
-                            ref={descriptionTextareaRef}
-                            value={description}
-                            onChange={handleDescriptionChange}
-                            onBlur={handleDescriptionBlur}
-                            className={`${styles.input} ${styles.bundleDescription}`}
-                            rows={3}
-                            placeholder="Enter bundle description"
-                        />
+                        <Editor value={bundle.description} onChange={handleDescriptionChange} onBlur={handleDescriptionBlur} />
                     ) : (
                         <div className={styles.descriptionContainer}>
-                            <span className={styles.bundleDescription}>{description || "No description"}</span>
+                            <span className={styles.bundleDescription}>{bundle.description || "No description"}</span>
                             <button
                                 onClick={startEditingDescription}
                                 className={styles.editButton}

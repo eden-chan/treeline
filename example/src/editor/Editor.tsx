@@ -5,23 +5,40 @@ import LexicalErrorBoundary from "@lexical/react/LexicalErrorBoundary";
 import styles from './Editor.module.css';
 import { MentionNode } from './nodes/MentionNode';
 import MentionPlugin from './plugins/MentionPlugin';
+import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
+import { $createParagraphNode, $createTextNode, $getRoot, type EditorState } from 'lexical';
+import type { InitialConfigType } from '@lexical/react/LexicalComposer';
+import { AutosavePlugin } from './plugins/AutosavePlugin';
 
+const editorConfig = ({ value }: { value: string }): InitialConfigType => {
+    return {
+        namespace: "editor",
+        onError: (error: Error) => console.error(error),
+        nodes: [MentionNode],
+        editorState: () => {
+            const paragraph = $createParagraphNode();
+            const text = $createTextNode(value);
+            paragraph.append(text);
+            $getRoot().append(paragraph);
+        },
+    };
+}
 
-const editorConfig = {
-    namespace: "editor",
-    onError: (error: Error) => console.error(error),
-    nodes: [MentionNode],
-};
+type Props = {
+    value: string;
+    onChange?: (editorState: EditorState) => void;
+    onBlur?: (editorState: EditorState) => void;
+}
 
-
-
-export function Editor() {
+export function Editor({ value, onChange, onBlur }: Props) {
+    console.log('value', value);
     return (
-        <LexicalComposer initialConfig={editorConfig}>
+        <LexicalComposer initialConfig={editorConfig({ value })}>
             <RichTextPlugin
                 contentEditable={
                     <ContentEditable
-                        className={styles.contentEditable}
+                        className={styles.contentEditable} suppressContentEditableWarning
+
                     />
                 }
                 placeholder={
@@ -32,6 +49,8 @@ export function Editor() {
                 ErrorBoundary={LexicalErrorBoundary}
             />
             <MentionPlugin />
+            {onChange && <OnChangePlugin onChange={onChange} />}
+            {onBlur && <AutosavePlugin onBlur={onBlur} />}
 
         </LexicalComposer>
     );
