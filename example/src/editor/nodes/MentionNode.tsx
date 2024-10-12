@@ -84,6 +84,8 @@ export class MentionNode extends TextNode {
     }
 
     exportDOM(): DOMExportOutput {
+
+        console.log('%cexport dom', 'color: red', this.__text);
         const element = document.createElement('span');
         element.setAttribute('data-lexical-mention', 'true');
         element.textContent = this.__text;

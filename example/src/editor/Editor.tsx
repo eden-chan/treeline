@@ -11,16 +11,16 @@ import type { InitialConfigType } from '@lexical/react/LexicalComposer';
 import { AutosavePlugin } from './plugins/AutosavePlugin';
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
 import {
+    $convertFromMarkdownString,
     $convertToMarkdownString,
-    TRANSFORMERS,
 } from '@lexical/markdown';
 import { $createCodeNode, $isCodeNode, CodeHighlightNode, CodeNode } from '@lexical/code';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { TableNode } from '@lexical/table';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
+import { CUSTOM_TRANSFORMERS } from './plugins/MyMarkdownTransformers';
 const editorConfig = ({ value }: { value: string }): InitialConfigType => {
-    console.log('markdown transformers', TRANSFORMERS, typeof TRANSFORMERS);
     return {
         namespace: "editor",
         onError: (error: Error) => console.error(error),
@@ -39,6 +39,8 @@ const editorConfig = ({ value }: { value: string }): InitialConfigType => {
 
         ],
         editorState: () => {
+
+
             const root = $getRoot();
             // const firstChild = root.getFirstChild();
 
@@ -51,12 +53,9 @@ const editorConfig = ({ value }: { value: string }): InitialConfigType => {
             //     root.clear().append($createCodeNode('markdown').append($createTextNode(markdown)));
             // }
 
+            // console.log('editorState val/ue', value);
 
 
-            const paragraph = $createParagraphNode();
-            const markdown = $convertToMarkdownString(TRANSFORMERS);
-            console.log('markdown transformers', markdown);
-            root.append(paragraph);
 
             let lastIndex = 0;
             let match: RegExpExecArray | null;
@@ -67,12 +66,23 @@ const editorConfig = ({ value }: { value: string }): InitialConfigType => {
                 // Add text before the mention
                 if (match.index > lastIndex) {
                     const textBefore = value.slice(lastIndex, match.index);
-                    paragraph.append($createTextNode(textBefore));
-                }
+                    const textNode = $createTextNode(textBefore);
+                    const paragraphNode = $createParagraphNode();
+                    // paragraphNode.append(textNode);
+                    console.log('%ctextBefore', 'color: green', textBefore);
+                    // $convertFromMarkdownString(textBefore, CUSTOM_TRANSFORMERS, paragraphNode, true);
+                    root.append(paragraphNode);
 
+                    // const markdown = $convertToMarkdownString(CUSTOM_TRANSFORMERS);
+                    // root.clear().append($createCodeNode('markdown').append($createTextNode(markdown)));
+
+                }
                 // Add the mention node
+                const paragraph = $createParagraphNode();
                 const mentionNode = $createMentionNode(match[0]);
                 paragraph.append(mentionNode);
+                root.append(paragraph);
+                console.log('retrieving mentionNode', mentionNode);
 
                 lastIndex = match.index + match[0].length;
             }
@@ -80,11 +90,16 @@ const editorConfig = ({ value }: { value: string }): InitialConfigType => {
             // Add any remaining text after the last mention
             if (lastIndex < value.length) {
                 const remainingText = value.slice(lastIndex);
-                paragraph.append($createTextNode(remainingText));
+
+
+                const paragraphNode = $createParagraphNode();
+                const remainingTextNode = $createTextNode(remainingText);
+                paragraphNode.append(remainingTextNode);
+                // $convertFromMarkdownString(remainingText, CUSTOM_TRANSFORMERS, paragraphNode, true);
+                root.append(paragraphNode);
             }
 
-            // const markdown = $convertToMarkdownString(root);
-            console.log('markdown', markdown);
+
         },
     };
 }
@@ -97,7 +112,6 @@ type Props = {
 }
 
 export function Editor({ value, onChange, onBlur, className }: Props) {
-    console.log('value', value);
     return (
         <LexicalComposer initialConfig={editorConfig({ value })}>
             <RichTextPlugin
@@ -114,7 +128,7 @@ export function Editor({ value, onChange, onBlur, className }: Props) {
                 }
                 ErrorBoundary={LexicalErrorBoundary}
             />
-            <MarkdownShortcutPlugin transformers={TRANSFORMERS} />
+            <MarkdownShortcutPlugin transformers={CUSTOM_TRANSFORMERS} />
 
             <MentionPlugin />
             {onChange && <OnChangePlugin onChange={onChange} />}

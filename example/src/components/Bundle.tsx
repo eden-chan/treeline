@@ -1,9 +1,11 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { unlinkDocumentFromBundle, deleteBundle, type Document, type BundleWithDocuments } from '../utils/dbUtils';
 import styles from './BundleSection.module.css';
 import { BundleSettingsMenu } from './BundleSettingsMenu';
 import { Editor } from '../editor/Editor';
 import { $getRoot, type EditorState } from 'lexical';
+import { $convertFromMarkdownString, $convertToMarkdownString } from '@lexical/markdown';
+import { CUSTOM_TRANSFORMERS } from '../editor/plugins/MyMarkdownTransformers';
 
 type Props = {
     bundle: BundleWithDocuments;
@@ -19,20 +21,30 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [settingsPosition, setSettingsPosition] = useState({ top: 0, left: 0 });
     const settingsButtonRef = useRef<HTMLButtonElement>(null);
+    const descriptionRef = useRef<string>(bundle.description);
 
-    const handleNameBlur = (editorState: EditorState) => {
-        const name = editorState.read(() => $getRoot().getTextContent());
+
+
+
+    const handleDescriptionChange = (editorState: EditorState) => {
+
+        // Todo preserve markdown state on save
+        const textContent = editorState.read(() => $getRoot().getTextContent());
+        const markdown = editorState.read(() => $convertToMarkdownString(CUSTOM_TRANSFORMERS, $getRoot(), true));
+        console.log('%chandleDescriptionChange root', 'color: red', markdown, textContent);
+        // const description = editorState.read(() => $convertToMarkdownString(CUSTOM_TRANSFORMERS, $getRoot(), true));
+        // console.log('description', description);
+
+        descriptionRef.current = markdown;
+        handleBundleChange(bundle.id, bundle.name, markdown);
+    };
+
+    const handleNameChange = (editorState: EditorState) => {
+        const name = editorState.read(() => $convertToMarkdownString(CUSTOM_TRANSFORMERS, $getRoot(), true));
         handleBundleChange(bundle.id, name, bundle.description);
     };
 
-    const handleDescriptionChange = (editorState: EditorState) => {
-        console.log('handleDescriptionChange', editorState.read(() => $getRoot().getTextContent()));
-    };
 
-    const handleDescriptionBlur = (editorState: EditorState) => {
-        const description = editorState.read(() => $getRoot().getTextContent());
-        handleBundleChange(bundle.id, bundle.name, description);
-    };
 
     const toggleExpand = (e: React.MouseEvent) => {
         e.stopPropagation();
@@ -75,7 +87,7 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
                     {isExpanded ? '▼' : '▶'}
                 </button>
 
-                <Editor value={bundle.name} onBlur={handleNameBlur} className={styles.bundleName} />
+                <Editor value={bundle.name} onChange={handleNameChange} className={styles.bundleName} />
                 <button
                     ref={settingsButtonRef}
                     onClick={toggleSettings}
@@ -92,7 +104,7 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
             </div>
             {isExpanded && (
                 <div className={styles.bundleContent}>
-                    <Editor value={bundle.description} onChange={handleDescriptionChange} onBlur={handleDescriptionBlur} className={styles.bundleDescription} />
+                    <Editor value={descriptionRef.current} onChange={handleDescriptionChange} className={styles.bundleDescription} />
                     <div className={styles.linkedDocumentsHeader}>
                         <span>Linked documents:</span>
                         <button

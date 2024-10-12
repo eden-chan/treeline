@@ -30,8 +30,9 @@ export function BundleSection({ documents, bundlesWithDocuments, toggleDocument,
         []
     );
 
-    const handleBundleChange = (bundleId: string, name: string, description: string) => {
+    const handleBundleSaveOnChange = (bundleId: string, name: string, description: string) => {
         debouncedUpdateBundle(bundleId, name, description);
+        // export the bundle markdown
     };
 
     const handleCreateBundle = async (name: string, description: string, documentIds: string[]) => {
@@ -115,7 +116,7 @@ export function BundleSection({ documents, bundlesWithDocuments, toggleDocument,
                                     bundle={bundle}
                                     selectedDocument={selectedDocument}
                                     toggleDocument={toggleDocument}
-                                    handleBundleChange={handleBundleChange}
+                                    handleBundleChange={handleBundleSaveOnChange}
                                     handleAddDocumentToBundle={handleAddDocumentToBundle}
                                 />
                             ))}

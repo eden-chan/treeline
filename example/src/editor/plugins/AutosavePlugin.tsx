@@ -8,6 +8,7 @@ export const AutosavePlugin = ({ onBlur }: { onBlur: (editorState: EditorState) 
         editor.registerCommand(
             BLUR_COMMAND,
             () => {
+                console.log('AutosavePlugin BLUR_COMMAND');
                 onBlur(editor.getEditorState());
                 return true;
             },
