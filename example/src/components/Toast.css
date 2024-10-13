@@ -1,0 +1,81 @@
+.toast-container {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+}
+
+.toast {
+  margin-bottom: 10px;
+  padding: 15px 30px;
+  border-radius: 5px;
+  color: #fff;
+  bottom: -100px;
+  animation: slideIn 0.3s ease forwards;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* X button styles */
+.toast-close-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: white;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  margin: 0;
+  font-weight: semibold;
+}
+
+.toast-close-button:hover {
+  color: #ccc;
+}
+
+.toast-leaving {
+  animation: slideOut 0.3s ease forwards;
+  opacity: 0; /* Fade out */
+}
+
+.toast-success {
+  background-color: #4caf50;
+}
+
+.toast-error {
+  background-color: #f44336;
+}
+
+.toast-info {
+  background-color: #2196f3;
+}
+
+/* Slide in animation */
+@keyframes slideIn {
+  0% {
+    opacity: 0.25;
+    transform: translateY(20px); /* Start from above */
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0); /* End in the normal position */
+  }
+}
+
+/* Slide out animation */
+@keyframes slideOut {
+  0% {
+    opacity: 1;
+    transform: translateY(0); /* Start from normal position */
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(20px); /* Move back up */
+  }
+}
