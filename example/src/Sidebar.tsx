@@ -1,7 +1,7 @@
 // Sidebar.tsx
 import { useState } from "react";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
-import type { User } from "@instantdb/react";
+import type { User } from "./utils/dbUtils";
 import { ClerkSignedInComponent } from "./ClerkSignedInComponent";
 import { ClerkSignedOutComponent } from "./ClerkSignedOutComponent";
 import { DocumentList } from "./DocumentList";
@@ -39,6 +39,7 @@ type Props = {
   closeSidebar: () => void;
   tags?: TagWithDocuments[];
   bundles?: BundleWithDocuments[];
+  users: User[];
 };
 
 export function Sidebar({
@@ -53,6 +54,7 @@ export function Sidebar({
   isMobile,
   closeSidebar,
   bundles,
+  users,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toasts, addToast, removeToast } = useToast();
@@ -159,6 +161,7 @@ export function Sidebar({
               onSuccess={showDocumentUploadSuccess}
               onError={showDocumentUploadError}
               onUpload={showDocumentUploadInfo}
+              users={users}
             />
           </div>
 

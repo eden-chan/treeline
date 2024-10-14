@@ -16,6 +16,7 @@ import { TableNode } from '@lexical/table';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { CUSTOM_TRANSFORMERS } from './plugins/MyMarkdownTransformers';
 import { $convertFromMarkdownString } from '@lexical/markdown';
+import { AutoLinkPlugin, createLinkMatcherWithRegExp } from '@lexical/react/LexicalAutoLinkPlugin';
 const editorConfig = ({ value, onRenderMarkdown, isEditable = true }: { value: string, onRenderMarkdown?: (markdown: string) => void, isEditable?: boolean }): InitialConfigType => {
     return {
         namespace: "editor",
@@ -138,6 +139,7 @@ export function Editor({ value, onChange, onBlur, onRenderMarkdown, className, i
                 }
                 ErrorBoundary={LexicalErrorBoundary}
             />
+            <AutoLinkPlugin matchers={[createLinkMatcherWithRegExp(/(https?:\/\/[^\s]+)/g, (url) => url.startsWith('http') ? url : `https://${url}`)]} />
             <MentionPlugin />
             {onChange && <OnChangePlugin onChange={onChange} />}
             {onBlur && <AutosavePlugin onBlur={onBlur} />}

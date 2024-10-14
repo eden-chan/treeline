@@ -5,9 +5,13 @@ import { i } from "@instantdb/react";
 
 const graph = i.graph(
   {
+    "$users": i.entity({
+      "email": i.any().unique(),
+    }),
     "bundles": i.entity({
       "createdAt": i.any(),
       "description": i.any(),
+      "documentIds": i.any(),
       "name": i.any(),
     }),
     "comments": i.entity({
@@ -20,7 +24,7 @@ const graph = i.graph(
     "documents": i.entity({
       "createdAt": i.any(),
       "name": i.any(),
-      "sourceUrl": i.any().unique(),
+      "sourceUrl": i.any(),
     }),
     "highlights": i.entity({
       "content": i.any(),
@@ -30,7 +34,9 @@ const graph = i.graph(
       "userName": i.any(),
     }),
     "tags": i.entity({
+      "createdAt": i.any(),
       "description": i.any(),
+      "documentIds": i.any(),
       "name": i.any().unique().indexed(),
     }),
   },

@@ -13,6 +13,9 @@ import { getCurrentDate } from './utils';
 
 const schema = i.graph(
   {
+    $users: i.entity({
+      email: i.string().unique(),
+    }),
     bundles: i.entity({
       description: i.string(),
       name: i.string(),
@@ -518,6 +521,7 @@ export const unlinkDocumentFromTag = (tagId: string, documentId: string) => {
 // Auth 
 // =========
 
+export type User = InstantEntity<DB, "$users">;
 export const signInWithIdToken = (idToken: string, clientName: string) => {
     return db.auth.signInWithIdToken({
         clientName,
@@ -525,6 +529,16 @@ export const signInWithIdToken = (idToken: string, clientName: string) => {
     });
 };
 
+const usersQuery = {
+    $users: {},
+} satisfies InstantQuery<DB>;
+
+export const getUsers = () => {
+    return db.useQuery(usersQuery);
+}
+// =========
+// Rooms 
+// =========
 export const MAIN_ROOM_ID = 'MAIN'
 export const useRoom = (roomId = MAIN_ROOM_ID) => {
     const room = presenceDb.room('chat', roomId);

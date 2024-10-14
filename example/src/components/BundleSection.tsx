@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { addBundle, updateBundle, type Document, type BundleWithDocuments, addToBundle, HighlightResponseTypeWithComments } from '../utils/dbUtils';
+import { addBundle, updateBundle, type Document, type BundleWithDocuments, addToBundle, HighlightResponseTypeWithComments, User } from '../utils/dbUtils';
 // @ts-ignore
 import debounce from '../utils/debounce';
 import styles from './BundleSection.module.css';
@@ -14,6 +14,7 @@ type Props = {
     selectedDocument?: Document;
     documents: Document[];
     highlights: HighlightResponseTypeWithComments[];
+    users: User[];
     onUpload: () => void;
     onError: () => void;
     onSuccess: () => void;
@@ -21,7 +22,7 @@ type Props = {
 
 const DEBOUNCE_TIME = 1000; // ms
 
-export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDocument, documents, highlights, onUpload, onError, onSuccess }: Props) {
+export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDocument, documents, highlights, users, onUpload, onError, onSuccess }: Props) {
     const [isCreateBundleModalOpen, setIsCreateBundleModalOpen] = useState(false);
     const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(true);
@@ -113,7 +114,7 @@ export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDo
             {isExpanded && (
                 <div className={styles.bundleListWrapper}>
                     <ul className={styles.bundleList}>
-                        <BundleProvider documents={documents} highlights={highlights}>
+                        <BundleProvider documents={documents} highlights={highlights} users={users}>
                             {bundlesWithDocuments.map((bundle) => (
                                 <Bundle
                                     key={bundle.id}

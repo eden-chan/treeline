@@ -20,7 +20,7 @@ import styles from './MentionPlugin.module.css';
 
 import { $createMentionNode } from '../nodes/MentionNode';
 import { useBundleContext } from '../../context/BundleContext';
-import type { Document, HighlightResponseTypeWithComments, Comment } from '../../utils/dbUtils';
+import type { Document, HighlightResponseTypeWithComments, Comment, User } from '../../utils/dbUtils';
 
 const PUNCTUATION = '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;';
 const NAME = `\\b[A-Z][^\\s${PUNCTUATION}]`;
@@ -177,7 +177,7 @@ function MentionsTypeaheadMenuItem({
 
 export default function MentionPlugin(): JSX.Element | null {
     const [editor] = useLexicalComposerContext();
-    const { documents, highlightsWithComments: highlights } = useBundleContext();
+    const { documents, highlightsWithComments: highlights, users } = useBundleContext();
     const [queryString, setQueryString] = useState<string | null>(null);
 
     const candidateDocuments: Array<LookupServiceResult> = useMemo(() => {
@@ -193,10 +193,15 @@ export default function MentionPlugin(): JSX.Element | null {
         );
     }, [highlights]);
 
+    const candidateUsers: Array<LookupServiceResult> = useMemo(() => {
+        return users.map((user: User) => ({ id: user.id, name: user.email }));
+    }, [users]);
+
+    console.log("candidateUsers", candidateUsers);
 
 
 
-    const candidateTexts = useMemo(() => [...candidateDocuments, ...candidateHighlightedText, ...candidateComments], [candidateDocuments, candidateHighlightedText, candidateComments]);
+    const candidateTexts = useMemo(() => [...candidateDocuments, ...candidateHighlightedText, ...candidateComments, ...candidateUsers], [candidateDocuments, candidateHighlightedText, candidateComments, candidateUsers]);
 
     const results: Array<LookupServiceResult> = useMentionLookupService(queryString, candidateTexts);
 
@@ -222,6 +227,7 @@ export default function MentionPlugin(): JSX.Element | null {
             closeMenu: () => void,
         ) => {
             editor.update(() => {
+                // const $cursor = editor.getCursor();  
                 const mentionNode = $createMentionNode(`@[${selectedOption.name}]<<${selectedOption.id}>>`);
                 if (nodeToReplace) {
                     nodeToReplace.replace(mentionNode);

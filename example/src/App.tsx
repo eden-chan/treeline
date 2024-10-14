@@ -18,7 +18,7 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights, addHighlightWithComment, getTags, getBundles } from "./utils/dbUtils";
+import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights, addHighlightWithComment, getTags, getBundles, getUsers } from "./utils/dbUtils";
 import type { Document, DocumentWithHighlightsAndComments } from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
@@ -110,6 +110,8 @@ export function ViewManager() {
 
   // Fetch Tags
   const { user } = useDbAuth();
+  const { data: usersData } = getUsers();
+
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     console.log("Touch start", e)
@@ -195,7 +197,6 @@ export function ViewManager() {
     selectedHighlightTypes.includes(getHighlightType(highlight.userId))
   ).map(highlight => ({ ...highlight, content: { text: highlight.content.text, image: highlight.content.image } as IHighlight['content'] })) ?? []
 
-  console.log("Current document", currentDocument)
 
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID}>
@@ -215,6 +216,7 @@ export function ViewManager() {
               closeSidebar={() => setIsSidebarOpen(false)}
               tags={tagData?.tags}
               bundles={bundleData?.bundles}
+              users={usersData?.$users ?? []}
             />
           </Panel>
         )}
