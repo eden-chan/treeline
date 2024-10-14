@@ -1,4 +1,4 @@
-import { HighlightType } from '../../example/src/utils/highlightTypes.js';
+import { HighlightType } from "../../example/src/utils/highlightTypes.js";
 import styles from "../style/Highlight.module.css";
 import type { LTWHP } from "../types.js";
 
@@ -25,11 +25,11 @@ export function Highlight({
   onMouseOut,
   comment,
   isScrolledTo,
-  highlightType
+  highlightType,
 }: Props) {
   const { rects, boundingRect } = position;
 
-  let highlightClass = '';
+  let highlightClass = "";
   if (highlightType === HighlightType.CURRENT_USER) {
     highlightClass = styles.currentUser;
   } else if (highlightType === HighlightType.ANONYMOUS_USER) {

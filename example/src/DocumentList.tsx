@@ -23,7 +23,7 @@ export const DocumentList: React.FC<Props> = ({
   const [isExpanded, setIsExpanded] = useState(true);
   const [editingDocument, setEditingDocument] = useState<Document | null>(null);
   const [settingsDocument, setSettingsDocument] = useState<Document | null>(
-    null
+    null,
   );
   const [settingsPosition, setSettingsPosition] = useState({ top: 0, left: 0 });
 

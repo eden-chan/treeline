@@ -148,8 +148,6 @@ export function MouseSelection({
       }
     };
 
-
-
     // Touch event handlers
     const handleTouchStart = (event: TouchEvent) => {
       if (!shouldStart(event)) {
@@ -169,7 +167,7 @@ export function MouseSelection({
       setEnd(null);
       setLocked(false);
 
-      console.log('Touch selection started:', coords);
+      console.log("Touch selection started:", coords);
     };
 
     const handleTouchMove = (event: TouchEvent) => {
@@ -181,7 +179,7 @@ export function MouseSelection({
       const coords = containerCoords(touch.pageX, touch.pageY);
       setEnd(coords);
 
-      console.log('Touch selection moving:', coords);
+      console.log("Touch selection moving:", coords);
     };
 
     const handleTouchEnd = (event: TouchEvent) => {
@@ -206,7 +204,14 @@ export function MouseSelection({
         return;
       }
 
-      console.log('Touch selection ended:', coords, 'Bounding rect:', boundingRect, 'End target:', endTarget);
+      console.log(
+        "Touch selection ended:",
+        coords,
+        "Bounding rect:",
+        boundingRect,
+        "End target:",
+        endTarget,
+      );
 
       onSelection(endTarget, boundingRect, reset);
       onDragEnd();

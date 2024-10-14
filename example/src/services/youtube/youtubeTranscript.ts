@@ -14,7 +14,7 @@ export class YoutubeTranscriptError extends Error {
 export class YoutubeTranscriptTooManyRequestError extends YoutubeTranscriptError {
   constructor() {
     super(
-      "YouTube is receiving too many requests from this IP and now requires solving a captcha to continue"
+      "YouTube is receiving too many requests from this IP and now requires solving a captcha to continue",
     );
   }
 }
@@ -41,8 +41,8 @@ export class YoutubeTranscriptNotAvailableLanguageError extends YoutubeTranscrip
   constructor(lang: string, availableLangs: string[], videoId: string) {
     super(
       `No transcripts are available in ${lang} this video (${videoId}). Available languages: ${availableLangs.join(
-        ", "
-      )}`
+        ", ",
+      )}`,
     );
   }
 }
@@ -62,7 +62,6 @@ export interface TranscriptResponse {
  * Class to retrieve transcript if exist
  */
 export class YoutubeTranscript {
-  
   private static cache: Map<string, TranscriptResponse[]> = new Map();
   public test = "test";
   public static clearCache(): void {
@@ -72,16 +71,16 @@ export class YoutubeTranscript {
 
   public static async fetchTranscript(
     videoId: string,
-    config?: TranscriptConfig
+    config?: TranscriptConfig,
   ): Promise<TranscriptResponse[]> {
     console.log(
-      `\x1b[31m[YoutubeTranscript] Fetching transcript for video ID: ${videoId} with config ${JSON.stringify(config)}\x1b[0m`
+      `\x1b[31m[YoutubeTranscript] Fetching transcript for video ID: ${videoId} with config ${JSON.stringify(config)}\x1b[0m`,
     );
     const cacheKey = `${videoId}_${config?.lang || "default"}`;
     // biome-ignore lint: reason
     if (this.cache.has(cacheKey)) {
       console.log(
-        `[YoutubeTranscript] Not Returning cached transcript for reliability ${videoId}`
+        `[YoutubeTranscript] Not Returning cached transcript for reliability ${videoId}`,
       );
       // biome-ignore lint: reason
       console.log(this.cache.get(cacheKey));
@@ -90,16 +89,14 @@ export class YoutubeTranscript {
     }
 
     try {
-
       //  need to bypass cors so we use a serverless function to make the fetch
       const response = await fetch(`${import.meta.env.VITE_AWS_BASE_URL}/`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ videoId }),
       });
-
 
       // const html = await response.text();
 
@@ -149,7 +146,7 @@ export class YoutubeTranscript {
       offset: Number.parseFloat(element.getAttribute("start") || "0"),
       // biome-ignore lint: reason
       timestamp: this.formatTimestamp(
-        Number.parseFloat(element.getAttribute("start") || "0")
+        Number.parseFloat(element.getAttribute("start") || "0"),
       ),
     }));
   }
@@ -167,8 +164,7 @@ export class YoutubeTranscript {
     }
     return `${minutes.toString().padStart(2, "0")}:${secs
       .toString()
-        .padStart(2, "0")}`;
-    
+      .padStart(2, "0")}`;
   }
 
   public static retrieveVideoId(videoId: string): string {
@@ -177,23 +173,23 @@ export class YoutubeTranscript {
     }
     const matchId = videoId.match(RE_YOUTUBE);
     if (matchId?.length) {
-      console.log("getting videoId from youtube url", matchId[1])
+      console.log("getting videoId from youtube url", matchId[1]);
       return matchId[1];
     }
     throw new YoutubeTranscriptError(
-      "Impossible to retrieve Youtube video ID."
+      "Impossible to retrieve Youtube video ID.",
     );
   }
 
   public static async fetchTranscriptIfAvailable(
-    videoId: string
+    videoId: string,
   ): Promise<TranscriptResponse[] | null> {
     try {
       return await YoutubeTranscript.fetchTranscript(videoId);
     } catch (error) {
       console.warn(
         `[YoutubeTranscript] Transcript not available for video ${videoId}:`,
-        error
+        error,
       );
       return null;
     }

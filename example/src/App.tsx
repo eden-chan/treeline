@@ -43,21 +43,21 @@ import type {
 } from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
-import InstantCursors from './Cursor';
-import InstantAvatarStack from './AvatarStack';
-import InstantTopics from './Emoji';
-import { randomDarkColor } from './utils/utils';
-import styles from './App.module.css';
-import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels';
-import { useMediaQuery } from 'react-responsive';
-import type { ServiceIdentifier, ServiceType } from './services/globals';
-import { serviceContextContainer, ServicesContext } from './services/globals';
-import MobileNavigation from './components/MobileNavigation';
-import { BundleProvider } from './context/BundleContext';
-import { ToastProvider } from './context/ToastContext';
+import InstantCursors from "./Cursor";
+import InstantAvatarStack from "./AvatarStack";
+import InstantTopics from "./Emoji";
+import { randomDarkColor } from "./utils/utils";
+import styles from "./App.module.css";
+import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
+import { useMediaQuery } from "react-responsive";
+import type { ServiceIdentifier, ServiceType } from "./services/globals";
+import { serviceContextContainer, ServicesContext } from "./services/globals";
+import MobileNavigation from "./components/MobileNavigation";
+import { BundleProvider } from "./context/BundleContext";
+import { ToastProvider } from "./context/ToastContext";
 
 export function useService<T extends ServiceIdentifier>(
-  serviceIdentifier: T
+  serviceIdentifier: T,
 ): ServiceType<T> {
   const container = useContext(ServicesContext);
   if (!container || !container.container) {
@@ -155,7 +155,7 @@ export function ViewManager() {
         });
       }
     },
-    [isMobile, isAreaSelectionEnabled]
+    [isMobile, isAreaSelectionEnabled],
   );
 
   const handleTouchMove = useCallback(
@@ -177,7 +177,7 @@ export function ViewManager() {
         }
       }
     },
-    [isMobile, isAreaSelectionEnabled, touchStartPosition]
+    [isMobile, isAreaSelectionEnabled, touchStartPosition],
   );
 
   const handleTouchEnd = useCallback(() => {
@@ -188,7 +188,7 @@ export function ViewManager() {
     const scrollToHighlightFromHash = () => {
       const highlightId = parseIdFromHash();
       const highlight = highlights?.find(
-        (highlight) => highlight.id === highlightId
+        (highlight) => highlight.id === highlightId,
       );
       if (highlight) {
         scrollViewerTo.current(highlight);
@@ -200,7 +200,7 @@ export function ViewManager() {
       window.removeEventListener(
         "hashchange",
         scrollToHighlightFromHash,
-        false
+        false,
       );
     };
   }, [highlights]);
@@ -236,7 +236,7 @@ export function ViewManager() {
   const renderedFilterHighlights =
     highlights
       ?.filter((highlight) =>
-        selectedHighlightTypes.includes(getHighlightType(highlight.userId))
+        selectedHighlightTypes.includes(getHighlightType(highlight.userId)),
       )
       .map((highlight) => ({
         ...highlight,
@@ -246,10 +246,7 @@ export function ViewManager() {
         } as IHighlight["content"],
       })) ?? [];
 
-
   const PDFViewer = () => {
-
-
     return (
       <div
         className={styles.mainContent}
@@ -266,15 +263,15 @@ export function ViewManager() {
                 event.altKey || (isMobile && isAreaSelectionEnabled)
               }
               onScrollChange={resetHash}
-
               scrollRef={(scrollTo) => {
                 scrollViewerTo.current = scrollTo;
                 const highlightId = parseIdFromHash();
-                const highlight = highlights?.find(highlight => highlight.id === highlightId);
+                const highlight = highlights?.find(
+                  (highlight) => highlight.id === highlightId,
+                );
                 if (highlight) {
                   scrollViewerTo.current(highlight);
                 }
-
               }}
               onSelectionFinished={(
                 position,
@@ -285,10 +282,11 @@ export function ViewManager() {
                 <Tip
                   onOpen={transformSelection}
                   onConfirm={(comment) => {
-
                     if (!currentDocument) {
-                      console.error('[Confirm Highlight] failed - no current document')
-                      return
+                      console.error(
+                        "[Confirm Highlight] failed - no current document",
+                      );
+                      return;
                     }
                     const userId = user?.id ?? ANONYMOUS_USER_ID;
                     const userName = user?.email ?? ANONYMOUS_USER_ID;
@@ -296,11 +294,11 @@ export function ViewManager() {
                     const commentDraft =
                       comment.text || comment.emoji
                         ? {
-                          text: comment.text,
-                          emoji: comment.emoji,
-                          userId,
-                          userName,
-                        }
+                            text: comment.text,
+                            emoji: comment.emoji,
+                            userId,
+                            userName,
+                          }
                         : undefined;
 
                     const highlightDraft = {
@@ -330,7 +328,6 @@ export function ViewManager() {
                 screenshot,
                 isScrolledTo,
               ) => {
-
                 const isTextHighlight = !highlight.content?.image;
 
                 const highlightType = getHighlightType(highlight.userId);
@@ -339,7 +336,9 @@ export function ViewManager() {
                   <Highlight
                     isScrolledTo={isScrolledTo}
                     position={highlight.position}
-                    comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }}
+                    comment={
+                      highlight?.comments?.[0] ?? { text: "", emoji: "" }
+                    }
                     highlightType={highlightType}
                   />
                 ) : (
@@ -359,7 +358,14 @@ export function ViewManager() {
 
                 return (
                   <Popup
-                    popupContent={<HighlightPopup {...highlight} comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }} />}
+                    popupContent={
+                      <HighlightPopup
+                        {...highlight}
+                        comment={
+                          highlight?.comments?.[0] ?? { text: "", emoji: "" }
+                        }
+                      />
+                    }
                     onMouseOver={(popupContent) =>
                       setTip(highlight, () => popupContent)
                     }
@@ -375,17 +381,24 @@ export function ViewManager() {
         </PdfLoader>
 
         <InstantTopics roomId={MAIN_ROOM_ID} />
-        <InstantAvatarStack roomId={MAIN_ROOM_ID} username={user?.email ?? ANONYMOUS_USER_ID} color={userColor} />
-
+        <InstantAvatarStack
+          roomId={MAIN_ROOM_ID}
+          username={user?.email ?? ANONYMOUS_USER_ID}
+          color={userColor}
+        />
       </div>
-    )
-  }
+    );
+  };
   return (
-
-    <BundleProvider documents={documentData?.documents ?? []} highlights={highlights ?? []} users={usersData?.$users ?? []}>
-
-      <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID}>
-
+    <BundleProvider
+      documents={documentData?.documents ?? []}
+      highlights={highlights ?? []}
+      users={usersData?.$users ?? []}
+    >
+      <InstantCursors
+        roomId={MAIN_ROOM_ID}
+        userId={user?.email ?? ANONYMOUS_USER_ID}
+      >
         <PanelGroup direction={isMobile ? "vertical" : "horizontal"}>
           {(!isMobile || isSidebarOpen) && (
             <Panel>
@@ -407,11 +420,20 @@ export function ViewManager() {
               />
             </Panel>
           )}
-          {!isMobile && <PanelResizeHandle className={styles.panelResizeHandle} />}
-          <Panel className={styles.viewerPanel} defaultSize={isMobile ? 100 : 70} minSize={isMobile ? 100 : 70}>
-            {viewer === "pdf" ? <PDFViewer /> : <ReactPlayer url={youtubeUrl} />}
+          {!isMobile && (
+            <PanelResizeHandle className={styles.panelResizeHandle} />
+          )}
+          <Panel
+            className={styles.viewerPanel}
+            defaultSize={isMobile ? 100 : 70}
+            minSize={isMobile ? 100 : 70}
+          >
+            {viewer === "pdf" ? (
+              <PDFViewer />
+            ) : (
+              <ReactPlayer url={youtubeUrl} />
+            )}
           </Panel>
-
         </PanelGroup>
         {isMobile && (
           <MobileNavigation
@@ -420,7 +442,6 @@ export function ViewManager() {
             setIsSidebarOpen={setIsSidebarOpen}
           />
         )}
-
       </InstantCursors>
     </BundleProvider>
   );

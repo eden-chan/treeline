@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import { YoutubeTranscript } from "./youtubeTranscript";
-import 'reflect-metadata';
+import "reflect-metadata";
 
 export const IYoutubeService = "youtubeService";
 
@@ -21,10 +21,12 @@ export class YoutubeService implements IYoutubeService {
   async getTranscript(url: string): Promise<string | null> {
     try {
       const videoId = YoutubeTranscript.retrieveVideoId(url);
-  
 
       if (this.transcriptCache.has(videoId)) {
-        console.log("[YoutubeService] cached, but not returning for reliability:", this.transcriptCache.get(videoId));
+        console.log(
+          "[YoutubeService] cached, but not returning for reliability:",
+          this.transcriptCache.get(videoId),
+        );
         // return this.transcriptCache.get(videoId) ?? null;
       }
 
@@ -32,20 +34,22 @@ export class YoutubeService implements IYoutubeService {
     } catch (error) {
       console.error(
         "[YoutubeService] Error fetching YouTube transcript:",
-        error
+        error,
       );
       return null;
     }
   }
 
   private async fetchAndProcessTranscript(
-    videoId: string
+    videoId: string,
   ): Promise<string | null> {
-    const transcript = await YoutubeTranscript.fetchTranscriptIfAvailable(
-      videoId
-    );
+    const transcript =
+      await YoutubeTranscript.fetchTranscriptIfAvailable(videoId);
 
-    console.log("[YoutubeService] Fetched transcript and now processing:", transcript);
+    console.log(
+      "[YoutubeService] Fetched transcript and now processing:",
+      transcript,
+    );
     if (!transcript) return null;
 
     let result = "";
@@ -87,12 +91,16 @@ export class YoutubeService implements IYoutubeService {
     const originalPushState = history.pushState;
     const originalReplaceState = history.replaceState;
 
-    history.pushState = function (...args: Parameters<typeof originalPushState>) {
+    history.pushState = function (
+      ...args: Parameters<typeof originalPushState>
+    ) {
       originalPushState.apply(this, args);
       checkForVideoChange();
     };
 
-    history.replaceState = function (...args: Parameters<typeof originalReplaceState>) {
+    history.replaceState = function (
+      ...args: Parameters<typeof originalReplaceState>
+    ) {
       originalReplaceState.apply(this, args);
       checkForVideoChange();
     };

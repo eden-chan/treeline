@@ -1,4 +1,4 @@
-import { init, tx, id } from '@instantdb/react';
+import { init, tx, id } from "@instantdb/react";
 
 import {
   i,
@@ -7,9 +7,12 @@ import {
   type InstantQuery,
 } from "@instantdb/react";
 
-import type { ScaledPosition, Content, CreateDocumentDraft } from "../react-pdf-highlighter";
-import { getCurrentDate } from './utils';
-
+import type {
+  ScaledPosition,
+  Content,
+  CreateDocumentDraft,
+} from "../react-pdf-highlighter";
+import { getCurrentDate } from "./utils";
 
 const schema = i.graph(
   {
@@ -45,108 +48,107 @@ const schema = i.graph(
       name: i.string().unique().indexed(),
     }),
   },
-    {
-    "bundlesChildren": {
-      "forward": {
-        "on": "bundles",
-        "has": "many",
-        "label": "children"
+  {
+    bundlesChildren: {
+      forward: {
+        on: "bundles",
+        has: "many",
+        label: "children",
       },
-      "reverse": {
-        "on": "bundles",
-        "has": "one",
-        "label": "parent"
-      }
+      reverse: {
+        on: "bundles",
+        has: "one",
+        label: "parent",
+      },
     },
-    "bundlesDocuments": {
-      "forward": {
-        "on": "bundles",
-        "has": "many",
-        "label": "documents"
+    bundlesDocuments: {
+      forward: {
+        on: "bundles",
+        has: "many",
+        label: "documents",
       },
-      "reverse": {
-        "on": "documents",
-        "has": "many",
-        "label": "bundles"
-      }
+      reverse: {
+        on: "documents",
+        has: "many",
+        label: "bundles",
+      },
     },
-    "documentsComments": {
-      "forward": {
-        "on": "documents",
-        "has": "many",
-        "label": "comments"
+    documentsComments: {
+      forward: {
+        on: "documents",
+        has: "many",
+        label: "comments",
       },
-      "reverse": {
-        "on": "comments",
-        "has": "one",
-        "label": "documents"
-      }
+      reverse: {
+        on: "comments",
+        has: "one",
+        label: "documents",
+      },
     },
-    "documentsHighlights": {
-      "forward": {
-        "on": "documents",
-        "has": "many",
-        "label": "highlights"
+    documentsHighlights: {
+      forward: {
+        on: "documents",
+        has: "many",
+        label: "highlights",
       },
-      "reverse": {
-        "on": "highlights",
-        "has": "one",
-        "label": "documents"
-      }
+      reverse: {
+        on: "highlights",
+        has: "one",
+        label: "documents",
+      },
     },
-    "highlightsComments": {
-      "forward": {
-        "on": "highlights",
-        "has": "many",
-        "label": "comments"
+    highlightsComments: {
+      forward: {
+        on: "highlights",
+        has: "many",
+        label: "comments",
       },
-      "reverse": {
-        "on": "comments",
-        "has": "one",
-        "label": "highlights"
-      }
+      reverse: {
+        on: "comments",
+        has: "one",
+        label: "highlights",
+      },
     },
-    "tagsDocuments": {
-      "forward": {
-        "on": "tags",
-        "has": "many",
-        "label": "documents"
+    tagsDocuments: {
+      forward: {
+        on: "tags",
+        has: "many",
+        label: "documents",
       },
-      "reverse": {
-        "on": "documents",
-        "has": "many",
-        "label": "tags"
-      }
-    }
-  }
+      reverse: {
+        on: "documents",
+        has: "many",
+        label: "tags",
+      },
+    },
+  },
 );
 
-// 
+//
 
 // Provide a room schema to get typings for presence!
 type EmojiName = keyof typeof emoji;
 type RoomSchema = {
   chat: {
-    presence: { name: string, color: string };
-     topics: {
-            emoji: {
-                name: EmojiName;
-                rotationAngle: number;
-                directionAngle: number;
-            };
-        };
+    presence: { name: string; color: string };
+    topics: {
+      emoji: {
+        name: EmojiName;
+        rotationAngle: number;
+        directionAngle: number;
+      };
+    };
   };
-}
+};
 
 export const emoji = {
-    fire: '🔥',
-    wave: '👋',
-    confetti: '🎉',
-    heart: '❤️',
+  fire: "🔥",
+  wave: "👋",
+  confetti: "🎉",
+  heart: "❤️",
 } as const;
 
 export const emojiNames = Object.keys(emoji) as EmojiName[];
-
 
 // Generic type for room schemas.
 // type RoomSchemaShape = {
@@ -161,17 +163,13 @@ export const emojiNames = Object.keys(emoji) as EmojiName[];
 // };
 
 const config = {
-    appId: import.meta.env.VITE_INSTANTDB_APP_ID ?? '',
- 
-}
+  appId: import.meta.env.VITE_INSTANTDB_APP_ID ?? "",
+};
 
 export const presenceDb = init<typeof schema, RoomSchema>(config);
 
 // for type support
-export const db = init_experimental<typeof schema>({...config,
-  schema,
-});
-
+export const db = init_experimental<typeof schema>({ ...config, schema });
 
 type DB = typeof db;
 // for when your want to get the type of DB before calling `init`
@@ -184,268 +182,304 @@ export const ANONYMOUS_USER_ID = "anonymous";
 // =========
 export type Highlight = InstantEntity<DB, "highlights">;
 
-export type CreateHighlightSchemaDraft= {
-    position: Partial<ScaledPosition>,
-    content: Partial<Content>,
-    userId: string,
-    userName: string,
-}
-
-export type AddHighlightWithCommentSchemaDraft = {
-    highlight: CreateHighlightSchemaDraft;
-    documentId: string;
-    comment?: CreateCommentDraft;
+export type CreateHighlightSchemaDraft = {
+  position: Partial<ScaledPosition>;
+  content: Partial<Content>;
+  userId: string;
+  userName: string;
 };
 
-export const addHighlightWithComment = ({ highlight, documentId, comment }: AddHighlightWithCommentSchemaDraft) => {
-    const highlightId = id()
-    
-    if (!documentId) {
-        throw new Error("Document ID is required");
-    }
-    
-    if (comment) {
-        const commentId = id()
+export type AddHighlightWithCommentSchemaDraft = {
+  highlight: CreateHighlightSchemaDraft;
+  documentId: string;
+  comment?: CreateCommentDraft;
+};
 
-        console.debug("Adding highlight with comment", highlightId, commentId)
-        return db.transact(
-           [ tx.highlights[highlightId].update({...highlight, createdAt: getCurrentDate()}).link({documents: documentId}),
-            tx.comments[commentId].update({...comment, createdAt: getCurrentDate()}).link({highlights: highlightId})
-        ]
-        );
-    }
+export const addHighlightWithComment = ({
+  highlight,
+  documentId,
+  comment,
+}: AddHighlightWithCommentSchemaDraft) => {
+  const highlightId = id();
 
-    console.debug("Adding highlight without comment", highlightId)
-    // No comment is passed in 
-    return db.transact(
-        tx.highlights[highlightId].update({...highlight}).link({documents: documentId}),
-    );
+  if (!documentId) {
+    throw new Error("Document ID is required");
+  }
 
-}
+  if (comment) {
+    const commentId = id();
 
-export const addHighlight = ( highlight: CreateHighlightSchemaDraft) => {
-    console.debug("Saving highlight with addHighlight", highlight);
-    const highlightId = id()
-    return db.transact(
-        tx.highlights[highlightId].update({...highlight, createdAt: getCurrentDate()}),
-    );
+    console.debug("Adding highlight with comment", highlightId, commentId);
+    return db.transact([
+      tx.highlights[highlightId]
+        .update({ ...highlight, createdAt: getCurrentDate() })
+        .link({ documents: documentId }),
+      tx.comments[commentId]
+        .update({ ...comment, createdAt: getCurrentDate() })
+        .link({ highlights: highlightId }),
+    ]);
+  }
+
+  console.debug("Adding highlight without comment", highlightId);
+  // No comment is passed in
+  return db.transact(
+    tx.highlights[highlightId]
+      .update({ ...highlight })
+      .link({ documents: documentId }),
+  );
+};
+
+export const addHighlight = (highlight: CreateHighlightSchemaDraft) => {
+  console.debug("Saving highlight with addHighlight", highlight);
+  const highlightId = id();
+  return db.transact(
+    tx.highlights[highlightId].update({
+      ...highlight,
+      createdAt: getCurrentDate(),
+    }),
+  );
 };
 
 export const updateHighlight = (
-    highlightId: string,
-    position: Partial<ScaledPosition>,
-    content: Partial<Content>,
+  highlightId: string,
+  position: Partial<ScaledPosition>,
+  content: Partial<Content>,
 ) => {
-    console.debug("Updating highlight", highlightId, position, content);
-    return db.transact(tx.highlights[highlightId].update({ position, content }));
+  console.debug("Updating highlight", highlightId, position, content);
+  return db.transact(tx.highlights[highlightId].update({ position, content }));
 };
 
 export const deleteHighlight = (highlightId: string) => {
-    console.debug("Deleting highlight", highlightId);
-    return db.transact(tx.highlights[highlightId].delete());
+  console.debug("Deleting highlight", highlightId);
+  return db.transact(tx.highlights[highlightId].delete());
 };
 
 export const resetHighlights = (highlights: HighlightResponseType[]) => {
-    console.debug("Resetting all highlights");
-    return db.transact(highlights.map(h => tx.highlights[h.id].delete()));
+  console.debug("Resetting all highlights");
+  return db.transact(highlights.map((h) => tx.highlights[h.id].delete()));
 };
 
-
-const highlightsQuery = { 
-    highlights: {},
+const highlightsQuery = {
+  highlights: {},
 } satisfies InstantQuery<DB>;
 
 export type HighlightResponseType = InstantEntity<DB, "highlights">;
 
-export type HighlightResponseTypeWithComments = InstantEntity<DB, "highlights"> & {
-    comments: InstantEntity<DB, "comments">[];
+export type HighlightResponseTypeWithComments = InstantEntity<
+  DB,
+  "highlights"
+> & {
+  comments: InstantEntity<DB, "comments">[];
 };
 
 export const getHighlights = () => {
-    return db.useQuery(highlightsQuery);
+  return db.useQuery(highlightsQuery);
 };
 
-
-
-const highlightsQueryByDocumentId = (sourceUrl: string) => { 
-    return { 
-        highlights: {
-            $: {
-                where: {
-                    'documents.sourceUrl': sourceUrl,   
-                }
-            }, 
-            comments: {},
+const highlightsQueryByDocumentId = (sourceUrl: string) => {
+  return {
+    highlights: {
+      $: {
+        where: {
+          "documents.sourceUrl": sourceUrl,
         },
-    } satisfies InstantQuery<DB>;
-}
+      },
+      comments: {},
+    },
+  } satisfies InstantQuery<DB>;
+};
 
 export const getHighlightsByDocument = (sourceUrl: string) => {
-    return db.useQuery(highlightsQueryByDocumentId(sourceUrl));
-}
-
+  return db.useQuery(highlightsQueryByDocumentId(sourceUrl));
+};
 
 // =========
 // Comments
 // =========
 
-
-const commentsQuery = { 
-    comments: {},
+const commentsQuery = {
+  comments: {},
 } satisfies InstantQuery<DB>;
 
 export type Comment = InstantEntity<DB, "comments">;
 
 export type CreateCommentDraft = {
-    text: string,
-    emoji: string,
-    userId: string,
-    userName: string,
-}
-export const addDocumentComment = (comment: CreateCommentDraft, documentId?: string) => {
-    console.log("Adding document comment", comment, documentId)
-    // If we want to batch create comment with the highlight, we need to generate the id ahead of time
-    return db.transact(
-        tx.comments[id()].update({...comment, createdAt: getCurrentDate()}).link({documents: documentId}),
-    );
-}
+  text: string;
+  emoji: string;
+  userId: string;
+  userName: string;
+};
+export const addDocumentComment = (
+  comment: CreateCommentDraft,
+  documentId?: string,
+) => {
+  console.log("Adding document comment", comment, documentId);
+  // If we want to batch create comment with the highlight, we need to generate the id ahead of time
+  return db.transact(
+    tx.comments[id()]
+      .update({ ...comment, createdAt: getCurrentDate() })
+      .link({ documents: documentId }),
+  );
+};
 
 export const deleteComment = (commentId: string) => {
-    console.debug("Deleting comment", commentId);
-    return db.transact(tx.comments[commentId].delete());
+  console.debug("Deleting comment", commentId);
+  return db.transact(tx.comments[commentId].delete());
 };
 
 export const updateComment = (commentId: string, text: string) => {
-    console.debug("Updating comment", commentId, text);
-    return db.transact(tx.comments[commentId].update({text}));
+  console.debug("Updating comment", commentId, text);
+  return db.transact(tx.comments[commentId].update({ text }));
 };
 
 export const resetComments = () => {
-    console.debug("Resetting all comments");
-    const {data}= db.useQuery(commentsQuery);
-    if (data?.comments) {
-        return db.transact(data.comments.map(c => tx.comments[c.id].delete()));
-    }
-    return Promise.reject("Failed to fetch comments");
+  console.debug("Resetting all comments");
+  const { data } = db.useQuery(commentsQuery);
+  if (data?.comments) {
+    return db.transact(data.comments.map((c) => tx.comments[c.id].delete()));
+  }
+  return Promise.reject("Failed to fetch comments");
 };
 
 // =========
 // Documents
 // =========
-export const addDocument = (document: CreateDocumentDraft, bundleId?: string) => {
-    console.debug("Saving document", document);
-    const documentId = id()
-    const transaction = [
-        tx.documents[documentId].update({
-            ...document,
-            createdAt: getCurrentDate(),
-            id: documentId,
-        })
-    ];
+export const addDocument = (
+  document: CreateDocumentDraft,
+  bundleId?: string,
+) => {
+  console.debug("Saving document", document);
+  const documentId = id();
+  const transaction = [
+    tx.documents[documentId].update({
+      ...document,
+      createdAt: getCurrentDate(),
+      id: documentId,
+    }),
+  ];
 
-    if (bundleId) {
-        transaction.push(tx.documents[documentId].link({ bundles: bundleId }));
-      }
-      
-      return {...db.transact(transaction), documentId};
-}
+  if (bundleId) {
+    transaction.push(tx.documents[documentId].link({ bundles: bundleId }));
+  }
 
-export const editDocument = (documentId: string, document: Partial<CreateDocumentDraft>) => {
-    console.debug("Editing document", documentId, document);
-    return db.transact(tx.documents[documentId].update({...document}));
+  return { ...db.transact(transaction), documentId };
+};
+
+export const editDocument = (
+  documentId: string,
+  document: Partial<CreateDocumentDraft>,
+) => {
+  console.debug("Editing document", documentId, document);
+  return db.transact(tx.documents[documentId].update({ ...document }));
 };
 
 export const removeDocument = (documentId: string) => {
-    console.debug("Removing document", documentId);
-    return db.transact(tx.documents[documentId].delete());
+  console.debug("Removing document", documentId);
+  return db.transact(tx.documents[documentId].delete());
 };
 
-
-const documentQuery = { 
-    documents: {},
+const documentQuery = {
+  documents: {},
 } satisfies InstantQuery<DB>;
 
 export type Document = InstantEntity<DB, "documents">;
 
-export type DocumentWithHighlightsAndComments = InstantEntity<DB, "documents"> & {
-    highlights: HighlightResponseTypeWithComments[];
-    comments: Comment[]; // document-level comments
+export type DocumentWithHighlightsAndComments = InstantEntity<
+  DB,
+  "documents"
+> & {
+  highlights: HighlightResponseTypeWithComments[];
+  comments: Comment[]; // document-level comments
 };
 // alternatively
 // export type DocumentResult = InstantQueryResult<DB, typeof documentQuery>["documents"];
-export const getDocuments = () : Promise<DocumentWithHighlightsAndComments[]> => {
-    const {data} = db.useQuery(documentQuery);
-    if (data?.documents) {
-        return Promise.resolve(data.documents as DocumentWithHighlightsAndComments[]);
-    }
-    return Promise.reject("Failed to fetch documents");
+export const getDocuments = (): Promise<
+  DocumentWithHighlightsAndComments[]
+> => {
+  const { data } = db.useQuery(documentQuery);
+  if (data?.documents) {
+    return Promise.resolve(
+      data.documents as DocumentWithHighlightsAndComments[],
+    );
+  }
+  return Promise.reject("Failed to fetch documents");
 };
 
-const documentQueryWithHighlights = { 
-    documents: {
-        highlights: {
-            comments: {},
-        },
-        comments: {},
-    }} satisfies InstantQuery<DB>;
-
-
+const documentQueryWithHighlights = {
+  documents: {
+    highlights: {
+      comments: {},
+    },
+    comments: {},
+  },
+} satisfies InstantQuery<DB>;
 
 // export type DocumentWithHighlights = InstantQueryResult<DB, typeof documentQueryWithHighlights>["documents"];
 export const getDocumentsWithHighlights = () => {
-    return db.useQuery(documentQueryWithHighlights);
+  return db.useQuery(documentQueryWithHighlights);
 };
 
 // =========
 // Bundles
-// ========= 
+// =========
 
 export type Bundle = InstantEntity<DB, "bundles">;
 export type BundleWithDocuments = InstantEntity<DB, "bundles"> & {
-    documents: Document[];
+  documents: Document[];
 };
 
 export type CreateBundleSchema = {
-    name: string,
-    description: string,
-    documentIds: string[],
-}
+  name: string;
+  description: string;
+  documentIds: string[];
+};
 
-export const addBundle = (bundle: CreateBundleSchema & { documentIds?: string[] }) => {
+export const addBundle = (
+  bundle: CreateBundleSchema & { documentIds?: string[] },
+) => {
   console.debug("Saving bundle", bundle);
   const bundleId = id();
   const transaction = [
-    tx.bundles[bundleId].update({ ...bundle, createdAt: getCurrentDate(), id: bundleId }),
+    tx.bundles[bundleId].update({
+      ...bundle,
+      createdAt: getCurrentDate(),
+      id: bundleId,
+    }),
   ];
-  
+
   if (bundle.documentIds && bundle.documentIds.length > 0) {
-    transaction.push(tx.bundles[bundleId].link({ documents: bundle.documentIds }));
+    transaction.push(
+      tx.bundles[bundleId].link({ documents: bundle.documentIds }),
+    );
   }
-  
+
   return db.transact(transaction);
 };
 
-export const addToBundle = (bundleId: string, documentId: string | string[]) => {
+export const addToBundle = (
+  bundleId: string,
+  documentId: string | string[],
+) => {
   console.debug("Adding to bundle", bundleId, documentId);
-  const transaction = [
-    tx.bundles[bundleId].link({ documents: documentId }),
-  ];
-  
-  return {...db.transact(transaction), documentId};
+  const transaction = [tx.bundles[bundleId].link({ documents: documentId })];
+
+  return { ...db.transact(transaction), documentId };
 };
 
-
-const bundlesQuery = { 
-    bundles: {
-        documents: {},
-    },
+const bundlesQuery = {
+  bundles: {
+    documents: {},
+  },
 } satisfies InstantQuery<DB>;
 
 export const getBundles = () => {
-    return db.useQuery(bundlesQuery);
-}
+  return db.useQuery(bundlesQuery);
+};
 
-export const updateBundle = (bundleId: string, updates: Partial<CreateBundleSchema>) => {
+export const updateBundle = (
+  bundleId: string,
+  updates: Partial<CreateBundleSchema>,
+) => {
   console.debug("Updating bundle", bundleId, updates);
   return db.transact(tx.bundles[bundleId].update(updates));
 };
@@ -455,7 +489,10 @@ export const deleteBundle = (bundleId: string) => {
   return db.transact(tx.bundles[bundleId].delete());
 };
 
-export const unlinkDocumentFromBundle = (bundleId: string, documentId: string) => {
+export const unlinkDocumentFromBundle = (
+  bundleId: string,
+  documentId: string,
+) => {
   console.debug("Unlinking document from bundle", bundleId, documentId);
   return db.transact(tx.bundles[bundleId].unlink({ documents: documentId }));
 };
@@ -466,28 +503,28 @@ export const unlinkDocumentFromBundle = (bundleId: string, documentId: string) =
 
 export type Tag = InstantEntity<DB, "tags">;
 export type TagWithDocuments = InstantEntity<DB, "tags"> & {
-    documents: Document[];
+  documents: Document[];
 };
 
 export type CreateTagSchema = {
-    name: string,
-    description: string,
-    documentIds: string[],
-}
+  name: string;
+  description: string;
+  documentIds: string[];
+};
 
 export type UpdateTagSchema = {
-    id: string,
+  id: string;
 } & Partial<CreateTagSchema>;
 
-const tagsQuery = { 
-    tags: {
-        documents: {},
-    },
+const tagsQuery = {
+  tags: {
+    documents: {},
+  },
 } satisfies InstantQuery<DB>;
 
 export const getTags = () => {
-    return db.useQuery(tagsQuery);
-}
+  return db.useQuery(tagsQuery);
+};
 
 export const updateTag = (tagId: string, updates: Partial<CreateTagSchema>) => {
   console.debug("Updating tag", tagId, updates);
@@ -500,7 +537,7 @@ export const addTag = (tag: CreateTagSchema & { documentIds?: string[] }) => {
   const transaction = [
     tx.tags[tagId].update({ ...tag, createdAt: getCurrentDate(), id: tagId }),
   ];
-  
+
   if (tag.documentIds && tag.documentIds.length > 0) {
     transaction.push(tx.tags[tagId].link({ documents: tag.documentIds }));
   }
@@ -518,35 +555,34 @@ export const unlinkDocumentFromTag = (tagId: string, documentId: string) => {
 };
 
 // =========
-// Auth 
+// Auth
 // =========
 
 export type User = InstantEntity<DB, "$users">;
 export const signInWithIdToken = (idToken: string, clientName: string) => {
-    return db.auth.signInWithIdToken({
-        clientName,
-        idToken,
-    });
+  return db.auth.signInWithIdToken({
+    clientName,
+    idToken,
+  });
 };
 
 const usersQuery = {
-    $users: {},
+  $users: {},
 } satisfies InstantQuery<DB>;
 
 export const getUsers = () => {
-    return db.useQuery(usersQuery);
-}
+  return db.useQuery(usersQuery);
+};
 // =========
-// Rooms 
+// Rooms
 // =========
-export const MAIN_ROOM_ID = 'MAIN'
+export const MAIN_ROOM_ID = "MAIN";
 export const useRoom = (roomId = MAIN_ROOM_ID) => {
-    const room = presenceDb.room('chat', roomId);
-    return room;
-
-}
+  const room = presenceDb.room("chat", roomId);
+  return room;
+};
 export const signOut = () => {
-    return db.auth.signOut();
+  return db.auth.signOut();
 };
 
 export const useAuth = db.useAuth;

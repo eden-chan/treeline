@@ -23,7 +23,7 @@ import MobileNavigation from "./components/MobileNavigation.tsx";
 
 import { UploadDocumentModal } from "./UploadDocumentModal.tsx";
 import { Viewer } from "./react-pdf-highlighter.ts";
-import { useBundleContext } from './context/BundleContext.tsx';
+import { useBundleContext } from "./context/BundleContext.tsx";
 
 type Props = {
   resetHighlights: () => void;
@@ -67,7 +67,7 @@ export function Sidebar({
 
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes((prev) =>
-      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type]
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
     );
   };
 
@@ -131,7 +131,7 @@ export function Sidebar({
           {isMobile && (
             <MobileNavigation
               isAreaSelectionEnabled={false}
-              setIsAreaSelectionEnabled={() => { }}
+              setIsAreaSelectionEnabled={() => {}}
               setIsSidebarOpen={closeSidebar}
             />
           )}
@@ -156,7 +156,6 @@ export function Sidebar({
           <UploadDocumentModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-
           />
           <div>
             <small>
@@ -170,7 +169,6 @@ export function Sidebar({
           highlights={highlights}
           selectedHighlightTypes={selectedHighlightTypes}
           handleFilterChange={handleFilterChange}
-
         />
         <div className={styles.buttonContainer}>
           {highlights && highlights.length > 0 && (
@@ -199,5 +197,3 @@ export function Sidebar({
     </div>
   );
 }
-
-

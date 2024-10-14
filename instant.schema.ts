@@ -5,115 +5,115 @@ import { i } from "@instantdb/react";
 
 const graph = i.graph(
   {
-    "$users": i.entity({
-      "email": i.any().unique(),
+    $users: i.entity({
+      email: i.any().unique(),
     }),
-    "bundles": i.entity({
-      "createdAt": i.any(),
-      "description": i.any(),
-      "documentIds": i.any(),
-      "name": i.any(),
+    bundles: i.entity({
+      createdAt: i.any(),
+      description: i.any(),
+      documentIds: i.any(),
+      name: i.any(),
     }),
-    "comments": i.entity({
-      "createdAt": i.any(),
-      "emoji": i.any(),
-      "text": i.any(),
-      "userId": i.any(),
-      "userName": i.any(),
+    comments: i.entity({
+      createdAt: i.any(),
+      emoji: i.any(),
+      text: i.any(),
+      userId: i.any(),
+      userName: i.any(),
     }),
-    "documents": i.entity({
-      "createdAt": i.any(),
-      "name": i.any(),
-      "sourceUrl": i.any(),
+    documents: i.entity({
+      createdAt: i.any(),
+      name: i.any(),
+      sourceUrl: i.any(),
     }),
-    "highlights": i.entity({
-      "content": i.any(),
-      "createdAt": i.any(),
-      "position": i.any(),
-      "userId": i.any(),
-      "userName": i.any(),
+    highlights: i.entity({
+      content: i.any(),
+      createdAt: i.any(),
+      position: i.any(),
+      userId: i.any(),
+      userName: i.any(),
     }),
-    "tags": i.entity({
-      "createdAt": i.any(),
-      "description": i.any(),
-      "documentIds": i.any(),
-      "name": i.any().unique().indexed(),
+    tags: i.entity({
+      createdAt: i.any(),
+      description: i.any(),
+      documentIds: i.any(),
+      name: i.any().unique().indexed(),
     }),
   },
   {
-    "bundlesChildren": {
-      "forward": {
-        "on": "bundles",
-        "has": "many",
-        "label": "children"
+    bundlesChildren: {
+      forward: {
+        on: "bundles",
+        has: "many",
+        label: "children",
       },
-      "reverse": {
-        "on": "bundles",
-        "has": "one",
-        "label": "parent"
-      }
+      reverse: {
+        on: "bundles",
+        has: "one",
+        label: "parent",
+      },
     },
-    "bundlesDocuments": {
-      "forward": {
-        "on": "bundles",
-        "has": "many",
-        "label": "documents"
+    bundlesDocuments: {
+      forward: {
+        on: "bundles",
+        has: "many",
+        label: "documents",
       },
-      "reverse": {
-        "on": "documents",
-        "has": "many",
-        "label": "bundles"
-      }
+      reverse: {
+        on: "documents",
+        has: "many",
+        label: "bundles",
+      },
     },
-    "documentsComments": {
-      "forward": {
-        "on": "documents",
-        "has": "many",
-        "label": "comments"
+    documentsComments: {
+      forward: {
+        on: "documents",
+        has: "many",
+        label: "comments",
       },
-      "reverse": {
-        "on": "comments",
-        "has": "one",
-        "label": "documents"
-      }
+      reverse: {
+        on: "comments",
+        has: "one",
+        label: "documents",
+      },
     },
-    "documentsHighlights": {
-      "forward": {
-        "on": "documents",
-        "has": "many",
-        "label": "highlights"
+    documentsHighlights: {
+      forward: {
+        on: "documents",
+        has: "many",
+        label: "highlights",
       },
-      "reverse": {
-        "on": "highlights",
-        "has": "one",
-        "label": "documents"
-      }
+      reverse: {
+        on: "highlights",
+        has: "one",
+        label: "documents",
+      },
     },
-    "highlightsComments": {
-      "forward": {
-        "on": "highlights",
-        "has": "many",
-        "label": "comments"
+    highlightsComments: {
+      forward: {
+        on: "highlights",
+        has: "many",
+        label: "comments",
       },
-      "reverse": {
-        "on": "comments",
-        "has": "one",
-        "label": "highlights"
-      }
+      reverse: {
+        on: "comments",
+        has: "one",
+        label: "highlights",
+      },
     },
-    "tagsDocuments": {
-      "forward": {
-        "on": "tags",
-        "has": "many",
-        "label": "documents"
+    tagsDocuments: {
+      forward: {
+        on: "tags",
+        has: "many",
+        label: "documents",
       },
-      "reverse": {
-        "on": "documents",
-        "has": "many",
-        "label": "tags"
-      }
-    }
-  }
+      reverse: {
+        on: "documents",
+        has: "many",
+        label: "tags",
+      },
+    },
+  },
 );
 
 export default graph;

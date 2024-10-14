@@ -1,7 +1,7 @@
 import { Component } from "react";
 import styles from "../style/Tip.module.css";
-import { Editor } from '../../example/src/editor/Editor';
-import { $getRoot } from 'lexical';
+import { Editor } from "../../example/src/editor/Editor";
+import { $getRoot } from "lexical";
 
 interface State {
   compact: boolean;
@@ -70,9 +70,14 @@ export class Tip extends Component<Props, State> {
                   }
                 }} */}
               {/* /> */}
-              <Editor value={text} onChange={(editorState) => {
-                this.setState({ text: editorState.read(() => $getRoot().getTextContent()) })
-              }} />
+              <Editor
+                value={text}
+                onChange={(editorState) => {
+                  this.setState({
+                    text: editorState.read(() => $getRoot().getTextContent()),
+                  });
+                }}
+              />
 
               <div>
                 {["💩", "😱", "😍", "🔥", "😳", "⚠️"].map((_emoji) => (

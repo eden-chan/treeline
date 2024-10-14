@@ -31,7 +31,7 @@ import type {
 import { HighlightLayer } from "./HighlightLayer";
 import { MouseSelection } from "./MouseSelection";
 import { TipContainer } from "./TipContainer";
-import type { HighlightResponseType } from '../../example/src/utils/dbUtils';
+import type { HighlightResponseType } from "../../example/src/utils/dbUtils";
 
 export type T_ViewportHighlight<T_HT> = { position: Position } & T_HT;
 
@@ -109,7 +109,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   highlightRoots: {
     [page: number]: { reactRoot: Root; container: Element };
   } = {};
-  unsubscribe = () => { };
+  unsubscribe = () => {};
 
   constructor(props: Props<T_HT>) {
     super(props);
@@ -261,7 +261,11 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
             }
           }
         }
-        if (anyRectsOnPage || pageNumber === highlight.position.pageNumber || pageNumber === highlight.position.boundingRect.pageNumber) {
+        if (
+          anyRectsOnPage ||
+          pageNumber === highlight.position.pageNumber ||
+          pageNumber === highlight.position.boundingRect.pageNumber
+        ) {
           groupedHighlights[pageNumber].push(pageSpecificHighlight);
         }
       }
@@ -401,7 +405,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
         ...pageViewport.convertToPdfPoint(
           0,
           scaledToViewport(boundingRect, pageViewport, usePdfCoordinates).top -
-          scrollMargin,
+            scrollMargin,
         ),
         0,
       ],
@@ -589,12 +593,17 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
                 Boolean(event.target.closest(".page"))
               }
               onSelection={(startTarget, boundingRect, resetSelection) => {
-
-                console.log("%c onSelectionArea selection started", "color: red", boundingRect, 'startTarget', startTarget)
+                console.log(
+                  "%c onSelectionArea selection started",
+                  "color: red",
+                  boundingRect,
+                  "startTarget",
+                  startTarget,
+                );
                 const page = getPageFromElement(startTarget);
-                console.log("%c page", "color: red", page)
+                console.log("%c page", "color: red", page);
                 if (!page) {
-                  console.log("%c exiting !page", "color: red", page)
+                  console.log("%c exiting !page", "color: red", page);
                   return;
                 }
 
@@ -619,7 +628,11 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
                   pageBoundingRect.pageNumber,
                 );
 
-                console.log("%c Area selection started", "color: green", scaledPosition)
+                console.log(
+                  "%c Area selection started",
+                  "color: green",
+                  scaledPosition,
+                );
 
                 this.setTip(
                   viewportPosition,

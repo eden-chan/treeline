@@ -9,8 +9,7 @@ export default $config({
     };
   },
   async run() {
-  
-await import("./infra/storage");
+    await import("./infra/storage");
     const api = await import("./infra/api");
 
     return {

@@ -132,7 +132,6 @@
   background-color: #f8fafc;
 }
 
-
 .documentButton::before {
   content: "📄";
   margin-right: 0.5rem;
@@ -540,7 +539,6 @@
   padding: 0.75rem 1rem;
   width: 100%;
   text-align: left;
-
 }
 
 .addNewButton:hover {

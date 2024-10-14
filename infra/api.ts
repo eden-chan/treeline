@@ -7,8 +7,8 @@ export const api = new sst.aws.ApiGatewayV2("Api", {
       handler: {
         link: [bucket],
       },
-    }
-  }
+    },
+  },
 });
 
 api.route("GET /", {
@@ -20,6 +20,6 @@ api.route("POST /", {
   link: [bucket],
   handler: "packages/functions/src/api.youtubeTranscript",
   nodejs: {
-    install: ["node-fetch"]
-  }
+    install: ["node-fetch"],
+  },
 });
