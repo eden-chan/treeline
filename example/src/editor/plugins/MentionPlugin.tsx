@@ -13,7 +13,7 @@ import {
     useBasicTypeaheadTriggerMatch,
 } from '@lexical/react/LexicalTypeaheadMenuPlugin';
 import type { MenuTextMatch } from '@lexical/react/LexicalTypeaheadMenuPlugin';
-import type { TextNode } from 'lexical';
+import { $createTextNode, type TextNode } from 'lexical';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import * as ReactDOM from 'react-dom';
 import styles from './MentionPlugin.module.css';
@@ -233,7 +233,11 @@ export default function MentionPlugin(): JSX.Element | null {
                 }
                 const textLength = selectedOption.name.length;
                 // const textLength = mentionNode.getTextContent().length;
-                mentionNode.select(textLength, textLength);
+                // mentionNode.select(textLength, textLength);
+                const spaceNode = $createTextNode(' ');
+                mentionNode.insertAfter(spaceNode);
+                spaceNode.select();
+
                 closeMenu();
             });
         },
