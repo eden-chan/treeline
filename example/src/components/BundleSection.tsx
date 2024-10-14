@@ -6,6 +6,7 @@ import styles from './BundleSection.module.css';
 import { CreateBundleModal } from './CreateBundleModal';
 import { AddDocumentToBundleModal } from './AddDocumentToBundleModal';
 import { Bundle } from './Bundle';
+import { BundleProvider } from '../context/BundleContext';
 
 type Props = {
     documents: Document[];
@@ -29,8 +30,9 @@ export function BundleSection({ documents, bundlesWithDocuments, toggleDocument,
         []
     );
 
-    const handleBundleChange = (bundleId: string, name: string, description: string) => {
+    const handleBundleSaveOnChange = (bundleId: string, name: string, description: string) => {
         debouncedUpdateBundle(bundleId, name, description);
+        // export the bundle markdown
     };
 
     const handleCreateBundle = async (name: string, description: string, documentIds: string[]) => {
@@ -107,16 +109,18 @@ export function BundleSection({ documents, bundlesWithDocuments, toggleDocument,
             {isExpanded && (
                 <div className={styles.bundleListWrapper}>
                     <ul className={styles.bundleList}>
-                        {bundlesWithDocuments.map((bundle) => (
-                            <Bundle
-                                key={bundle.id}
-                                bundle={bundle}
-                                selectedDocument={selectedDocument}
-                                toggleDocument={toggleDocument}
-                                handleBundleChange={handleBundleChange}
-                                handleAddDocumentToBundle={handleAddDocumentToBundle}
-                            />
-                        ))}
+                        <BundleProvider bundlesWithDocuments={bundlesWithDocuments}>
+                            {bundlesWithDocuments.map((bundle) => (
+                                <Bundle
+                                    key={bundle.id}
+                                    bundle={bundle}
+                                    selectedDocument={selectedDocument}
+                                    toggleDocument={toggleDocument}
+                                    handleBundleChange={handleBundleSaveOnChange}
+                                    handleAddDocumentToBundle={handleAddDocumentToBundle}
+                                />
+                            ))}
+                        </BundleProvider>
                     </ul>
                 </div>
             )}

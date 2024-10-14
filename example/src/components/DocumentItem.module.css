@@ -1,69 +1,26 @@
 .documentItem {
-  position: relative;
   display: flex;
   align-items: center;
-  border-top: 1px solid #e2e8f0;
+  justify-content: space-between;
+  border-bottom: 1px solid #e2e8f0;
 }
-
+.documentItem:last-child {
+  border-bottom: none;
+}
 .documentButton {
+  flex-grow: 1;
+  text-align: left;
+  padding: 0.75rem 1rem;
   background: none;
   border: none;
   cursor: pointer;
-  display: flex;
-  align-items: center;
   font-size: 0.875rem;
   color: #333;
-  padding: 0.75rem 1rem;
-  width: 100%;
-  text-align: left;
   transition: background-color 0.2s ease;
 }
 
 .documentButton:hover {
   background-color: #f1f5f9;
-}
-
-.documentButton::before {
-  content: "📄";
-  margin-right: 0.5rem;
-}
-
-.selectedDocument {
-  background-color: #e2e8f0;
-  font-weight: 600;
-}
-
-.documentLink {
-  opacity: 0.3;
-  transition: opacity 0.2s ease;
-  color: inherit;
-  margin-left: auto;
-  padding: 4px;
-}
-
-.documentButton:hover .documentLink,
-.selectedDocument .documentLink {
-  opacity: 0.6;
-}
-
-.documentLink:hover {
-  opacity: 1;
-}
-
-.documentLink svg {
-  vertical-align: middle;
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border-width: 0;
 }
 
 .documentActions {
@@ -72,13 +29,8 @@
 }
 
 .documentLink,
-.removeButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  margin-left: 8px;
+.unlinkButton {
+  padding: 0.5rem;
   background: none;
   border: none;
   cursor: pointer;
@@ -87,32 +39,15 @@
 }
 
 .documentLink:hover,
-.removeButton:hover {
+.unlinkButton:hover {
   color: #000;
 }
 
-.removeButton {
-  color: #ff4d4f;
+.unlinkButton {
+  margin-left: 0.5rem;
 }
 
-.removeButton:hover {
-  color: #ff7875;
-}
-
-.editButton {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  margin-left: 8px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  color: #1890ff;
-  transition: color 0.2s ease;
-}
-
-.editButton:hover {
-  color: #40a9ff;
+.selectedDocument {
+  background-color: #e2e8f0;
+  font-weight: 600;
 }
