@@ -231,7 +231,7 @@ export default function MentionPlugin(): JSX.Element | null {
                 if (nodeToReplace) {
                     nodeToReplace.replace(mentionNode);
                 }
-                const textLength = selectedOption.name.length;
+                // const textLength = selectedOption.name.length;
                 // const textLength = mentionNode.getTextContent().length;
                 // mentionNode.select(textLength, textLength);
                 const spaceNode = $createTextNode(' ');
