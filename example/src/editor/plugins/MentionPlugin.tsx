@@ -41,7 +41,7 @@ const VALID_CHARS = `[^${TRIGGERS}${PUNC}\\s]`;
 
 // Non-standard series of chars. Each series must be preceded and followed by
 // a valid char.
-const VALID_JOINS = `(?:\\.[ |$]| |[${PUNC}]|)` // E.g. "r. " in "Mr. Smith"
+const VALID_JOINS = `(?:\\.[ |$]| |[${PUNCTUATION}]|)` // E.g. "r. " in "Mr. Smith"
 ')';
 
 const LENGTH_LIMIT = 75;

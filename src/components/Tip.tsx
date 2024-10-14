@@ -36,10 +36,10 @@ export class Tip extends Component<Props, State> {
     const { compact, text, emoji } = this.state;
 
     return (
-      <div>
+      <div className={styles.tipContainer}>
         {compact ? (
           <div
-            className={styles.compact}
+            className={`${styles.compact} ${styles.tipContent}`}
             onClick={() => {
               onOpen();
               this.setState({ compact: false });
@@ -49,7 +49,7 @@ export class Tip extends Component<Props, State> {
           </div>
         ) : (
           <form
-            className={styles.card}
+            className={`${styles.card} ${styles.tipContent}`}
             onSubmit={(event) => {
               event.preventDefault();
               onConfirm({ text, emoji });
