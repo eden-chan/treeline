@@ -85,10 +85,6 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
     };
 
 
-
-    const candidateTexts = bundle.documents.map((doc) => doc.name);
-    console.log(candidateTexts);
-
     return (
         <li className={styles.bundleItem}>
             <div className={styles.bundleHeader} onClick={toggleExpand}>
@@ -100,7 +96,7 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
                     {isExpanded ? '▼' : '▶'}
                 </button>
 
-                <Editor value={bundle.name} onChange={handleNameChange} className={styles.bundleName} />
+                <Editor value={bundle.name} onChange={handleNameChange} className={styles.bundleName} placeholder="What to learn from this bundle?" />
                 <button
                     ref={settingsButtonRef}
                     onClick={toggleSettings}
@@ -117,56 +113,41 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
             </div>
             {isExpanded && (
                 <div className={styles.bundleContent}>
-                    <Editor isEditable={false} value={descriptionRef.current} onRenderMarkdown={onRenderMarkdown} onChange={handleDescriptionChange} className={styles.bundleDescription} />
-                    <div className={styles.linkedDocumentsHeader}>
-                        <button
-                            onClick={() => handleAddDocumentToBundle(bundle.id)}
-                            className={styles.addDocumentToBundleButton}
-                            type="button"
-                            aria-label="Add new document to bundle"
-                        >
-                            +
-                        </button>
-                    </div>
-                    {(!bundle.documents || bundle.documents.length === 0) ? (
-                        <div className={styles.noDocumentsMessage}>
-                            <p>No documents linked to this bundle.</p>
+                    <Editor isEditable={false} value={descriptionRef.current} onRenderMarkdown={onRenderMarkdown} onChange={handleDescriptionChange} className={styles.bundleDescription} placeholder="What to expect from this bundle?" />
+                    <ul className={styles.documentList}>
+                        {bundle.documents.map((doc) => (
+                            <li key={doc.id} className={styles.documentItem}>
+                                <button
+                                    className={`${styles.documentButton} ${selectedDocument && selectedDocument.id === doc.id ? styles.selectedDocument : ''}`}
+                                    onClick={() => toggleDocument(doc)}
+                                >
+                                    {doc.name}
+                                </button>
+                                <div className={styles.documentActions}>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            unlinkDocumentFromBundle(bundle.id, doc.id);
+                                        }}
+                                        className={styles.unlinkButton}
+                                    >
+                                        Unlink
+                                    </button>
+                                </div>
+                            </li>
+                        ))}
+                        <li className={styles.documentItem}>
                             <button
                                 onClick={() => handleAddDocumentToBundle(bundle.id)}
-                                className={styles.addDocumentButton}
+                                className={styles.addNewButton}
                                 type="button"
                             >
-                                Add a document
+                                Add new document
                             </button>
-                        </div>
-                    ) : (
-                        <ul className={styles.documentList}>
-                            {bundle.documents.map((doc) => (
-                                doc ? (
-                                    <li key={doc.id} className={styles.documentItem}>
-                                        <button
-                                            className={`${styles.documentButton} ${selectedDocument && selectedDocument.id === doc.id ? styles.selectedDocument : ''}`}
-                                            onClick={() => toggleDocument(doc)}
-                                        >
-                                            {doc.name}
-                                        </button>
-                                        <div className={styles.documentActions}>
-                                            <button
-                                                type="button"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    unlinkDocumentFromBundle(bundle.id, doc.id);
-                                                }}
-                                                className={styles.unlinkButton}
-                                            >
-                                                Unlink
-                                            </button>
-                                        </div>
-                                    </li>
-                                ) : null
-                            ))}
-                        </ul>
-                    )}
+                        </li>
+
+                    </ul>
                 </div>
             )}
             <BundleSettingsMenu

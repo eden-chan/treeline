@@ -49,19 +49,15 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 0.875rem;
-  color: #4caf50;
-  padding: 0.5rem;
-  border-radius: 0.25rem;
-  transition: opacity 0.2s ease, background-color 0.2s ease;
   display: flex;
   align-items: center;
-  justify-content: center;
-  opacity: 0;
-}
-
-.bundleSectionHeader:hover .addNewButton {
-  opacity: 1;
+  font-size: 0.875rem;
+  color: #4caf50;
+  width: 100%;
+  text-align: left;
+  transition: background-color 0.2s ease;
+  background-color: yellow; /* Temporary debug style */
+  border: 2px solid red; /* Temporary debug style */
 }
 
 .addNewButton:hover {
@@ -70,8 +66,8 @@
 
 .addNewButton::before {
   content: "+";
+  margin-right: 0.5rem;
   font-size: 1.2rem;
-  margin-right: 0.25rem;
 }
 
 .modalOverlay {
@@ -136,6 +132,11 @@
   background-color: #f8fafc;
 }
 
+
+.documentButton::before {
+  content: "📄";
+  margin-right: 0.5rem;
+}
 .submitButton,
 .cancelButton {
   flex: 1;
@@ -269,14 +270,12 @@
 .documentList {
   list-style-type: none;
   padding: 0;
-  margin: 0.5rem 0;
 }
 
 .documentItem {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.25rem;
   transition: background-color 0.2s ease;
 }
 
@@ -528,4 +527,46 @@
 
 .settingsMenuItem:not(:last-child) {
   border-bottom: 1px solid #e2e8f0;
+}
+
+.addNewButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #4caf50;
+  padding: 0.75rem 1rem;
+  width: 100%;
+  text-align: left;
+
+}
+
+.addNewButton:hover {
+  background-color: #e8f5e9;
+}
+
+.addNewButton::before {
+  content: "+";
+  margin-right: 0.5rem;
+  font-size: 1.2rem;
+}
+
+.checkboxContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
+  color: #333;
+}
+
+.checkboxInput {
+  margin-right: 0.5rem;
 }

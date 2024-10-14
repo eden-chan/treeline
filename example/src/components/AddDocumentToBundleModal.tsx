@@ -1,65 +1,155 @@
+
 import { useState } from 'react';
 import { Modal } from '../Modal';
 import type { Document } from '../utils/dbUtils';
 import styles from './BundleSection.module.css';
-
+import { fetchPDF, uploadLocalFiles } from './UploadDocumentForm';
+import { CreateDocumentDraft } from '../react-pdf-highlighter';
+import FileDropzone from './FileDropzone';
+import { FileList } from './FileList';
 type Props = {
     isOpen: boolean;
     onClose: () => void;
-    onAddExistingDocument: (documentId: string) => void;
-    onCreateDocument: (name: string, url: string) => void;
+    onAddExistingDocument: (documentId: string | string[]) => void;
+
     documents: Document[];
+    onUpload: () => void;
+    onError: () => void;
+    onSuccess: () => void;
 };
 
-export function AddDocumentToBundleModal({ isOpen, onClose, onAddExistingDocument, onCreateDocument, documents }: Props) {
-    const [newDocumentName, setNewDocumentName] = useState('');
-    const [newDocumentUrl, setNewDocumentUrl] = useState('');
+export function AddDocumentToBundleModal({ isOpen, onClose, onAddExistingDocument, documents, onUpload, onError, onSuccess }: Props) {
+    const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
 
-    const handleCreateDocument = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (newDocumentName && newDocumentUrl) {
-            onCreateDocument(newDocumentName, newDocumentUrl);
-            setNewDocumentName('');
-            setNewDocumentUrl('');
+    // File Upload Stato
+    const [name, setName] = useState("");
+    const [urlInput, setUrlInput] = useState("");
+    const [files, setFiles] = useState<File[]>([]);
+    const [resourceLinks, setResourceLinks] = useState<CreateDocumentDraft[]>([]);
+
+    const addLocalFileToBatch = (newFiles: File[]) => {
+        setFiles((prevFiles) => {
+            const uniqueNewFiles = newFiles.filter(
+                (newFile) =>
+                    !prevFiles.some(
+                        (prevFile) =>
+                            prevFile.name === newFile.name && prevFile.size === newFile.size
+                    )
+            );
+            return [...prevFiles, ...uniqueNewFiles];
+        });
+    };
+
+    const addUrlToBatch = () => {
+        if (urlInput) {
+            setResourceLinks([...resourceLinks, { name, sourceUrl: urlInput }]);
+            setUrlInput("");
+            setName("");
         }
+    };
+
+    // get the ids from the state ? 
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        onClose();
+        onUpload();// const onSubmit()
+        const fetchPDFPromises = resourceLinks.map(fetchPDF);
+        const uploadFilesPromise = uploadLocalFiles(files);
+
+
+        let resultingUploadedIds: string[] = [];
+        try {
+            const results = await Promise.all([...fetchPDFPromises, uploadFilesPromise]);
+            resultingUploadedIds = results.flat().filter(Boolean).map((result) => result.documentId);
+            const allIds = [...selectedDocumentIds, ...resultingUploadedIds];
+            onAddExistingDocument(allIds);
+            console.log("addDocumentToBundleModal allIds", allIds);
+        } catch (error) {
+            console.error("Error in upload process:", error);
+        }
+
+
+        // Reset form state
+        setName("");
+        setUrlInput("");
+        setResourceLinks([]);
+        setFiles([]);
+
+
+        if (resultingUploadedIds.length > 0) {
+            onSuccess();
+        } else {
+            onError();
+        }
+
     };
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Add Document to Bundle">
             <h3>Choose Existing Document</h3>
-            <ul className={styles.documentList}>
-                {documents.map((doc) => (
-                    <li key={doc.id} className={styles.documentItem}>
-                        <button
-                            type="button"
-                            onClick={() => onAddExistingDocument(doc.id)}
-                            className={styles.documentButton}
-                        >
-                            {doc.name}
-                        </button>
-                    </li>
-                ))}
-            </ul>
-            <h3>Or Create New Document</h3>
-            <form onSubmit={handleCreateDocument} className={styles.createDocumentForm}>
+            <form onSubmit={handleSubmit}>
+                <ul className={styles.documentList}>
+                    {documents.map((doc) => (
+                        <li key={doc.id} className={styles.documentItem}>
+                            <label className={styles.documentLabel}>
+                                <input
+                                    type="checkbox"
+                                    checked={selectedDocumentIds.includes(doc.id)}
+                                    onChange={() => {
+                                        if (selectedDocumentIds.includes(doc.id)) {
+                                            setSelectedDocumentIds(selectedDocumentIds.filter(id => id !== doc.id));
+                                        } else {
+                                            setSelectedDocumentIds([...selectedDocumentIds, doc.id]);
+                                        }
+                                    }}
+                                    className={styles.documentCheckbox}
+                                />
+                                <span className={styles.documentName}>{doc.name}</span>
+                            </label>
+                        </li>
+                    ))}
+                </ul>
+                <h3>Or Create New Document</h3>
+
                 <input
                     type="text"
-                    value={newDocumentName}
-                    onChange={(e) => setNewDocumentName(e.target.value)}
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
                     placeholder="Document Name"
                     className={styles.inputField}
-                    required
                 />
-                <input
-                    type="url"
-                    value={newDocumentUrl}
-                    onChange={(e) => setNewDocumentUrl(e.target.value)}
-                    placeholder="Document URL"
-                    className={styles.inputField}
-                    required
-                />
+                <div className={styles.urlInputContainer}>
+                    <input
+                        type="url"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        placeholder="Enter URL"
+                        className={styles.inputField}
+                    />
+                    <button
+                        type="button"
+                        onClick={addUrlToBatch}
+                        className={styles.addUrlButton}
+                    >
+                        Add URL
+                    </button>
+                </div>
+                <FileDropzone onFilesAdded={addLocalFileToBatch} setFiles={setFiles} />
+
+                {(files.length > 0 || resourceLinks.length > 0) && (
+                    <div className={styles.fileListContainer}>
+                        <h3 className={styles.fileListTitle}>Selected Files:</h3>
+                        <FileList
+                            localFiles={files}
+                            resourceLinks={resourceLinks}
+                            setLocalFiles={setFiles}
+                            setResourceLinks={setResourceLinks}
+                        />
+                    </div>
+                )}
+
                 <div className={styles.modalButtons}>
-                    <button type="submit" className={styles.submitButton}>Create and Add</button>
+                    <button type="submit" className={styles.submitButton}>Add Documents to Bundle</button>
                     <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
                 </div>
             </form>

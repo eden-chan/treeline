@@ -20,7 +20,7 @@ import styles from './MentionPlugin.module.css';
 
 import { $createMentionNode } from '../nodes/MentionNode';
 import { useBundleContext } from '../../context/BundleContext';
-import type { Document } from '../../utils/dbUtils';
+import type { Document, HighlightResponseTypeWithComments, Comment } from '../../utils/dbUtils';
 
 const PUNCTUATION = '\\.,\\+\\*\\?\\$\\@\\|#{}\\(\\)\\^\\-\\[\\]\\\\/!%\'"~=<>_:;';
 const NAME = `\\b[A-Z][^\\s${PUNCTUATION}]`;
@@ -62,20 +62,6 @@ const SUGGESTION_LIST_LENGTH_LIMIT = 5;
 
 const mentionsCache = new Map<string, Array<LookupServiceResult>>();
 
-
-
-const searchService = {
-    search(string: string, data: Array<LookupServiceResult>, callback: (results: Array<LookupServiceResult>) => void): void {
-
-        const results = data.filter((mention: LookupServiceResult) =>
-            mention.name.toLowerCase().includes(string.toLowerCase()),
-        );
-        callback(results);
-
-    },
-};
-
-
 type LookupServiceResult = {
     id: string;
     name: string;
@@ -85,27 +71,24 @@ function useMentionLookupService(mentionString: string | null, candidateTexts: A
     const [results, setResults] = useState<Array<LookupServiceResult>>([]);
 
     useEffect(() => {
-        const cachedResults = mentionsCache.get(mentionString ?? '');
-
         if (mentionString == null) {
             setResults([]);
             return;
         }
 
-        if (cachedResults === null) {
-            return;
-        }
+        const cachedResults = mentionsCache.get(mentionString);
 
         if (cachedResults !== undefined) {
             setResults(cachedResults);
             return;
         }
+        const newResults = candidateTexts.filter((mention: LookupServiceResult) =>
+            mention.name.toLowerCase().includes(mentionString.toLowerCase()) ?? false
+        ).slice(0, SUGGESTION_LIST_LENGTH_LIMIT);
 
-        mentionsCache.set(mentionString ?? '', []);
-        searchService.search(mentionString, candidateTexts, (newResults) => {
-            mentionsCache.set(mentionString ?? '', newResults);
-            setResults(newResults);
-        });
+        mentionsCache.set(mentionString, newResults);
+        setResults(newResults);
+
     }, [mentionString, candidateTexts]);
 
     return results;
@@ -194,14 +177,26 @@ function MentionsTypeaheadMenuItem({
 
 export default function MentionPlugin(): JSX.Element | null {
     const [editor] = useLexicalComposerContext();
-    const { bundlesWithDocuments } = useBundleContext();
+    const { documents, highlightsWithComments: highlights } = useBundleContext();
     const [queryString, setQueryString] = useState<string | null>(null);
 
-    const candidateTexts: Array<LookupServiceResult> = useMemo(() => {
-        return bundlesWithDocuments.flatMap(bundle =>
-            bundle.documents.map((doc: Document) => ({ id: doc.id, name: doc.name }))
+    const candidateDocuments: Array<LookupServiceResult> = useMemo(() => {
+        return documents.map((doc: Document) => ({ id: doc.id, name: doc.name }));
+    }, [documents]);
+    const candidateHighlightedText: Array<LookupServiceResult> = useMemo(() => {
+        return highlights.filter((highlight): HighlightResponseTypeWithComments => highlight.content?.text).map((highlight) => ({ id: highlight.id, name: highlight.content.text })) ?? [];
+    }, [highlights]);
+
+    const candidateComments: Array<LookupServiceResult> = useMemo(() => {
+        return highlights.flatMap((highlight): Array<LookupServiceResult> =>
+            highlight.comments?.map((comment: Comment) => ({ id: comment.id, name: comment.text })) || []
         );
-    }, [bundlesWithDocuments]);
+    }, [highlights]);
+
+
+
+
+    const candidateTexts = useMemo(() => [...candidateDocuments, ...candidateHighlightedText, ...candidateComments], [candidateDocuments, candidateHighlightedText, candidateComments]);
 
     const results: Array<LookupServiceResult> = useMentionLookupService(queryString, candidateTexts);
 

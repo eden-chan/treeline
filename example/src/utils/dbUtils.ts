@@ -20,7 +20,7 @@ const schema = i.graph(
     }),
     documents: i.entity({
       name: i.string(),
-      sourceUrl: i.string().unique(),
+      sourceUrl: i.string(),
       createdAt: i.number(),
     }),
     highlights: i.entity({
@@ -179,7 +179,7 @@ export const ANONYMOUS_USER_ID = "anonymous";
 // =========
 // Highlights
 // =========
-
+export type Highlight = InstantEntity<DB, "highlights">;
 
 export type CreateHighlightSchemaDraft= {
     position: Partial<ScaledPosition>,
@@ -342,9 +342,9 @@ export const addDocument = (document: CreateDocumentDraft, bundleId?: string) =>
 
     if (bundleId) {
         transaction.push(tx.documents[documentId].link({ bundles: bundleId }));
-    }
-
-    return db.transact(transaction);
+      }
+      
+      return {...db.transact(transaction), documentId};
 }
 
 export const editDocument = (documentId: string, document: Partial<CreateDocumentDraft>) => {
@@ -422,13 +422,13 @@ export const addBundle = (bundle: CreateBundleSchema & { documentIds?: string[] 
   return db.transact(transaction);
 };
 
-export const addToBundle = (bundleId: string, documentId: string) => {
+export const addToBundle = (bundleId: string, documentId: string | string[]) => {
   console.debug("Adding to bundle", bundleId, documentId);
   const transaction = [
     tx.bundles[bundleId].link({ documents: documentId }),
   ];
   
-  return db.transact(transaction);
+  return {...db.transact(transaction), documentId};
 };
 
 

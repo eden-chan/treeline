@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { addBundle, updateBundle, type Document, type BundleWithDocuments, addToBundle, addDocument } from '../utils/dbUtils';
+import { addBundle, updateBundle, type Document, type BundleWithDocuments, addToBundle, HighlightResponseTypeWithComments } from '../utils/dbUtils';
 // @ts-ignore
 import debounce from '../utils/debounce';
 import styles from './BundleSection.module.css';
@@ -9,15 +9,19 @@ import { Bundle } from './Bundle';
 import { BundleProvider } from '../context/BundleContext';
 
 type Props = {
-    documents: Document[];
     bundlesWithDocuments: BundleWithDocuments[];
     toggleDocument: (doc: Document) => void;
     selectedDocument?: Document;
+    documents: Document[];
+    highlights: HighlightResponseTypeWithComments[];
+    onUpload: () => void;
+    onError: () => void;
+    onSuccess: () => void;
 };
 
 const DEBOUNCE_TIME = 1000; // ms
 
-export function BundleSection({ documents, bundlesWithDocuments, toggleDocument, selectedDocument }: Props) {
+export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDocument, documents, highlights, onUpload, onError, onSuccess }: Props) {
     const [isCreateBundleModalOpen, setIsCreateBundleModalOpen] = useState(false);
     const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(true);
@@ -49,16 +53,10 @@ export function BundleSection({ documents, bundlesWithDocuments, toggleDocument,
         setIsAddDocumentModalOpen(true);
     };
 
-    const handleAddExistingDocument = async (documentId: string) => {
+    const handleAddExistingDocument = async (documentId: string | string[]) => {
         if (currentBundleId) {
-            await addToBundle(currentBundleId, documentId);
-            setIsAddDocumentModalOpen(false);
-        }
-    };
-
-    const handleCreateDocumentAndAddToBundle = async (name: string, url: string) => {
-        if (currentBundleId) {
-            await addDocument({ name, sourceUrl: url }, currentBundleId);
+            const result = await addToBundle(currentBundleId, documentId);
+            console.log("handleAddExistingDocument result", result);
             setIsAddDocumentModalOpen(false);
         }
     };
@@ -96,20 +94,26 @@ export function BundleSection({ documents, bundlesWithDocuments, toggleDocument,
                 onClose={() => setIsCreateBundleModalOpen(false)}
                 onSubmit={handleCreateBundle}
                 documents={documents}
+                onUpload={onUpload}
+                onError={onError}
+                onSuccess={onSuccess}
             />
 
             <AddDocumentToBundleModal
+
                 isOpen={isAddDocumentModalOpen}
                 onClose={() => setIsAddDocumentModalOpen(false)}
                 onAddExistingDocument={handleAddExistingDocument}
-                onCreateDocument={handleCreateDocumentAndAddToBundle}
                 documents={documents}
+                onUpload={onUpload}
+                onError={onError}
+                onSuccess={onSuccess}
             />
 
             {isExpanded && (
                 <div className={styles.bundleListWrapper}>
                     <ul className={styles.bundleList}>
-                        <BundleProvider bundlesWithDocuments={bundlesWithDocuments}>
+                        <BundleProvider documents={documents} highlights={highlights}>
                             {bundlesWithDocuments.map((bundle) => (
                                 <Bundle
                                     key={bundle.id}

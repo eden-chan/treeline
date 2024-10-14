@@ -18,15 +18,12 @@ export const isHTMLCanvasElement = (element: Element) =>
   element instanceof getWindow(element).HTMLCanvasElement;
 
 export const getPageFromElement = (target: HTMLElement): Page | null => {
-  console.log("%c getPageFromElement", "color: red", target)
   const node = target.closest(".page");
-  console.log("%c getPageFromElement node", "color: red", node)
   if (!isHTMLElement(node)) {
     return null;
   }
 
   const number = Number(node.dataset.pageNumber);
-  console.log("%c getPageFromElement", "color: red", number, node)
   return { node, number } as Page;
 };
 

@@ -1,15 +1,19 @@
 import { createContext, useContext, type ReactNode } from 'react';
-import type { BundleWithDocuments } from '../utils/dbUtils';
+import type { Document, HighlightResponseTypeWithComments } from '../utils/dbUtils';
 
 interface BundleContextType {
-    bundlesWithDocuments: BundleWithDocuments[];
+    documents: Document[];
+    highlightsWithComments: HighlightResponseTypeWithComments[];
+
 }
 
 const BundleContext = createContext<BundleContextType | undefined>(undefined);
 
-export function BundleProvider({ children, bundlesWithDocuments }: { children: ReactNode; bundlesWithDocuments: BundleWithDocuments[] }) {
+type Props = { children: ReactNode; documents: Document[]; highlights: HighlightResponseTypeWithComments[] }
+
+export function BundleProvider({ children, documents, highlights }: Props) {
     return (
-        <BundleContext.Provider value={{ bundlesWithDocuments }}>
+        <BundleContext.Provider value={{ documents, highlightsWithComments: highlights }}>
             {children}
         </BundleContext.Provider>
     );

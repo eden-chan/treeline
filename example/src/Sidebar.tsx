@@ -5,7 +5,6 @@ import type { User } from "@instantdb/react";
 import { ClerkSignedInComponent } from "./ClerkSignedInComponent";
 import { ClerkSignedOutComponent } from "./ClerkSignedOutComponent";
 import { DocumentList } from "./DocumentList";
-import { CreateDocumentModal } from "./CreateDocumentModal.tsx";
 import { HighlightsList } from "./HighlightsList.tsx";
 import type { HighlightType } from "./utils/highlightTypes";
 import type {
@@ -23,6 +22,7 @@ import { IYoutubeService } from "./services/youtube/youtubeService.ts";
 import MobileNavigation from "./components/MobileNavigation.tsx";
 
 import { useToast, Toaster } from "./components/UseToast.tsx";
+import { UploadDocumentModal } from './UploadDocumentModal.tsx';
 
 type Props = {
   documents: Document[];
@@ -145,16 +145,20 @@ export function Sidebar({
           {isMobile && (
             <MobileNavigation
               isAreaSelectionEnabled={false}
-              setIsAreaSelectionEnabled={() => {}}
+              setIsAreaSelectionEnabled={() => { }}
               setIsSidebarOpen={closeSidebar}
             />
           )}
           <div className={styles.tagsAndBundles}>
             <BundleSection
+              highlights={highlights ?? []}
               documents={documents}
               bundlesWithDocuments={bundles ?? []}
               toggleDocument={toggleDocument}
               selectedDocument={currentDocument}
+              onSuccess={showDocumentUploadSuccess}
+              onError={showDocumentUploadError}
+              onUpload={showDocumentUploadInfo}
             />
           </div>
 
@@ -164,7 +168,7 @@ export function Sidebar({
             onAddNew={() => setIsModalOpen(true)}
             selectedDocument={currentDocument}
           />
-          <CreateDocumentModal
+          <UploadDocumentModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             onSuccess={showDocumentUploadSuccess}

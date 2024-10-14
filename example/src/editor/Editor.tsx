@@ -118,6 +118,7 @@ type Props = {
     onRenderMarkdown?: (markdown: string) => void;
     className?: string;
     isEditable?: boolean;
+    placeholder?: string;
 }
 
 export function Editor({ value, onChange, onBlur, onRenderMarkdown, className, isEditable = true }: Props) {
@@ -128,11 +129,6 @@ export function Editor({ value, onChange, onBlur, onRenderMarkdown, className, i
                     <ContentEditable
                         className={`${styles.contentEditable} ${className}`}
                         suppressContentEditableWarning
-                        style={{
-                            outline: '1px solid #e0e0e0',
-                            padding: '10px',
-                            borderRadius: '4px',
-                        }}
                     />
                 }
                 placeholder={
@@ -145,7 +141,6 @@ export function Editor({ value, onChange, onBlur, onRenderMarkdown, className, i
             <MentionPlugin />
             {onChange && <OnChangePlugin onChange={onChange} />}
             {onBlur && <AutosavePlugin onBlur={onBlur} />}
-
         </LexicalComposer>
     );
 }
