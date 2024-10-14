@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { addDocument } from "../utils/dbUtils";
 import FileDropzone from "./FileDropzone";
 import { FileList } from "./FileList";
@@ -24,10 +24,9 @@ export const fetchPDF = async (link: CreateDocumentDraft) => {
         name: link.name,
         sourceUrl: url,
       });
-    } else {
-      console.error("Error getting hosted URL:", data.error);
-      return null;
     }
+    console.error("Error getting hosted URL:", data.error);
+    return null;
   } catch (error) {
     console.error("Error processing link:", link.sourceUrl, error);
     return null;
@@ -51,7 +50,9 @@ export const uploadFileByLink = async (file: { name: string; url: string }) => {
 export const uploadLocalFiles = async (files: File[]) => {
   try {
     const formData = new FormData();
-    files.forEach((file) => formData.append("files", file));
+    for (const file of files) {
+      formData.append("files", file);
+    }
 
     const response = await fetch(
       `${import.meta.env.VITE_SERVER_URL}/upload-files`,

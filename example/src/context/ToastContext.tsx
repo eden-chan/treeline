@@ -1,5 +1,9 @@
-import React, { createContext, useContext, ReactNode } from "react";
-import { Toast, Toaster, useToast as useToastHook } from "../components/Toast";
+import { createContext, useContext, type ReactNode } from "react";
+import {
+  type Toast,
+  Toaster,
+  useToast as useToastHook,
+} from "../components/Toast";
 
 interface ToastContextType {
   addToast: (toast: Omit<Toast, "id">) => void;

@@ -37,6 +37,10 @@ export const HighlightsList: React.FC<Props> = ({
       ),
   );
 
+  const copyToClipboard = () => {
+    console.log("copy to clipboard");
+  };
+
   return (
     <div className={styles.highlightsListContainer}>
       <div className={styles.highlightsHeader}>
@@ -44,6 +48,14 @@ export const HighlightsList: React.FC<Props> = ({
           selectedHighlightTypes={selectedHighlightTypes}
           handleFilterChange={handleFilterChange}
         />
+        <button
+          onClick={copyToClipboard}
+          className={styles.copyButton}
+          aria-label="Copy highlight"
+          type="button"
+        >
+          📋
+        </button>
         <input
           type="text"
           className={styles.searchBar}

@@ -3,7 +3,7 @@ import { Modal } from "../Modal";
 import type { Document } from "../utils/dbUtils";
 import styles from "./BundleSection.module.css";
 import { fetchPDF, uploadLocalFiles } from "./UploadDocumentForm";
-import { CreateDocumentDraft } from "../react-pdf-highlighter";
+import type { CreateDocumentDraft } from "../react-pdf-highlighter";
 import FileDropzone from "./FileDropzone";
 import { FileList } from "./FileList";
 import { useToast } from "../context/ToastContext";
@@ -102,7 +102,7 @@ export function AddDocumentToBundleModal({
     if (allIds.length > 0) {
       onSuccess();
     } else {
-      onError(`No documents added`);
+      onError("No documents added");
     }
   };
 

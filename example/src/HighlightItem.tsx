@@ -1,4 +1,3 @@
-import React from "react";
 import {
   deleteHighlight,
   type HighlightResponseTypeWithComments,
@@ -77,6 +76,7 @@ export const HighlightItem: React.FC<HighlightItemProps> = ({
             onClick={copyToClipboard}
             className={styles.copyButton}
             aria-label="Copy highlight"
+            type="button"
           >
             📋
           </button>
@@ -84,6 +84,7 @@ export const HighlightItem: React.FC<HighlightItemProps> = ({
             onClick={handleDelete}
             className={styles.deleteButton}
             aria-label="Delete highlight"
+            type="button"
           >
             ×
           </button>
@@ -96,7 +97,7 @@ export const HighlightItem: React.FC<HighlightItemProps> = ({
       )}
       <div>
         {highlight.comments?.map((comment) => (
-          <Editor value={comment.text} />
+          <Editor key={comment.id} value={comment.text} />
         ))}
       </div>
       <div className={styles.highlightInfo}>

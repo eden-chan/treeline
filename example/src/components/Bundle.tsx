@@ -48,7 +48,7 @@ export function Bundle({
 
   const handleDescriptionChange = (
     editorState: EditorState,
-    isEditable: boolean = false,
+    isEditable = false,
   ) => {
     if (!isEditable) {
       return;
@@ -157,6 +157,7 @@ export function Bundle({
                 <button
                   className={`${styles.documentButton} ${selectedDocument && selectedDocument.id === doc.id ? styles.selectedDocument : ""}`}
                   onClick={() => toggleDocument(doc)}
+                  type="button"
                 >
                   {doc.name}
                 </button>

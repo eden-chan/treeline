@@ -22,7 +22,7 @@ import { IYoutubeService } from "./services/youtube/youtubeService.ts";
 import MobileNavigation from "./components/MobileNavigation.tsx";
 
 import { UploadDocumentModal } from "./UploadDocumentModal.tsx";
-import { Viewer } from "./react-pdf-highlighter.ts";
+import type { Viewer } from "./react-pdf-highlighter.ts";
 import { useBundleContext } from "./context/BundleContext.tsx";
 
 type Props = {

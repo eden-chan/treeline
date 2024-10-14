@@ -1,6 +1,5 @@
-import React from "react";
 import styles from "./DocumentItem.module.css";
-import { Document } from "../utils/dbUtils";
+import type { Document } from "../utils/dbUtils";
 
 interface DocumentItemProps {
   doc: Document;
@@ -27,8 +26,6 @@ const DocumentItem: React.FC<DocumentItemProps> = ({
               toggleDocument(doc);
             }
           }}
-          tabIndex={0}
-          role="button"
         >
           {doc?.name?.length > 20 ? `${doc.name.slice(0, 20)}...` : doc?.name}
         </span>

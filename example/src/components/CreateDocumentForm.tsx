@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import styles from "./CreateDocumentModal.module.css";
 import FileDropzone from "./FileDropzone";
 import { FileList } from "./FileList";
