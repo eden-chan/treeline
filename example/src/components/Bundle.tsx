@@ -155,7 +155,11 @@ export function Bundle({
             {bundle.documents.map((doc) => (
               <li key={doc.id} className={styles.documentItem}>
                 <button
-                  className={`${styles.documentButton} ${selectedDocument && selectedDocument.id === doc.id ? styles.selectedDocument : ""}`}
+                  className={`${styles.documentButton} ${
+                    selectedDocument && selectedDocument.id === doc.id
+                      ? styles.selectedDocument
+                      : ""
+                  }`}
                   onClick={() => toggleDocument(doc)}
                   type="button"
                 >
