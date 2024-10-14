@@ -4,12 +4,10 @@ import FileDropzone from "./FileDropzone";
 import { FileList } from "./FileList";
 import type { CreateDocumentDraft } from "../react-pdf-highlighter";
 import styles from "./UploadDocumentForm.module.css";
+import { useToast } from '../context/ToastContext';
 
 interface Props {
     onClose: () => void;
-    onSuccess: () => void;
-    onError: () => void;
-    onUpload: () => void;
 }
 
 // Move these functions outside the component
@@ -75,10 +73,34 @@ export const uploadLocalFiles = async (files: File[]) => {
 
 export const UploadDocumentForm: React.FC<Props> = ({
     onClose,
-    onSuccess,
-    onError,
-    onUpload,
 }) => {
+    const { addToast } = useToast();
+
+    const onUpload = () => {
+        console.log("onUpload");
+        addToast({
+            message: "Uploading documents...",
+            type: "info",
+            duration: 2000,
+        });
+    };
+
+    const onError = () => {
+        addToast({
+            message: "Unable to upload document",
+            type: "error",
+            duration: 2000,
+        });
+    };
+
+    const onSuccess = () => {
+        addToast({
+            message: "Document successfully added!",
+            type: "success",
+            duration: 2000,
+        });
+    };
+
     const [name, setName] = useState("");
     const [urlInput, setUrlInput] = useState("");
     const [files, setFiles] = useState<File[]>([]);

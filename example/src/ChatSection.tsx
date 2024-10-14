@@ -1,20 +1,24 @@
 import { useState } from 'react';
-import { type DocumentWithHighlightsAndComments, type Comment, type CreateCommentDraft, MAIN_ROOM_ID, useRoom, addDocumentComment } from './utils/dbUtils';
+import { type DocumentWithHighlightsAndComments, type Comment, MAIN_ROOM_ID, useRoom } from './utils/dbUtils';
 
 import styles from './ChatSection.module.css';
 import { timeSince } from './utils/utils';
+import { Editor } from './editor/Editor';
+import { $getRoot } from 'lexical';
 
 
 
-interface ChatProps {
+
+type Props = {
     roomId: string;
     username: string;
     color: string;
     currentDocument?: DocumentWithHighlightsAndComments;
 
+
 }
 
-export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDocument }: ChatProps) {
+export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDocument }: Props) {
     const room = useRoom(roomId);
     const user = {
         name: username,
@@ -25,7 +29,7 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
 
     const presence = room.usePresence();
 
-    const { active, inputProps } = room.useTypingIndicator('chat');
+    const { active } = room.useTypingIndicator('chat');
 
     const peers = Object.values(presence.peers).filter((p) => p.name !== username);
     const activeMap = Object.fromEntries(
@@ -34,19 +38,20 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
 
     const [message, setMessage] = useState('');
 
-    const handleSendMessage = () => {
-        if (message.trim()) {
-            const newComment: CreateCommentDraft = {
-                text: message,
-                emoji: "💬", // You can change this or make it dynamic
-                userId: username,
-                userName: username
-            };
 
-            addDocumentComment(newComment, currentDocument?.id);
-            setMessage('');
-        }
-    };
+    // const handleSendMessage = () => {
+    //     if (message.trim()) {
+    //         const newComment: CreateCommentDraft = {
+    //             text: message,
+    //             emoji: "💬", // You can change this or make it dynamic
+    //             userId: username,
+    //             userName: username
+    //         };
+
+    //         addDocumentComment(newComment, currentDocument?.id);
+    //         setMessage('');
+    //     }
+    // };
 
     return (
         <div className={styles.container}>
@@ -83,24 +88,19 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
                 ))}
             </div>
             <div key="main" className={styles.mainContainer}>
-                <textarea
-                    placeholder="Compose your message here..."
-                    className={styles.textarea}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                        inputProps.onKeyDown(e);
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            console.log("Sending message", message)
-                            handleSendMessage();
-                        }
-                    }}
-                    onBlur={() => inputProps.onBlur()}
-                />
+
+                <div className={styles.editorWrapper}>
+                    <Editor
+                        placeholder="Compose your message here..."
+                        value={message}
+                        onChange={(editorState) => setMessage(editorState.read(() => $getRoot().getTextContent()))}
+                    />
+                </div>
+
                 <div className={styles.typingInfo}>
                     {active.length ? typingInfo(active) : <>&nbsp;</>}
                 </div>
+
             </div>
         </div>
     );

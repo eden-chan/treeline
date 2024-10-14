@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import "./Toast.css";
 
 // User api
-type ToastType = {
+export type Toast = {
   message: string;
   type: "info" | "success" | "warning" | "error";
   duration: number;
 };
 
 // Private type
-type IdToast = ToastType & {
+type IdToast = Toast & {
   id: number;
 };
 
@@ -22,7 +22,7 @@ const useToast = () => {
   const [toasts, setToasts] = useState<IdToast[]>([]);
 
   // Add a new toast notification
-  const addToast = (toast: ToastType) => {
+  const addToast = (toast: Toast) => {
     const id = Date.now();
     setToasts([...toasts, { ...toast, id }]);
   };

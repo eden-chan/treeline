@@ -21,12 +21,11 @@ import { useService } from "./App.tsx";
 import { IYoutubeService } from "./services/youtube/youtubeService.ts";
 import MobileNavigation from "./components/MobileNavigation.tsx";
 
-import { useToast, Toaster } from "./components/UseToast.tsx";
 import { UploadDocumentModal } from "./UploadDocumentModal.tsx";
 import { Viewer } from "./react-pdf-highlighter.ts";
+import { useBundleContext } from './context/BundleContext.tsx';
 
 type Props = {
-  documents: Document[];
   resetHighlights: () => void;
   toggleDocument: (newDocument: Document) => void;
   selectedHighlightTypes: HighlightType[];
@@ -40,14 +39,12 @@ type Props = {
   closeSidebar: () => void;
   tags?: TagWithDocuments[];
   bundles?: BundleWithDocuments[];
-  users: User[];
   youtubeUrl: string;
   setYoutubeUrl: (url: string) => void;
   setViewer: (viewer: Viewer) => void; // For changing between youtube and pdf viewer
 };
 
 export function Sidebar({
-  documents,
   toggleDocument,
   resetHighlights,
   selectedHighlightTypes,
@@ -58,40 +55,15 @@ export function Sidebar({
   isMobile,
   closeSidebar,
   bundles,
-  users,
-  setViewer,
   youtubeUrl,
   setYoutubeUrl,
+  setViewer,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { toasts, addToast, removeToast } = useToast();
   const highlights = currentDocument?.highlights;
 
   const youtubeService = useService(IYoutubeService);
-
-  const showDocumentUploadSuccess = () => {
-    addToast({
-      message: "Document successfully added!",
-      type: "success",
-      duration: 2000,
-    });
-  };
-
-  const showDocumentUploadError = () => {
-    addToast({
-      message: "Unable to upload document",
-      type: "error",
-      duration: 2000,
-    });
-  };
-
-  const showDocumentUploadInfo = () => {
-    addToast({
-      message: "Uploading documents...",
-      type: "info",
-      duration: 2000,
-    });
-  };
+  const { documents, users } = useBundleContext();
 
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes((prev) =>
@@ -159,7 +131,7 @@ export function Sidebar({
           {isMobile && (
             <MobileNavigation
               isAreaSelectionEnabled={false}
-              setIsAreaSelectionEnabled={() => {}}
+              setIsAreaSelectionEnabled={() => { }}
               setIsSidebarOpen={closeSidebar}
             />
           )}
@@ -170,9 +142,6 @@ export function Sidebar({
               bundlesWithDocuments={bundles ?? []}
               toggleDocument={toggleDocumentAndViewPDF}
               selectedDocument={currentDocument}
-              onSuccess={showDocumentUploadSuccess}
-              onError={showDocumentUploadError}
-              onUpload={showDocumentUploadInfo}
               users={users}
             />
           </div>
@@ -187,11 +156,8 @@ export function Sidebar({
           <UploadDocumentModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            onSuccess={showDocumentUploadSuccess}
-            onError={showDocumentUploadError}
-            onUpload={showDocumentUploadInfo}
+
           />
-          <Toaster toasts={toasts} removeToast={removeToast}></Toaster>
           <div>
             <small>
               To create area highlight hold ⌥ Option key (Alt), then click and
@@ -204,6 +170,7 @@ export function Sidebar({
           highlights={highlights}
           selectedHighlightTypes={selectedHighlightTypes}
           handleFilterChange={handleFilterChange}
+
         />
         <div className={styles.buttonContainer}>
           {highlights && highlights.length > 0 && (
@@ -232,3 +199,5 @@ export function Sidebar({
     </div>
   );
 }
+
+

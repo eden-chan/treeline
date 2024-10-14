@@ -2,14 +2,14 @@
 import styles from './ChatView.module.css';
 import Chat from './ChatSection';
 import type { DocumentWithHighlightsAndComments } from './utils/dbUtils';
-interface ChatViewProps {
+type Props = {
     roomId: string;
     username: string;
     color: string;
     currentDocument?: DocumentWithHighlightsAndComments;
 }
 
-export function ChatView({ roomId, username, color, currentDocument }: ChatViewProps) {
+export function ChatView({ roomId, username, color, currentDocument }: Props) {
     return (
         <div className={styles.chatView}>
             <Chat

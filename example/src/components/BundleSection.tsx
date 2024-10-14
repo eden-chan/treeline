@@ -6,7 +6,6 @@ import styles from './BundleSection.module.css';
 import { CreateBundleModal } from './CreateBundleModal';
 import { AddDocumentToBundleModal } from './AddDocumentToBundleModal';
 import { Bundle } from './Bundle';
-import { BundleProvider } from '../context/BundleContext';
 
 type Props = {
     bundlesWithDocuments: BundleWithDocuments[];
@@ -15,14 +14,11 @@ type Props = {
     documents: Document[];
     highlights: HighlightResponseTypeWithComments[];
     users: User[];
-    onUpload: () => void;
-    onError: () => void;
-    onSuccess: () => void;
 };
 
 const DEBOUNCE_TIME = 1000; // ms
 
-export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDocument, documents, highlights, users, onUpload, onError, onSuccess }: Props) {
+export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDocument, documents }: Props) {
     const [isCreateBundleModalOpen, setIsCreateBundleModalOpen] = useState(false);
     const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(true);
@@ -95,37 +91,28 @@ export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDo
                 onClose={() => setIsCreateBundleModalOpen(false)}
                 onSubmit={handleCreateBundle}
                 documents={documents}
-                onUpload={onUpload}
-                onError={onError}
-                onSuccess={onSuccess}
             />
 
             <AddDocumentToBundleModal
-
                 isOpen={isAddDocumentModalOpen}
                 onClose={() => setIsAddDocumentModalOpen(false)}
                 onAddExistingDocument={handleAddExistingDocument}
                 documents={documents}
-                onUpload={onUpload}
-                onError={onError}
-                onSuccess={onSuccess}
             />
 
             {isExpanded && (
                 <div className={styles.bundleListWrapper}>
                     <ul className={styles.bundleList}>
-                        <BundleProvider documents={documents} highlights={highlights} users={users}>
-                            {bundlesWithDocuments.map((bundle) => (
-                                <Bundle
-                                    key={bundle.id}
-                                    bundle={bundle}
-                                    selectedDocument={selectedDocument}
-                                    toggleDocument={toggleDocument}
-                                    handleBundleChange={handleBundleSaveOnChange}
-                                    handleAddDocumentToBundle={handleAddDocumentToBundle}
-                                />
-                            ))}
-                        </BundleProvider>
+                        {bundlesWithDocuments.map((bundle) => (
+                            <Bundle
+                                key={bundle.id}
+                                bundle={bundle}
+                                selectedDocument={selectedDocument}
+                                toggleDocument={toggleDocument}
+                                handleBundleChange={handleBundleSaveOnChange}
+                                handleAddDocumentToBundle={handleAddDocumentToBundle}
+                            />
+                        ))}
                     </ul>
                 </div>
             )}

@@ -13,6 +13,7 @@
   padding: 0.75rem;
   background-color: #ffffff;
   border-bottom: 1px solid #e2e8f0;
+  margin: 0 -20px; /* Compensate for the container padding */
 }
 
 .avatarContainer {
@@ -44,7 +45,8 @@
   display: flex;
   flex: 1;
   flex-direction: column;
-  padding: 0.75rem;
+  padding: 0.75rem 0; /* Removed horizontal padding */
+  padding-bottom: 2rem;
 }
 
 .chatMessages {
@@ -61,6 +63,7 @@
   max-width: 85%;
   font-size: 0.875rem;
   line-height: 1.25;
+  position: relative;
 }
 
 .myMessage {
@@ -99,6 +102,39 @@
   color: #64748b;
   margin-top: 0.25rem;
   text-align: center;
+}
+
+.editorWrapper {
+  /* gutter whitespace at the bottom of the editor for mention dropdown */
+  margin-bottom: 15rem;
+}
+
+/* Copy to Clipboard button styles */
+.copyButton {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  background-color: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 0.75rem;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out, background-color 0.2s ease-in-out;
+}
+
+.message:hover .copyButton {
+  opacity: 1;
+}
+
+.copyButton:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.copyButton:active {
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 /* Scrollbar styles */
