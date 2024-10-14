@@ -2,6 +2,7 @@ import React from 'react';
 import { deleteHighlight, type HighlightResponseTypeWithComments } from './utils/dbUtils';
 import styles from './HighlightItem.module.css';
 import { useToast } from './context/ToastContext';
+import { Editor } from './editor/Editor';
 
 interface HighlightItemProps {
     highlight: HighlightResponseTypeWithComments;
@@ -83,7 +84,7 @@ export const HighlightItem: React.FC<HighlightItemProps> = ({ highlight, updateH
             )}
             <div>
                 {highlight.comments?.map((comment) => (
-                    <div key={comment.id}>{comment.text}</div>
+                    <Editor value={comment.text} />
                 ))}
             </div>
             <div className={styles.highlightInfo}>

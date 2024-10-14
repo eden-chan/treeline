@@ -22,9 +22,9 @@ import { IYoutubeService } from "./services/youtube/youtubeService.ts";
 import MobileNavigation from "./components/MobileNavigation.tsx";
 
 import { UploadDocumentModal } from './UploadDocumentModal.tsx';
+import { useBundleContext } from './context/BundleContext.tsx';
 
 type Props = {
-  documents: Document[];
   resetHighlights: () => void;
   toggleDocument: (newDocument: Document) => void;
   selectedHighlightTypes: HighlightType[];
@@ -38,11 +38,9 @@ type Props = {
   closeSidebar: () => void;
   tags?: TagWithDocuments[];
   bundles?: BundleWithDocuments[];
-  users: User[];
 };
 
 export function Sidebar({
-  documents,
   toggleDocument,
   resetHighlights,
   selectedHighlightTypes,
@@ -53,15 +51,13 @@ export function Sidebar({
   isMobile,
   closeSidebar,
   bundles,
-  users,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const highlights = currentDocument?.highlights;
 
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const youtubeService = useService(IYoutubeService);
-
-
+  const { documents, users } = useBundleContext();
 
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes((prev) =>
@@ -181,9 +177,6 @@ export function Sidebar({
         </button>
 
         <ChatView
-          documents={documents ?? []}
-          highlights={highlights ?? []}
-          users={users ?? []}
           roomId={currentDocument?.id ?? ""}
           username={currentUser?.email ?? ""}
           color={currentUserColor}
@@ -193,3 +186,5 @@ export function Sidebar({
     </div>
   );
 }
+
+

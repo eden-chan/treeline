@@ -6,7 +6,6 @@ import styles from './BundleSection.module.css';
 import { CreateBundleModal } from './CreateBundleModal';
 import { AddDocumentToBundleModal } from './AddDocumentToBundleModal';
 import { Bundle } from './Bundle';
-import { BundleProvider } from '../context/BundleContext';
 
 type Props = {
     bundlesWithDocuments: BundleWithDocuments[];
@@ -19,7 +18,7 @@ type Props = {
 
 const DEBOUNCE_TIME = 1000; // ms
 
-export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDocument, documents, highlights, users }: Props) {
+export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDocument, documents }: Props) {
     const [isCreateBundleModalOpen, setIsCreateBundleModalOpen] = useState(false);
     const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(true);
@@ -104,18 +103,16 @@ export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDo
             {isExpanded && (
                 <div className={styles.bundleListWrapper}>
                     <ul className={styles.bundleList}>
-                        <BundleProvider documents={documents} highlights={highlights} users={users}>
-                            {bundlesWithDocuments.map((bundle) => (
-                                <Bundle
-                                    key={bundle.id}
-                                    bundle={bundle}
-                                    selectedDocument={selectedDocument}
-                                    toggleDocument={toggleDocument}
-                                    handleBundleChange={handleBundleSaveOnChange}
-                                    handleAddDocumentToBundle={handleAddDocumentToBundle}
-                                />
-                            ))}
-                        </BundleProvider>
+                        {bundlesWithDocuments.map((bundle) => (
+                            <Bundle
+                                key={bundle.id}
+                                bundle={bundle}
+                                selectedDocument={selectedDocument}
+                                toggleDocument={toggleDocument}
+                                handleBundleChange={handleBundleSaveOnChange}
+                                handleAddDocumentToBundle={handleAddDocumentToBundle}
+                            />
+                        ))}
                     </ul>
                 </div>
             )}

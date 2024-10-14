@@ -1,18 +1,15 @@
 
 import styles from './ChatView.module.css';
 import Chat from './ChatSection';
-import type { DocumentWithHighlightsAndComments, HighlightResponseTypeWithComments, User, Document } from './utils/dbUtils';
-interface ChatViewProps {
+import type { DocumentWithHighlightsAndComments } from './utils/dbUtils';
+type Props = {
     roomId: string;
     username: string;
     color: string;
     currentDocument?: DocumentWithHighlightsAndComments;
-    documents: Document[];
-    highlights: HighlightResponseTypeWithComments[];
-    users: User[];
 }
 
-export function ChatView({ roomId, username, color, currentDocument, documents, highlights, users }: ChatViewProps) {
+export function ChatView({ roomId, username, color, currentDocument }: Props) {
     return (
         <div className={styles.chatView}>
             <Chat
@@ -20,9 +17,6 @@ export function ChatView({ roomId, username, color, currentDocument, documents, 
                 username={username}
                 color={color}
                 currentDocument={currentDocument}
-                documents={documents}
-                highlights={highlights}
-                users={users}
             />
         </div>
     );

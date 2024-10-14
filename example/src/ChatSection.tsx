@@ -1,26 +1,24 @@
 import { useState } from 'react';
-import { type DocumentWithHighlightsAndComments, type Document, type Comment, type CreateCommentDraft, MAIN_ROOM_ID, useRoom, addDocumentComment, HighlightResponseTypeWithComments, User } from './utils/dbUtils';
+import { type DocumentWithHighlightsAndComments, type Comment, type CreateCommentDraft, MAIN_ROOM_ID, useRoom, addDocumentComment, HighlightResponseTypeWithComments, User } from './utils/dbUtils';
 
 import styles from './ChatSection.module.css';
 import { timeSince } from './utils/utils';
 import { Editor } from './editor/Editor';
 import { $getRoot } from 'lexical';
-import { BundleProvider } from './context/BundleContext';
 
 
 
-interface ChatProps {
+
+type Props = {
     roomId: string;
     username: string;
     color: string;
     currentDocument?: DocumentWithHighlightsAndComments;
-    documents: Document[];
-    highlights: HighlightResponseTypeWithComments[];
-    users: User[];
+
 
 }
 
-export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDocument, documents, highlights, users }: ChatProps) {
+export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDocument }: Props) {
     const room = useRoom(roomId);
     const user = {
         name: username,
@@ -55,7 +53,6 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
         }
     };
 
-    console.log('documents', documents, 'highlights', highlights, 'users', users);
     return (
         <div className={styles.container}>
             {currentDocument?.name ?? 'untitled document'}
@@ -91,15 +88,14 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
                 ))}
             </div>
             <div key="main" className={styles.mainContainer}>
-                <BundleProvider documents={documents} highlights={highlights} users={users}>
-                    <div className={styles.editorWrapper}>
-                        <Editor
-                            placeholder="Compose your message here..."
-                            value={message}
-                            onChange={(editorState) => setMessage(editorState.read(() => $getRoot().getTextContent()))}
-                        />
-                    </div>
-                </BundleProvider>
+
+                <div className={styles.editorWrapper}>
+                    <Editor
+                        placeholder="Compose your message here..."
+                        value={message}
+                        onChange={(editorState) => setMessage(editorState.read(() => $getRoot().getTextContent()))}
+                    />
+                </div>
 
                 <div className={styles.typingInfo}>
                     {active.length ? typingInfo(active) : <>&nbsp;</>}
