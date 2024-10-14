@@ -8,6 +8,8 @@
 
 import {
     $applyNodeReplacement,
+    $createRangeSelection,
+    $setSelection,
     type DOMConversionMap,
     type DOMConversionOutput,
     type DOMExportOutput,
@@ -22,6 +24,7 @@ import {
 export type SerializedMentionNode = Spread<
     {
         mentionName: string;
+        mentionId: string;
     },
     SerializedTextNode
 >;
@@ -32,7 +35,8 @@ function $convertMentionElement(
     const textContent = domNode.textContent;
 
     if (textContent !== null) {
-        const node = $createMentionNode(textContent);
+        console.log('%cconvert mention element', 'color: red', textContent);
+        const node = $createMentionNode(textContent, '');
         return {
             node,
         };
@@ -44,16 +48,17 @@ function $convertMentionElement(
 const mentionStyle = 'background-color: rgba(24, 119, 232, 0.2)';
 export class MentionNode extends TextNode {
     __mention: string;
+    __mentionId: string;
 
     static getType(): string {
         return 'mention';
     }
 
     static clone(node: MentionNode): MentionNode {
-        return new MentionNode(node.__mention, node.__text, node.__key);
+        return new MentionNode(node.__mention, node.__mentionId, node.__text, node.__key);
     }
     static importJSON(serializedNode: SerializedMentionNode): MentionNode {
-        const node = $createMentionNode(serializedNode.mentionName);
+        const node = $createMentionNode(serializedNode.mentionName, serializedNode.mentionId);
         node.setTextContent(serializedNode.text);
         node.setFormat(serializedNode.format);
         node.setDetail(serializedNode.detail);
@@ -62,15 +67,17 @@ export class MentionNode extends TextNode {
         return node;
     }
 
-    constructor(mentionName: string, text?: string, key?: NodeKey) {
+    constructor(mentionName: string, mentionId: string, text?: string, key?: NodeKey) {
         super(text ?? mentionName, key);
         this.__mention = mentionName;
+        this.__mentionId = mentionId;
     }
 
     exportJSON(): SerializedMentionNode {
         return {
             ...super.exportJSON(),
             mentionName: this.__mention,
+            mentionId: this.__mentionId,
             type: 'mention',
             version: 1,
         };
@@ -88,6 +95,7 @@ export class MentionNode extends TextNode {
         console.log('%cexport dom', 'color: red', this.__text);
         const element = document.createElement('span');
         element.setAttribute('data-lexical-mention', 'true');
+        element.setAttribute('data-lexical-mention-id', this.__mentionId);
         element.textContent = this.__text;
         return { element };
     }
@@ -117,11 +125,23 @@ export class MentionNode extends TextNode {
     canInsertTextAfter(): boolean {
         return false;
     }
+
+    getTextContent(): string {
+        return `@[${this.__mention}]<<${this.__mentionId}>>`;
+    }
 }
 
-export function $createMentionNode(mentionName: string): MentionNode {
-    const mentionNode = new MentionNode(mentionName);
+export function $createMentionNode(mentionName: string, mentionId: string): MentionNode {
+    const mentionNode = new MentionNode(mentionName, mentionId);
     mentionNode.setMode('segmented').toggleDirectionless();
+    // Set selection to the end of the new node
+    const selection = $createRangeSelection();
+
+    console.log('mentionNode', mentionNode.__text);
+    selection.focus.set(mentionNode.getKey(), 5, 'text');
+    $setSelection(selection);
+
+
     return $applyNodeReplacement(mentionNode);
 }
 
