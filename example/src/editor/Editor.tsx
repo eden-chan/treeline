@@ -9,18 +9,14 @@ import { OnChangePlugin } from '@lexical/react/LexicalOnChangePlugin';
 import { $createParagraphNode, $createTextNode, $getRoot, TextNode, type EditorState } from 'lexical';
 import type { InitialConfigType } from '@lexical/react/LexicalComposer';
 import { AutosavePlugin } from './plugins/AutosavePlugin';
-import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin';
-import {
-    $convertFromMarkdownString,
-    $convertToMarkdownString,
-} from '@lexical/markdown';
-import { $createCodeNode, $isCodeNode, CodeHighlightNode, CodeNode } from '@lexical/code';
+import { CodeHighlightNode, CodeNode } from '@lexical/code';
 import { HeadingNode, QuoteNode } from '@lexical/rich-text';
 import { ListItemNode, ListNode } from '@lexical/list';
 import { TableNode } from '@lexical/table';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { CUSTOM_TRANSFORMERS } from './plugins/MyMarkdownTransformers';
-const editorConfig = ({ value, onRenderMarkdown }: { value: string, onRenderMarkdown?: (markdown: string) => void }): InitialConfigType => {
+import { $convertFromMarkdownString } from '@lexical/markdown';
+const editorConfig = ({ value, onRenderMarkdown, isEditable = true }: { value: string, onRenderMarkdown?: (markdown: string) => void, isEditable?: boolean }): InitialConfigType => {
     return {
         namespace: "editor",
         onError: (error: Error) => console.error(error),
@@ -73,7 +69,9 @@ const editorConfig = ({ value, onRenderMarkdown }: { value: string, onRenderMark
                     paragraphNode.append(textNode);
                     console.log('%c rendering as markdown textBefore', 'color: green', textBefore);
 
-                    // $convertFromMarkdownString(textBefore, CUSTOM_TRANSFORMERS, paragraphNode);
+                    if (!isEditable) {
+                        $convertFromMarkdownString(textBefore, CUSTOM_TRANSFORMERS, paragraphNode);
+                    }
                     root.append(paragraphNode);
                     preservedText += textBefore;
                     // const markdown = $convertToMarkdownString(CUSTOM_TRANSFORMERS);
@@ -100,7 +98,9 @@ const editorConfig = ({ value, onRenderMarkdown }: { value: string, onRenderMark
                 paragraphNode.append(remainingTextNode);
                 console.log('%c rendering as markdown remainingText', 'color: green', remainingText);
 
-                // $convertFromMarkdownString(remainingText, CUSTOM_TRANSFORMERS, paragraphNode, true);
+                if (!isEditable) {
+                    $convertFromMarkdownString(remainingText, CUSTOM_TRANSFORMERS, paragraphNode);
+                }
                 root.append(paragraphNode);
                 preservedText += remainingText;
             }
@@ -117,16 +117,22 @@ type Props = {
     onBlur?: (editorState: EditorState) => void;
     onRenderMarkdown?: (markdown: string) => void;
     className?: string;
+    isEditable?: boolean;
 }
 
-export function Editor({ value, onChange, onBlur, onRenderMarkdown, className }: Props) {
+export function Editor({ value, onChange, onBlur, onRenderMarkdown, className, isEditable = true }: Props) {
     return (
-        <LexicalComposer initialConfig={editorConfig({ value, onRenderMarkdown })}>
+        <LexicalComposer initialConfig={editorConfig({ value, onRenderMarkdown, isEditable })}>
             <RichTextPlugin
                 contentEditable={
                     <ContentEditable
-                        className={`${styles.contentEditable} ${className}`} suppressContentEditableWarning
-
+                        className={`${styles.contentEditable} ${className}`}
+                        suppressContentEditableWarning
+                        style={{
+                            outline: '1px solid #e0e0e0',
+                            padding: '10px',
+                            borderRadius: '4px',
+                        }}
                     />
                 }
                 placeholder={
@@ -136,8 +142,6 @@ export function Editor({ value, onChange, onBlur, onRenderMarkdown, className }:
                 }
                 ErrorBoundary={LexicalErrorBoundary}
             />
-            <MarkdownShortcutPlugin transformers={CUSTOM_TRANSFORMERS} />
-
             <MentionPlugin />
             {onChange && <OnChangePlugin onChange={onChange} />}
             {onBlur && <AutosavePlugin onBlur={onBlur} />}

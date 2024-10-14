@@ -515,7 +515,7 @@ export const ITALIC_UNDERSCORE: TextFormatTransformer = {
 // - then longer tags match (e.g. ** or __ should go before * or _)
 export const LINK: TextMatchTransformer = {
   dependencies: [LinkNode],
-  export: (node, exportChildren, exportFormat) => {
+  export: (node, _, exportFormat) => {
     if (!$isLinkNode(node)) {
       return null;
     }
