@@ -1,5 +1,7 @@
 import { Component } from "react";
 import styles from "../style/Tip.module.css";
+import { Editor } from '../../example/src/editor/Editor';
+import { $getRoot } from 'lexical';
 
 interface State {
   compact: boolean;
@@ -54,7 +56,7 @@ export class Tip extends Component<Props, State> {
             }}
           >
             <div>
-              <textarea
+              {/* <textarea
                 placeholder="Your comment"
                 // biome-ignore lint/a11y/noAutofocus: This is an example app
                 autoFocus
@@ -66,8 +68,12 @@ export class Tip extends Component<Props, State> {
                   if (node) {
                     node.focus();
                   }
-                }}
-              />
+                }} */}
+              {/* /> */}
+              <Editor value={text} onChange={(editorState) => {
+                this.setState({ text: editorState.read(() => $getRoot().getTextContent()) })
+              }} />
+
               <div>
                 {["💩", "😱", "😍", "🔥", "😳", "⚠️"].map((_emoji) => (
                   <label key={_emoji}>

@@ -197,7 +197,6 @@ export default function MentionPlugin(): JSX.Element | null {
         return users.map((user: User) => ({ id: user.id, name: user.email }));
     }, [users]);
 
-    console.log("candidateUsers", candidateUsers);
 
 
 
