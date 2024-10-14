@@ -44,8 +44,7 @@ export interface HighlightContent {
   content: Content;
 }
 
-
-export type Reply = Omit<Comment, 'replies'> 
+export type Reply = Omit<Comment, "replies">;
 
 export interface Comment {
   text: string;
@@ -58,10 +57,12 @@ export interface HighlightCommentSection {
   comments: Comment[];
 }
 
-export interface NewHighlight extends HighlightContent, HighlightCommentSection {
+export interface NewHighlight
+  extends HighlightContent,
+    HighlightCommentSection {
   position: ScaledPosition;
-  // content 
-  //  comments 
+  // content
+  //  comments
 }
 
 export interface IHighlight extends NewHighlight {
@@ -71,7 +72,9 @@ export interface IHighlight extends NewHighlight {
   createdAt: number; // timestamp only used for rendering.
 }
 
-export interface ViewportHighlight extends HighlightContent, HighlightCommentSection {
+export interface ViewportHighlight
+  extends HighlightContent,
+    HighlightCommentSection {
   position: Position;
 }
 
@@ -87,8 +90,6 @@ export interface Page {
   number: number;
 }
 
-
-
 // New Document interface
 export interface Document {
   id: string;
@@ -98,24 +99,23 @@ export interface Document {
   comments: Comment[]; // Document-level comment thread
 }
 
-export type CommentDraft = Omit<Comment, 'replies'> // text + emoji
-export type HighlightDraft = Omit<NewHighlight, 'comments'> // content + position
+export type CommentDraft = Omit<Comment, "replies">; // text + emoji
+export type HighlightDraft = Omit<NewHighlight, "comments">; // content + position
 
-// Creating a new document 
-
+// Creating a new document
 
 export interface HighlightMetadata {
-    userId: string;
-    userName: string;
-    documentId?: string;
+  userId: string;
+  userName: string;
+  documentId?: string;
 }
 
-export interface CreateDocumentHighlightDraft  {
-    // highlight: HighlightDraft; // content + position
-    // comment: CommentDraft; // text + emoji
-    highlightDraft: HighlightDraft;
-    commentDraft: CommentDraft;
-    highlightMetadata: HighlightMetadata;
+export interface CreateDocumentHighlightDraft {
+  // highlight: HighlightDraft; // content + position
+  // comment: CommentDraft; // text + emoji
+  highlightDraft: HighlightDraft;
+  commentDraft: CommentDraft;
+  highlightMetadata: HighlightMetadata;
 }
 
 export interface CreateDocumentDraft {
@@ -126,3 +126,5 @@ export interface CreateDocumentDraft {
 export interface DocumentWithId extends Document {
   id: string;
 }
+
+export type Viewer = "pdf" | "youtube";

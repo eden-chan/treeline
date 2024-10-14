@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { type DocumentWithHighlightsAndComments, type Comment, type CreateCommentDraft, MAIN_ROOM_ID, useRoom, addDocumentComment, HighlightResponseTypeWithComments, User } from './utils/dbUtils';
+import { type DocumentWithHighlightsAndComments, type Comment, MAIN_ROOM_ID, useRoom } from './utils/dbUtils';
 
 import styles from './ChatSection.module.css';
 import { timeSince } from './utils/utils';
@@ -29,7 +29,7 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
 
     const presence = room.usePresence();
 
-    const { active, inputProps } = room.useTypingIndicator('chat');
+    const { active } = room.useTypingIndicator('chat');
 
     const peers = Object.values(presence.peers).filter((p) => p.name !== username);
     const activeMap = Object.fromEntries(
@@ -39,19 +39,19 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
     const [message, setMessage] = useState('');
 
 
-    const handleSendMessage = () => {
-        if (message.trim()) {
-            const newComment: CreateCommentDraft = {
-                text: message,
-                emoji: "💬", // You can change this or make it dynamic
-                userId: username,
-                userName: username
-            };
+    // const handleSendMessage = () => {
+    //     if (message.trim()) {
+    //         const newComment: CreateCommentDraft = {
+    //             text: message,
+    //             emoji: "💬", // You can change this or make it dynamic
+    //             userId: username,
+    //             userName: username
+    //         };
 
-            addDocumentComment(newComment, currentDocument?.id);
-            setMessage('');
-        }
-    };
+    //         addDocumentComment(newComment, currentDocument?.id);
+    //         setMessage('');
+    //     }
+    // };
 
     return (
         <div className={styles.container}>

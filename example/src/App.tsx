@@ -1,5 +1,12 @@
 "use client";
-import { useState, useEffect, useRef, useMemo, useCallback, useContext } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+  useContext,
+} from "react";
 
 import {
   AreaHighlight,
@@ -9,7 +16,8 @@ import {
   Popup,
   Tip,
 } from "./react-pdf-highlighter";
-import type { Comment, IHighlight } from "./react-pdf-highlighter";
+import ReactPlayer from "react-player";
+import type { Comment, IHighlight, Viewer } from "./react-pdf-highlighter";
 
 import { Sidebar } from "./Sidebar";
 import { Spinner } from "./Spinner";
@@ -18,8 +26,21 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights, addHighlightWithComment, getTags, getBundles, getUsers } from "./utils/dbUtils";
-import type { Document, DocumentWithHighlightsAndComments } from "./utils/dbUtils";
+import {
+  updateHighlight,
+  resetHighlights,
+  ANONYMOUS_USER_ID,
+  MAIN_ROOM_ID,
+  getDocumentsWithHighlights,
+  addHighlightWithComment,
+  getTags,
+  getBundles,
+  getUsers,
+} from "./utils/dbUtils";
+import type {
+  Document,
+  DocumentWithHighlightsAndComments,
+} from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
 import InstantCursors from './Cursor';
@@ -40,7 +61,7 @@ export function useService<T extends ServiceIdentifier>(
 ): ServiceType<T> {
   const container = useContext(ServicesContext);
   if (!container || !container.container) {
-    throw new Error('useService must be used within a ServicesContext');
+    throw new Error("useService must be used within a ServicesContext");
   }
   return container.container.get<ServiceType<T>>(serviceIdentifier);
 }
@@ -52,11 +73,7 @@ const resetHash = () => {
   document.location.hash = "";
 };
 
-const HighlightPopup = ({
-  comment,
-}: {
-  comment: Comment;
-}) =>
+const HighlightPopup = ({ comment }: { comment: Comment }) =>
   comment.text ? (
     <div className="Highlight__popup">
       {comment.emoji} {comment.text}
@@ -66,7 +83,7 @@ const HighlightPopup = ({
 const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
 
 const searchParams = new URLSearchParams(document.location.search);
-const initialUrl = searchParams.get("url") || PRIMARY_PDF_URL;
+const initialPdfUrl = searchParams.get("url") || PRIMARY_PDF_URL;
 
 export function AppWrapper() {
   return (
@@ -84,8 +101,11 @@ export function AppWrapper() {
 }
 
 export function ViewManager() {
-  const [url, setUrl] = useState(initialUrl);
-  const [selectedHighlightTypes, setSelectedHighlightTypes] = useState<HighlightType[]>(Object.values(HighlightType));
+  const [pdfUrl, setPdfUrl] = useState(initialPdfUrl);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
+  const [selectedHighlightTypes, setSelectedHighlightTypes] = useState<
+    HighlightType[]
+  >(Object.values(HighlightType));
   const scrollViewerTo = useRef((_: IHighlight) => {
     // noop
   });
@@ -94,20 +114,29 @@ export function ViewManager() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const isMobile = useMediaQuery({ maxWidth: 768 });
   const [isAreaSelectionEnabled, setIsAreaSelectionEnabled] = useState(false);
-  const [touchStartPosition, setTouchStartPosition] = useState<{ x: number; y: number } | null>(null);
+  const [touchStartPosition, setTouchStartPosition] = useState<{
+    x: number;
+    y: number;
+  } | null>(null);
+  const [viewer, setViewer] = useState<Viewer>("pdf");
 
   // Fetch Documents
-  const { data: documentData, isLoading: isLoadingDocuments, error: errorDocuments } = getDocumentsWithHighlights();
+  const {
+    data: documentData,
+    isLoading: isLoadingDocuments,
+    error: errorDocuments,
+  } = getDocumentsWithHighlights();
 
   // Fetch displayed Document
-  const currentDocument: DocumentWithHighlightsAndComments | undefined = documentData?.documents.find(doc => doc.sourceUrl === url)
+  const currentDocument: DocumentWithHighlightsAndComments | undefined =
+    documentData?.documents.find((doc) => doc.sourceUrl === pdfUrl);
 
   // Fetch Highlights
   // const {data: highlightData, error: errorHighlights } = getHighlightsByDocument(url);
-  const highlights = currentDocument?.highlights
+  const highlights = currentDocument?.highlights;
 
   // Fetch Tags
-  const { data: tagData, } = getTags();
+  const { data: tagData } = getTags();
 
   // Fetch Bundles
   const { data: bundleData } = getBundles();
@@ -116,35 +145,40 @@ export function ViewManager() {
   const { user } = useDbAuth();
   const { data: usersData } = getUsers();
 
+  const handleTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      console.log("Touch start", e);
+      if (isMobile && isAreaSelectionEnabled) {
+        setTouchStartPosition({
+          x: e.touches[0].clientX,
+          y: e.touches[0].clientY,
+        });
+      }
+    },
+    [isMobile, isAreaSelectionEnabled]
+  );
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    console.log("Touch start", e)
-    if (isMobile && isAreaSelectionEnabled) {
-      setTouchStartPosition({
-        x: e.touches[0].clientX,
-        y: e.touches[0].clientY
-      });
-    }
-  }, [isMobile, isAreaSelectionEnabled]);
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (isMobile && isAreaSelectionEnabled) {
+        // Prevent scrolling when area selection is enabled
+        e.preventDefault();
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (isMobile && isAreaSelectionEnabled) {
-      // Prevent scrolling when area selection is enabled
-      e.preventDefault();
+        if (touchStartPosition) {
+          const currentX = e.touches[0].clientX;
+          const currentY = e.touches[0].clientY;
+          const deltaX = Math.abs(currentX - touchStartPosition.x);
+          const deltaY = Math.abs(currentY - touchStartPosition.y);
 
-      if (touchStartPosition) {
-        const currentX = e.touches[0].clientX;
-        const currentY = e.touches[0].clientY;
-        const deltaX = Math.abs(currentX - touchStartPosition.x);
-        const deltaY = Math.abs(currentY - touchStartPosition.y);
-
-        if (deltaX > 5 || deltaY > 5) {
-          // The user has moved their finger enough to consider it a selection
-          console.log("Area selection started");
+          if (deltaX > 5 || deltaY > 5) {
+            // The user has moved their finger enough to consider it a selection
+            console.log("Area selection started");
+          }
         }
       }
-    }
-  }, [isMobile, isAreaSelectionEnabled, touchStartPosition]);
+    },
+    [isMobile, isAreaSelectionEnabled, touchStartPosition]
+  );
 
   const handleTouchEnd = useCallback(() => {
     setTouchStartPosition(null);
@@ -153,7 +187,9 @@ export function ViewManager() {
   useEffect(() => {
     const scrollToHighlightFromHash = () => {
       const highlightId = parseIdFromHash();
-      const highlight = highlights?.find(highlight => highlight.id === highlightId);
+      const highlight = highlights?.find(
+        (highlight) => highlight.id === highlightId
+      );
       if (highlight) {
         scrollViewerTo.current(highlight);
       }
@@ -164,13 +200,13 @@ export function ViewManager() {
       window.removeEventListener(
         "hashchange",
         scrollToHighlightFromHash,
-        false,
+        false
       );
     };
   }, [highlights]);
 
   if (isLoadingDocuments) {
-    return <Spinner />
+    return <Spinner />;
   }
   if (errorDocuments) {
     return <div>Error fetching data: {errorDocuments.message}</div>;
@@ -193,20 +229,163 @@ export function ViewManager() {
   };
 
   const toggleDocument = (newDocument: Document) => {
-    setUrl(newDocument.sourceUrl);
+    setPdfUrl(newDocument.sourceUrl);
   };
 
   // reduce the highlights to only the ones that are in the selectedHighlightTypes
-  const renderedFilterHighlights = highlights?.filter(highlight =>
-    selectedHighlightTypes.includes(getHighlightType(highlight.userId))
-  ).map(highlight => ({ ...highlight, content: { text: highlight.content.text, image: highlight.content.image } as IHighlight['content'] })) ?? []
+  const renderedFilterHighlights =
+    highlights
+      ?.filter((highlight) =>
+        selectedHighlightTypes.includes(getHighlightType(highlight.userId))
+      )
+      .map((highlight) => ({
+        ...highlight,
+        content: {
+          text: highlight.content.text,
+          image: highlight.content.image,
+        } as IHighlight["content"],
+      })) ?? [];
 
 
+  const PDFViewer = () => {
+
+
+    return (
+      <div
+        className={styles.mainContent}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+      >
+        <PdfLoader url={pdfUrl} beforeLoad={<Spinner />}>
+          {(pdfDocument) => (
+            <PdfHighlighter
+              highlights={renderedFilterHighlights}
+              pdfDocument={pdfDocument}
+              enableAreaSelection={(event) =>
+                event.altKey || (isMobile && isAreaSelectionEnabled)
+              }
+              onScrollChange={resetHash}
+
+              scrollRef={(scrollTo) => {
+                scrollViewerTo.current = scrollTo;
+                const highlightId = parseIdFromHash();
+                const highlight = highlights?.find(highlight => highlight.id === highlightId);
+                if (highlight) {
+                  scrollViewerTo.current(highlight);
+                }
+
+              }}
+              onSelectionFinished={(
+                position,
+                content,
+                hideTipAndSelection,
+                transformSelection,
+              ) => (
+                <Tip
+                  onOpen={transformSelection}
+                  onConfirm={(comment) => {
+
+                    if (!currentDocument) {
+                      console.error('[Confirm Highlight] failed - no current document')
+                      return
+                    }
+                    const userId = user?.id ?? ANONYMOUS_USER_ID;
+                    const userName = user?.email ?? ANONYMOUS_USER_ID;
+
+                    const commentDraft =
+                      comment.text || comment.emoji
+                        ? {
+                          text: comment.text,
+                          emoji: comment.emoji,
+                          userId,
+                          userName,
+                        }
+                        : undefined;
+
+                    const highlightDraft = {
+                      position,
+                      content,
+                      userId,
+                      userName,
+                    };
+
+                    // addHighlight(newHighlightDraft)
+                    addHighlightWithComment({
+                      highlight: highlightDraft,
+                      documentId: currentDocument.id,
+                      comment: commentDraft,
+                    });
+
+                    hideTipAndSelection();
+                  }}
+                />
+              )}
+              highlightTransform={(
+                highlight,
+                index,
+                setTip,
+                hideTip,
+                viewportToScaled,
+                screenshot,
+                isScrolledTo,
+              ) => {
+
+                const isTextHighlight = !highlight.content?.image;
+
+                const highlightType = getHighlightType(highlight.userId);
+
+                const component = isTextHighlight ? (
+                  <Highlight
+                    isScrolledTo={isScrolledTo}
+                    position={highlight.position}
+                    comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }}
+                    highlightType={highlightType}
+                  />
+                ) : (
+                  <AreaHighlight
+                    isScrolledTo={isScrolledTo}
+                    highlight={highlight}
+                    onChange={(boundingRect) => {
+                      updateHighlight(
+                        highlight.id,
+                        { boundingRect: viewportToScaled(boundingRect) },
+                        { image: screenshot(boundingRect) },
+                      );
+                    }}
+                    highlightType={highlightType}
+                  />
+                );
+
+                return (
+                  <Popup
+                    popupContent={<HighlightPopup {...highlight} comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }} />}
+                    onMouseOver={(popupContent) =>
+                      setTip(highlight, () => popupContent)
+                    }
+                    onMouseOut={hideTip}
+                    key={index}
+                  >
+                    {component}
+                  </Popup>
+                );
+              }}
+            />
+          )}
+        </PdfLoader>
+
+        <InstantTopics roomId={MAIN_ROOM_ID} />
+        <InstantAvatarStack roomId={MAIN_ROOM_ID} username={user?.email ?? ANONYMOUS_USER_ID} color={userColor} />
+
+      </div>
+    )
+  }
   return (
 
     <BundleProvider documents={documentData?.documents ?? []} highlights={highlights ?? []} users={usersData?.$users ?? []}>
 
       <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID}>
+
         <PanelGroup direction={isMobile ? "vertical" : "horizontal"}>
           {(!isMobile || isSidebarOpen) && (
             <Panel>
@@ -222,134 +401,15 @@ export function ViewManager() {
                 closeSidebar={() => setIsSidebarOpen(false)}
                 tags={tagData?.tags}
                 bundles={bundleData?.bundles}
+                youtubeUrl={youtubeUrl}
+                setYoutubeUrl={setYoutubeUrl}
+                setViewer={setViewer}
               />
             </Panel>
           )}
           {!isMobile && <PanelResizeHandle className={styles.panelResizeHandle} />}
           <Panel className={styles.viewerPanel} defaultSize={isMobile ? 100 : 70} minSize={isMobile ? 100 : 70}>
-            <div
-              className={styles.mainContent}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-            >
-              <PdfLoader url={url} beforeLoad={<Spinner />}>
-                {(pdfDocument) => (
-                  <PdfHighlighter
-                    highlights={renderedFilterHighlights}
-                    pdfDocument={pdfDocument}
-                    enableAreaSelection={(event) =>
-                      event.altKey || (isMobile && isAreaSelectionEnabled)
-                    }
-                    onScrollChange={resetHash}
-
-                    scrollRef={(scrollTo) => {
-                      scrollViewerTo.current = scrollTo;
-                      const highlightId = parseIdFromHash();
-                      const highlight = highlights?.find(highlight => highlight.id === highlightId);
-                      if (highlight) {
-                        scrollViewerTo.current(highlight);
-                      }
-
-                    }}
-                    onSelectionFinished={(
-                      position,
-                      content,
-                      hideTipAndSelection,
-                      transformSelection,
-                    ) => (
-                      <Tip
-                        onOpen={transformSelection}
-                        onConfirm={(comment) => {
-
-                          if (!currentDocument) {
-                            console.error('[Confirm Highlight] failed - no current document')
-                            return
-                          }
-                          const userId = user?.id ?? ANONYMOUS_USER_ID;
-                          const userName = user?.email ?? ANONYMOUS_USER_ID;
-
-
-
-                          const commentDraft = comment.text || comment.emoji ? {
-                            text: comment.text,
-                            emoji: comment.emoji,
-                            userId,
-                            userName,
-                          } : undefined
-
-
-                          const highlightDraft = {
-                            position,
-                            content,
-                            userId,
-                            userName,
-                          }
-
-                          // addHighlight(newHighlightDraft)
-                          addHighlightWithComment({ highlight: highlightDraft, documentId: currentDocument.id, comment: commentDraft })
-
-                          hideTipAndSelection();
-                        }}
-                      />
-                    )}
-                    highlightTransform={(
-                      highlight,
-                      index,
-                      setTip,
-                      hideTip,
-                      viewportToScaled,
-                      screenshot,
-                      isScrolledTo,
-                    ) => {
-
-                      const isTextHighlight = !highlight.content?.image;
-
-                      const highlightType = getHighlightType(highlight.userId);
-
-                      const component = isTextHighlight ? (
-                        <Highlight
-                          isScrolledTo={isScrolledTo}
-                          position={highlight.position}
-                          comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }}
-                          highlightType={highlightType}
-                        />
-                      ) : (
-                        <AreaHighlight
-                          isScrolledTo={isScrolledTo}
-                          highlight={highlight}
-                          onChange={(boundingRect) => {
-                            updateHighlight(
-                              highlight.id,
-                              { boundingRect: viewportToScaled(boundingRect) },
-                              { image: screenshot(boundingRect) },
-                            );
-                          }}
-                          highlightType={highlightType}
-                        />
-                      );
-
-                      return (
-                        <Popup
-                          popupContent={<HighlightPopup {...highlight} comment={highlight?.comments?.[0] ?? { text: '', emoji: '' }} />}
-                          onMouseOver={(popupContent) =>
-                            setTip(highlight, () => popupContent)
-                          }
-                          onMouseOut={hideTip}
-                          key={index}
-                        >
-                          {component}
-                        </Popup>
-                      );
-                    }}
-                  />
-                )}
-              </PdfLoader>
-
-              <InstantTopics roomId={MAIN_ROOM_ID} />
-              <InstantAvatarStack roomId={MAIN_ROOM_ID} username={user?.email ?? ANONYMOUS_USER_ID} color={userColor} />
-
-            </div>
+            {viewer === "pdf" ? <PDFViewer /> : <ReactPlayer url={youtubeUrl} />}
           </Panel>
 
         </PanelGroup>
@@ -360,6 +420,7 @@ export function ViewManager() {
             setIsSidebarOpen={setIsSidebarOpen}
           />
         )}
+
       </InstantCursors>
     </BundleProvider>
   );

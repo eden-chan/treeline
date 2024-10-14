@@ -21,7 +21,8 @@ import { useService } from "./App.tsx";
 import { IYoutubeService } from "./services/youtube/youtubeService.ts";
 import MobileNavigation from "./components/MobileNavigation.tsx";
 
-import { UploadDocumentModal } from './UploadDocumentModal.tsx';
+import { UploadDocumentModal } from "./UploadDocumentModal.tsx";
+import { Viewer } from "./react-pdf-highlighter.ts";
 import { useBundleContext } from './context/BundleContext.tsx';
 
 type Props = {
@@ -38,6 +39,9 @@ type Props = {
   closeSidebar: () => void;
   tags?: TagWithDocuments[];
   bundles?: BundleWithDocuments[];
+  youtubeUrl: string;
+  setYoutubeUrl: (url: string) => void;
+  setViewer: (viewer: Viewer) => void; // For changing between youtube and pdf viewer
 };
 
 export function Sidebar({
@@ -51,11 +55,13 @@ export function Sidebar({
   isMobile,
   closeSidebar,
   bundles,
+  youtubeUrl,
+  setYoutubeUrl,
+  setViewer,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const highlights = currentDocument?.highlights;
 
-  const [youtubeUrl, setYoutubeUrl] = useState("");
   const youtubeService = useService(IYoutubeService);
   const { documents, users } = useBundleContext();
 
@@ -70,12 +76,18 @@ export function Sidebar({
       console.error("Please enter a YouTube URL");
       return;
     }
+    setViewer("youtube");
     try {
       const transcript = await youtubeService.getTranscript(youtubeUrl);
       console.log("Transcript:", transcript);
     } catch (error) {
       console.error("Error fetching transcript:", error);
     }
+  };
+
+  const toggleDocumentAndViewPDF = (doc: Document) => {
+    setViewer("pdf");
+    toggleDocument(doc);
   };
 
   return (
@@ -128,7 +140,7 @@ export function Sidebar({
               highlights={highlights ?? []}
               documents={documents}
               bundlesWithDocuments={bundles ?? []}
-              toggleDocument={toggleDocument}
+              toggleDocument={toggleDocumentAndViewPDF}
               selectedDocument={currentDocument}
               users={users}
             />
@@ -136,9 +148,10 @@ export function Sidebar({
 
           <DocumentList
             documents={documents}
-            toggleDocument={toggleDocument}
+            toggleDocument={toggleDocumentAndViewPDF}
             onAddNew={() => setIsModalOpen(true)}
             selectedDocument={currentDocument}
+            setViewer={setViewer}
           />
           <UploadDocumentModal
             isOpen={isModalOpen}
