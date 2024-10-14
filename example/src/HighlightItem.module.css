@@ -47,16 +47,37 @@
   margin-top: 0.5rem;
 }
 
+.buttonGroup {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.copyButton,
 .deleteButton {
   background-color: transparent;
   border: none;
   color: #888;
   font-size: 1.2em;
   cursor: pointer;
-  padding: 0 5px;
-  transition: color 0.3s ease;
+  padding: 0.25rem;
+  border-radius: 0.25rem;
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+.copyButton:hover,
+.deleteButton:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.copyButton:active,
+.deleteButton:active {
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .deleteButton:hover {
   color: #ff4d4d;
+}
+
+.copyButton:hover {
+  color: #4a90e2;
 }

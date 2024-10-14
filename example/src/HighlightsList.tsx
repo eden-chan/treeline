@@ -4,14 +4,13 @@ import type { HighlightResponseTypeWithComments } from './utils/dbUtils';
 import type { HighlightType } from './utils/highlightTypes';
 import styles from './HighlightsList.module.css';
 import { HighlightLegend } from './HighlightLegend';
-import { deleteHighlight } from './utils/dbUtils';
 import { HighlightItem } from './HighlightItem';
 
 type Props = {
     highlights: HighlightResponseTypeWithComments[] | undefined;
     selectedHighlightTypes: HighlightType[];
     handleFilterChange: (type: HighlightType) => void;
-    onHighlightDeleted: () => void; // Add this prop
+
 }
 
 const updateHash = (highlight: HighlightResponseTypeWithComments) => {

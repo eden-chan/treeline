@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { type DocumentWithHighlightsAndComments, type Comment, type CreateCommentDraft, MAIN_ROOM_ID, useRoom, addDocumentComment } from './utils/dbUtils';
+import { type DocumentWithHighlightsAndComments, type Document, type Comment, type CreateCommentDraft, MAIN_ROOM_ID, useRoom, addDocumentComment, HighlightResponseTypeWithComments, User } from './utils/dbUtils';
 
 import styles from './ChatSection.module.css';
 import { timeSince } from './utils/utils';
+import { Editor } from './editor/Editor';
+import { $getRoot } from 'lexical';
+import { BundleProvider } from './context/BundleContext';
 
 
 
@@ -11,10 +14,13 @@ interface ChatProps {
     username: string;
     color: string;
     currentDocument?: DocumentWithHighlightsAndComments;
+    documents: Document[];
+    highlights: HighlightResponseTypeWithComments[];
+    users: User[];
 
 }
 
-export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDocument }: ChatProps) {
+export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDocument, documents, highlights, users }: ChatProps) {
     const room = useRoom(roomId);
     const user = {
         name: username,
@@ -34,6 +40,7 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
 
     const [message, setMessage] = useState('');
 
+
     const handleSendMessage = () => {
         if (message.trim()) {
             const newComment: CreateCommentDraft = {
@@ -48,6 +55,7 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
         }
     };
 
+    console.log('documents', documents, 'highlights', highlights, 'users', users);
     return (
         <div className={styles.container}>
             {currentDocument?.name ?? 'untitled document'}
@@ -83,24 +91,20 @@ export default function Chat({ roomId = MAIN_ROOM_ID, username, color, currentDo
                 ))}
             </div>
             <div key="main" className={styles.mainContainer}>
-                <textarea
-                    placeholder="Compose your message here..."
-                    className={styles.textarea}
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    onKeyDown={(e) => {
-                        inputProps.onKeyDown(e);
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                            e.preventDefault();
-                            console.log("Sending message", message)
-                            handleSendMessage();
-                        }
-                    }}
-                    onBlur={() => inputProps.onBlur()}
-                />
+                <BundleProvider documents={documents} highlights={highlights} users={users}>
+                    <div className={styles.editorWrapper}>
+                        <Editor
+                            placeholder="Compose your message here..."
+                            value={message}
+                            onChange={(editorState) => setMessage(editorState.read(() => $getRoot().getTextContent()))}
+                        />
+                    </div>
+                </BundleProvider>
+
                 <div className={styles.typingInfo}>
                     {active.length ? typingInfo(active) : <>&nbsp;</>}
                 </div>
+
             </div>
         </div>
     );

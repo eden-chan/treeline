@@ -191,6 +191,7 @@ export function Sidebar({
           highlights={highlights}
           selectedHighlightTypes={selectedHighlightTypes}
           handleFilterChange={handleFilterChange}
+
         />
         <div className={styles.buttonContainer}>
           {highlights && highlights.length > 0 && (
@@ -210,6 +211,9 @@ export function Sidebar({
         </button>
 
         <ChatView
+          documents={documents ?? []}
+          highlights={highlights ?? []}
+          users={users ?? []}
           roomId={currentDocument?.id ?? ""}
           username={currentUser?.email ?? ""}
           color={currentUserColor}

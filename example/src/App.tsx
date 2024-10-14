@@ -33,6 +33,7 @@ import type { ServiceIdentifier, ServiceType } from './services/globals';
 import { serviceContextContainer, ServicesContext } from './services/globals';
 import MobileNavigation from './components/MobileNavigation';
 import { BundleProvider } from './context/BundleContext';
+import { ToastProvider } from './context/ToastContext';
 
 export function useService<T extends ServiceIdentifier>(
   serviceIdentifier: T
@@ -74,7 +75,9 @@ export function AppWrapper() {
         publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? ""}
         afterSignOutUrl="/"
       >
-        <ViewManager />
+        <ToastProvider>
+          <ViewManager />
+        </ToastProvider>
       </ClerkProvider>
     </ServicesContext.Provider>
   );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { deleteHighlight, type HighlightResponseTypeWithComments } from './utils/dbUtils';
 import styles from './HighlightItem.module.css';
+import { useToast } from './context/ToastContext';
 
 interface HighlightItemProps {
     highlight: HighlightResponseTypeWithComments;
@@ -9,6 +10,45 @@ interface HighlightItemProps {
 }
 
 export const HighlightItem: React.FC<HighlightItemProps> = ({ highlight, updateHash }) => {
+    const { addToast } = useToast();
+
+    const copyToClipboard = () => {
+        if (highlight.content.text) {
+            navigator.clipboard.writeText(highlight.content.text).then(() => {
+                addToast({
+                    message: "Copied to clipboard",
+                    type: "success",
+                    duration: 2000,
+                });
+            }).catch(err => {
+                console.error('Failed to copy text: ', err);
+                addToast({
+                    message: "Failed to copy to clipboard",
+                    type: "error",
+                    duration: 2000,
+                });
+            });
+        }
+    };
+
+    const handleDelete = async () => {
+        try {
+            await deleteHighlight(highlight.id);
+            addToast({
+                message: "Highlight deleted successfully",
+                type: "success",
+                duration: 2000,
+            });
+        } catch (error) {
+            console.error('Failed to delete highlight:', error);
+            addToast({
+                message: "Failed to delete highlight",
+                type: "error",
+                duration: 2000,
+            });
+        }
+    };
+
     return (
         <li className={styles.highlightItem}>
             <div className={styles.highlightHeader}>
@@ -19,13 +59,22 @@ export const HighlightItem: React.FC<HighlightItemProps> = ({ highlight, updateH
                         </blockquote>
                     )}
                 </span>
-                <button
-                    onClick={() => deleteHighlight(highlight.id)}
-                    className={styles.deleteButton}
-                    aria-label="Delete highlight"
-                >
-                    ×
-                </button>
+                <div className={styles.buttonGroup}>
+                    <button
+                        onClick={copyToClipboard}
+                        className={styles.copyButton}
+                        aria-label="Copy highlight"
+                    >
+                        📋
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        className={styles.deleteButton}
+                        aria-label="Delete highlight"
+                    >
+                        ×
+                    </button>
+                </div>
             </div>
             {highlight.content.image && (
                 <div className={styles.highlightImage}>
