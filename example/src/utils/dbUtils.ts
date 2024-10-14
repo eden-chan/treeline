@@ -13,6 +13,9 @@ import { getCurrentDate } from './utils';
 
 const schema = i.graph(
   {
+    $users: i.entity({
+      email: i.string().unique(),
+    }),
     bundles: i.entity({
       description: i.string(),
       name: i.string(),
@@ -20,7 +23,7 @@ const schema = i.graph(
     }),
     documents: i.entity({
       name: i.string(),
-      sourceUrl: i.string().unique(),
+      sourceUrl: i.string(),
       createdAt: i.number(),
     }),
     highlights: i.entity({
@@ -179,7 +182,7 @@ export const ANONYMOUS_USER_ID = "anonymous";
 // =========
 // Highlights
 // =========
-
+export type Highlight = InstantEntity<DB, "highlights">;
 
 export type CreateHighlightSchemaDraft= {
     position: Partial<ScaledPosition>,
@@ -342,9 +345,9 @@ export const addDocument = (document: CreateDocumentDraft, bundleId?: string) =>
 
     if (bundleId) {
         transaction.push(tx.documents[documentId].link({ bundles: bundleId }));
-    }
-
-    return db.transact(transaction);
+      }
+      
+      return {...db.transact(transaction), documentId};
 }
 
 export const editDocument = (documentId: string, document: Partial<CreateDocumentDraft>) => {
@@ -422,13 +425,13 @@ export const addBundle = (bundle: CreateBundleSchema & { documentIds?: string[] 
   return db.transact(transaction);
 };
 
-export const addToBundle = (bundleId: string, documentId: string) => {
+export const addToBundle = (bundleId: string, documentId: string | string[]) => {
   console.debug("Adding to bundle", bundleId, documentId);
   const transaction = [
     tx.bundles[bundleId].link({ documents: documentId }),
   ];
   
-  return db.transact(transaction);
+  return {...db.transact(transaction), documentId};
 };
 
 
@@ -518,6 +521,7 @@ export const unlinkDocumentFromTag = (tagId: string, documentId: string) => {
 // Auth 
 // =========
 
+export type User = InstantEntity<DB, "$users">;
 export const signInWithIdToken = (idToken: string, clientName: string) => {
     return db.auth.signInWithIdToken({
         clientName,
@@ -525,6 +529,16 @@ export const signInWithIdToken = (idToken: string, clientName: string) => {
     });
 };
 
+const usersQuery = {
+    $users: {},
+} satisfies InstantQuery<DB>;
+
+export const getUsers = () => {
+    return db.useQuery(usersQuery);
+}
+// =========
+// Rooms 
+// =========
 export const MAIN_ROOM_ID = 'MAIN'
 export const useRoom = (roomId = MAIN_ROOM_ID) => {
     const room = presenceDb.room('chat', roomId);

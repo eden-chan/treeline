@@ -1,3 +1,13 @@
+.tipContainer {
+  position: relative;
+  z-index: 1000;
+}
+
+.tipContent {
+  position: relative;
+  z-index: 1001;
+}
+
 .compact {
   cursor: pointer;
   background-color: #3d464d;

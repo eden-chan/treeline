@@ -18,7 +18,7 @@ import "../../dist/style.css";
 
 import { ClerkProvider } from "@clerk/clerk-react";
 
-import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights, addHighlightWithComment, getTags, getBundles } from "./utils/dbUtils";
+import { updateHighlight, resetHighlights, ANONYMOUS_USER_ID, MAIN_ROOM_ID, getDocumentsWithHighlights, addHighlightWithComment, getTags, getBundles, getUsers } from "./utils/dbUtils";
 import type { Document, DocumentWithHighlightsAndComments } from "./utils/dbUtils";
 import { useAuth as useDbAuth } from "./utils/dbUtils";
 import { HighlightType } from "./utils/highlightTypes";
@@ -32,6 +32,7 @@ import { useMediaQuery } from 'react-responsive';
 import type { ServiceIdentifier, ServiceType } from './services/globals';
 import { serviceContextContainer, ServicesContext } from './services/globals';
 import MobileNavigation from './components/MobileNavigation';
+import { BundleProvider } from './context/BundleContext';
 
 export function useService<T extends ServiceIdentifier>(
   serviceIdentifier: T
@@ -110,6 +111,8 @@ export function ViewManager() {
 
   // Fetch Tags
   const { user } = useDbAuth();
+  const { data: usersData } = getUsers();
+
 
   const handleTouchStart = useCallback((e: React.TouchEvent) => {
     console.log("Touch start", e)
@@ -195,7 +198,6 @@ export function ViewManager() {
     selectedHighlightTypes.includes(getHighlightType(highlight.userId))
   ).map(highlight => ({ ...highlight, content: { text: highlight.content.text, image: highlight.content.image } as IHighlight['content'] })) ?? []
 
-  console.log("Current document", currentDocument)
 
   return (
     <InstantCursors roomId={MAIN_ROOM_ID} userId={user?.email ?? ANONYMOUS_USER_ID}>
@@ -215,6 +217,7 @@ export function ViewManager() {
               closeSidebar={() => setIsSidebarOpen(false)}
               tags={tagData?.tags}
               bundles={bundleData?.bundles}
+              users={usersData?.$users ?? []}
             />
           </Panel>
         )}
@@ -251,40 +254,42 @@ export function ViewManager() {
                     hideTipAndSelection,
                     transformSelection,
                   ) => (
-                    <Tip
-                      onOpen={transformSelection}
-                      onConfirm={(comment) => {
+                    <BundleProvider documents={documentData?.documents ?? []} highlights={highlights ?? []} users={usersData?.$users ?? []}>
+                      <Tip
+                        onOpen={transformSelection}
+                        onConfirm={(comment) => {
 
-                        if (!currentDocument) {
-                          console.error('[Confirm Highlight] failed - no current document')
-                          return
-                        }
-                        const userId = user?.id ?? ANONYMOUS_USER_ID;
-                        const userName = user?.email ?? ANONYMOUS_USER_ID;
-
-
-
-                        const commentDraft = comment.text || comment.emoji ? {
-                          text: comment.text,
-                          emoji: comment.emoji,
-                          userId,
-                          userName,
-                        } : undefined
+                          if (!currentDocument) {
+                            console.error('[Confirm Highlight] failed - no current document')
+                            return
+                          }
+                          const userId = user?.id ?? ANONYMOUS_USER_ID;
+                          const userName = user?.email ?? ANONYMOUS_USER_ID;
 
 
-                        const highlightDraft = {
-                          position,
-                          content,
-                          userId,
-                          userName,
-                        }
 
-                        // addHighlight(newHighlightDraft)
-                        addHighlightWithComment({ highlight: highlightDraft, documentId: currentDocument.id, comment: commentDraft })
+                          const commentDraft = comment.text || comment.emoji ? {
+                            text: comment.text,
+                            emoji: comment.emoji,
+                            userId,
+                            userName,
+                          } : undefined
 
-                        hideTipAndSelection();
-                      }}
-                    />
+
+                          const highlightDraft = {
+                            position,
+                            content,
+                            userId,
+                            userName,
+                          }
+
+                          // addHighlight(newHighlightDraft)
+                          addHighlightWithComment({ highlight: highlightDraft, documentId: currentDocument.id, comment: commentDraft })
+
+                          hideTipAndSelection();
+                        }}
+                      />
+                    </BundleProvider>
                   )}
                   highlightTransform={(
                     highlight,

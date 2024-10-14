@@ -1,11 +1,10 @@
 // Sidebar.tsx
 import { useState } from "react";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
-import type { User } from "@instantdb/react";
+import type { User } from "./utils/dbUtils";
 import { ClerkSignedInComponent } from "./ClerkSignedInComponent";
 import { ClerkSignedOutComponent } from "./ClerkSignedOutComponent";
 import { DocumentList } from "./DocumentList";
-import { CreateDocumentModal } from "./CreateDocumentModal.tsx";
 import { HighlightsList } from "./HighlightsList.tsx";
 import type { HighlightType } from "./utils/highlightTypes";
 import type {
@@ -23,6 +22,7 @@ import { IYoutubeService } from "./services/youtube/youtubeService.ts";
 import MobileNavigation from "./components/MobileNavigation.tsx";
 
 import { useToast, Toaster } from "./components/UseToast.tsx";
+import { UploadDocumentModal } from './UploadDocumentModal.tsx';
 
 type Props = {
   documents: Document[];
@@ -39,6 +39,7 @@ type Props = {
   closeSidebar: () => void;
   tags?: TagWithDocuments[];
   bundles?: BundleWithDocuments[];
+  users: User[];
 };
 
 export function Sidebar({
@@ -53,6 +54,7 @@ export function Sidebar({
   isMobile,
   closeSidebar,
   bundles,
+  users,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toasts, addToast, removeToast } = useToast();
@@ -145,16 +147,21 @@ export function Sidebar({
           {isMobile && (
             <MobileNavigation
               isAreaSelectionEnabled={false}
-              setIsAreaSelectionEnabled={() => {}}
+              setIsAreaSelectionEnabled={() => { }}
               setIsSidebarOpen={closeSidebar}
             />
           )}
           <div className={styles.tagsAndBundles}>
             <BundleSection
+              highlights={highlights ?? []}
               documents={documents}
               bundlesWithDocuments={bundles ?? []}
               toggleDocument={toggleDocument}
               selectedDocument={currentDocument}
+              onSuccess={showDocumentUploadSuccess}
+              onError={showDocumentUploadError}
+              onUpload={showDocumentUploadInfo}
+              users={users}
             />
           </div>
 
@@ -164,7 +171,7 @@ export function Sidebar({
             onAddNew={() => setIsModalOpen(true)}
             selectedDocument={currentDocument}
           />
-          <CreateDocumentModal
+          <UploadDocumentModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
             onSuccess={showDocumentUploadSuccess}

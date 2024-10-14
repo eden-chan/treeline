@@ -1,29 +1,107 @@
 import { useState } from 'react';
 import { Modal } from '../Modal';
-import type { Document } from '../utils/dbUtils';
+import { type Document } from '../utils/dbUtils';
 import styles from './BundleSection.module.css';
+import { fetchPDF, uploadLocalFiles } from './UploadDocumentForm';
+import { CreateDocumentDraft } from '../react-pdf-highlighter';
+import FileDropzone from './FileDropzone';
+import { FileList } from "./FileList";
 
 type Props = {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (name: string, description: string, documentIds: string[]) => void;
     documents: Document[];
+    onUpload: () => void;
+    onError: () => void;
+    onSuccess: () => void;
 };
 
-export function CreateBundleModal({ isOpen, onClose, onSubmit, documents }: Props) {
+export function CreateBundleModal({ isOpen, onClose, onSubmit, documents, onUpload, onError, onSuccess }: Props) {
     const [newBundleName, setNewBundleName] = useState('');
     const [newBundleDescription, setNewBundleDescription] = useState('');
     const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+
+    // File Upload Stato
+    const [name, setName] = useState("");
+    const [urlInput, setUrlInput] = useState("");
+    const [files, setFiles] = useState<File[]>([]);
+    const [resourceLinks, setResourceLinks] = useState<CreateDocumentDraft[]>([]);
+
+    const addLocalFileToBatch = (newFiles: File[]) => {
+        setFiles((prevFiles) => {
+            const uniqueNewFiles = newFiles.filter(
+                (newFile) =>
+                    !prevFiles.some(
+                        (prevFile) =>
+                            prevFile.name === newFile.name && prevFile.size === newFile.size
+                    )
+            );
+            return [...prevFiles, ...uniqueNewFiles];
+        });
+    };
+
+    const addUrlToBatch = () => {
+        if (urlInput) {
+            setResourceLinks([...resourceLinks, { name, sourceUrl: urlInput }]);
+            setUrlInput("");
+            setName("");
+        }
+    };
+
+
+
+    // get the ids from the state ? 
+    const handleSubmit = async (e: React.FormEvent) => {
+
+
         e.preventDefault();
+        onClose();
+        onUpload();// const onSubmit()
+        const fetchPDFPromises = resourceLinks.map(fetchPDF);
+        const uploadFilesPromise = uploadLocalFiles(files);
+
+
+        let resultingUploadedIds: string[] = [];
+        try {
+            const results = await Promise.all([...fetchPDFPromises, uploadFilesPromise]);
+            resultingUploadedIds = results.flat().filter(Boolean).map((result) => result.documentId);
+
+            console.log("createdBundleModal resultingUploadedIds", resultingUploadedIds);
+        } catch (error) {
+            console.error("Error in upload process:", error);
+            onError();
+        }
+
         if (newBundleName.trim()) {
-            onSubmit(newBundleName.trim(), newBundleDescription.trim(), selectedDocumentIds);
+
+
+            const allIds = [...selectedDocumentIds, ...resultingUploadedIds];
+            console.log("createdBundleModal allIds", allIds);
+
+
+            onSubmit(newBundleName.trim(), newBundleDescription.trim(), allIds);
             setNewBundleName('');
             setNewBundleDescription('');
             setSelectedDocumentIds([]);
+
         }
+        // Reset form state
+        setName("");
+        setUrlInput("");
+        setResourceLinks([]);
+        setFiles([]);
+
+
+        if (resultingUploadedIds.length > 0) {
+            onSuccess();
+        } else {
+            onError();
+        }
+
     };
+
 
     return (
         <Modal isOpen={isOpen} onClose={onClose} title="Create Bundle">
@@ -43,23 +121,74 @@ export function CreateBundleModal({ isOpen, onClose, onSubmit, documents }: Prop
                     placeholder="Bundle Description"
                     className={styles.inputField}
                 />
-                <select
-                    multiple
-                    value={selectedDocumentIds}
-                    onChange={(e) => setSelectedDocumentIds(Array.from(e.target.selectedOptions, option => option.value))}
-                    className={styles.inputField}
-                >
+                <div className={styles.checkboxContainer}>
                     {documents.map((doc) => (
-                        <option key={doc.id} value={doc.id}>
+                        <label key={doc.id} className={styles.checkboxLabel}>
+                            <input
+                                type="checkbox"
+                                value={doc.id}
+                                checked={selectedDocumentIds.includes(doc.id)}
+                                onChange={(e) => {
+                                    const docId = e.target.value;
+                                    setSelectedDocumentIds(prev =>
+                                        e.target.checked
+                                            ? [...prev, docId]
+                                            : prev.filter(id => id !== docId)
+                                    );
+                                }}
+                                className={styles.checkboxInput}
+                            />
                             {doc.name}
-                        </option>
+                        </label>
                     ))}
-                </select>
+                </div>
+
+
+                <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Document Name"
+                    className={styles.inputField}
+                />
+                <div className={styles.urlInputContainer}>
+                    <input
+                        type="url"
+                        value={urlInput}
+                        onChange={(e) => setUrlInput(e.target.value)}
+                        placeholder="Enter URL"
+                        className={styles.inputField}
+                    />
+                    <button
+                        type="button"
+                        onClick={addUrlToBatch}
+                        className={styles.addUrlButton}
+                    >
+                        Add URL
+                    </button>
+                </div>
+                <FileDropzone onFilesAdded={addLocalFileToBatch} setFiles={setFiles} />
+
+                {(files.length > 0 || resourceLinks.length > 0) && (
+                    <div className={styles.fileListContainer}>
+                        <h3 className={styles.fileListTitle}>Selected Files:</h3>
+                        <FileList
+                            localFiles={files}
+                            resourceLinks={resourceLinks}
+                            setLocalFiles={setFiles}
+                            setResourceLinks={setResourceLinks}
+                        />
+                    </div>
+                )}
+
+
+
                 <div className={styles.modalButtons}>
                     <button type="submit" className={styles.submitButton}>Add Bundle</button>
                     <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
                 </div>
             </form>
+
         </Modal>
     );
 }

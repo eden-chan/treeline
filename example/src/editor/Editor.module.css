@@ -13,6 +13,16 @@
   pointer-events: none;
 }
 
+.contentEditable {
+  outline: 1px solid #e0e0e0;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.contentEditable:focus {
+  outline: none;
+}
+
 /* Styles for @ mentions */
 .mentionDefault {
   padding-left: 4px;

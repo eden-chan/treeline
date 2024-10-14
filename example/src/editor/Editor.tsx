@@ -16,6 +16,7 @@ import { TableNode } from '@lexical/table';
 import { AutoLinkNode, LinkNode } from '@lexical/link';
 import { CUSTOM_TRANSFORMERS } from './plugins/MyMarkdownTransformers';
 import { $convertFromMarkdownString } from '@lexical/markdown';
+import { AutoLinkPlugin, createLinkMatcherWithRegExp } from '@lexical/react/LexicalAutoLinkPlugin';
 const editorConfig = ({ value, onRenderMarkdown, isEditable = true }: { value: string, onRenderMarkdown?: (markdown: string) => void, isEditable?: boolean }): InitialConfigType => {
     return {
         namespace: "editor",
@@ -59,6 +60,8 @@ const editorConfig = ({ value, onRenderMarkdown, isEditable = true }: { value: s
 
             while (true) {
                 match = mentionRegex.exec(value);
+                console.log('%c mentionRegex match', 'color: red', match);
+
                 if (match === null) break;
                 // Add text before the mention
 
@@ -80,10 +83,16 @@ const editorConfig = ({ value, onRenderMarkdown, isEditable = true }: { value: s
                 }
                 // Add the mention node
                 const paragraph = $createParagraphNode();
-                const mentionNode = $createMentionNode(match[0]);
+
+                // const fullMatch = match?.[0] ?? '';
+                const matchedName = match?.[1] ?? '@[mentionName]'
+                const matchedId = match?.[2] ?? '<<id>>'
+
+                console.log('%c recreating mention node name/id', 'color: red', 'name:', matchedName, 'id:', matchedId);
+
+                const mentionNode = $createMentionNode(matchedName, matchedId);
                 paragraph.append(mentionNode);
                 root.append(paragraph);
-                console.log('retrieving mentionNode', mentionNode);
                 preservedText += match[0];
                 lastIndex = match.index + match[0].length;
             }
@@ -118,6 +127,7 @@ type Props = {
     onRenderMarkdown?: (markdown: string) => void;
     className?: string;
     isEditable?: boolean;
+    placeholder?: string;
 }
 
 export function Editor({ value, onChange, onBlur, onRenderMarkdown, className, isEditable = true }: Props) {
@@ -128,11 +138,6 @@ export function Editor({ value, onChange, onBlur, onRenderMarkdown, className, i
                     <ContentEditable
                         className={`${styles.contentEditable} ${className}`}
                         suppressContentEditableWarning
-                        style={{
-                            outline: '1px solid #e0e0e0',
-                            padding: '10px',
-                            borderRadius: '4px',
-                        }}
                     />
                 }
                 placeholder={
@@ -142,10 +147,10 @@ export function Editor({ value, onChange, onBlur, onRenderMarkdown, className, i
                 }
                 ErrorBoundary={LexicalErrorBoundary}
             />
+            <AutoLinkPlugin matchers={[createLinkMatcherWithRegExp(/(https?:\/\/[^\s]+)/g, (url) => url.startsWith('http') ? url : `https://${url}`)]} />
             <MentionPlugin />
             {onChange && <OnChangePlugin onChange={onChange} />}
             {onBlur && <AutosavePlugin onBlur={onBlur} />}
-
         </LexicalComposer>
     );
 }
