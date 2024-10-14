@@ -21,7 +21,6 @@ import { useService } from "./App.tsx";
 import { IYoutubeService } from "./services/youtube/youtubeService.ts";
 import MobileNavigation from "./components/MobileNavigation.tsx";
 
-import { useToast, Toaster } from "./components/UseToast.tsx";
 import { UploadDocumentModal } from './UploadDocumentModal.tsx';
 
 type Props = {
@@ -57,35 +56,12 @@ export function Sidebar({
   users,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { toasts, addToast, removeToast } = useToast();
   const highlights = currentDocument?.highlights;
 
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const youtubeService = useService(IYoutubeService);
 
-  const showDocumentUploadSuccess = () => {
-    addToast({
-      message: "Document successfully added!",
-      type: "success",
-      duration: 2000,
-    });
-  };
 
-  const showDocumentUploadError = () => {
-    addToast({
-      message: "Unable to upload document",
-      type: "error",
-      duration: 2000,
-    });
-  };
-
-  const showDocumentUploadInfo = () => {
-    addToast({
-      message: "Uploading documents...",
-      type: "info",
-      duration: 2000,
-    });
-  };
 
   const handleFilterChange = (type: HighlightType) => {
     setSelectedHighlightTypes((prev) =>
@@ -158,9 +134,6 @@ export function Sidebar({
               bundlesWithDocuments={bundles ?? []}
               toggleDocument={toggleDocument}
               selectedDocument={currentDocument}
-              onSuccess={showDocumentUploadSuccess}
-              onError={showDocumentUploadError}
-              onUpload={showDocumentUploadInfo}
               users={users}
             />
           </div>
@@ -174,11 +147,8 @@ export function Sidebar({
           <UploadDocumentModal
             isOpen={isModalOpen}
             onClose={() => setIsModalOpen(false)}
-            onSuccess={showDocumentUploadSuccess}
-            onError={showDocumentUploadError}
-            onUpload={showDocumentUploadInfo}
+
           />
-          <Toaster toasts={toasts} removeToast={removeToast}></Toaster>
           <div>
             <small>
               To create area highlight hold ⌥ Option key (Alt), then click and

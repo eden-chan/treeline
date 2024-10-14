@@ -7,18 +7,21 @@ import { fetchPDF, uploadLocalFiles } from './UploadDocumentForm';
 import { CreateDocumentDraft } from '../react-pdf-highlighter';
 import FileDropzone from './FileDropzone';
 import { FileList } from './FileList';
+import { useToast } from '../context/ToastContext';
 type Props = {
     isOpen: boolean;
     onClose: () => void;
     onAddExistingDocument: (documentId: string | string[]) => void;
 
     documents: Document[];
-    onUpload: () => void;
-    onError: () => void;
-    onSuccess: () => void;
 };
 
-export function AddDocumentToBundleModal({ isOpen, onClose, onAddExistingDocument, documents, onUpload, onError, onSuccess }: Props) {
+export function AddDocumentToBundleModal({ isOpen, onClose, onAddExistingDocument, documents }: Props) {
+    const { addToast } = useToast();
+
+
+
+
     const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
 
     // File Upload Stato
@@ -26,6 +29,23 @@ export function AddDocumentToBundleModal({ isOpen, onClose, onAddExistingDocumen
     const [urlInput, setUrlInput] = useState("");
     const [files, setFiles] = useState<File[]>([]);
     const [resourceLinks, setResourceLinks] = useState<CreateDocumentDraft[]>([]);
+
+
+    const onError = (error: string) => {
+        addToast({
+            message: `Unable to add documents due to error ${error}`,
+            type: "error",
+            duration: 2000,
+        });
+    };
+
+    const onSuccess = () => {
+        addToast({
+            message: "Documents added to bundle successfully!",
+            type: "success",
+            duration: 2000,
+        });
+    };
 
     const addLocalFileToBatch = (newFiles: File[]) => {
         setFiles((prevFiles) => {
@@ -52,16 +72,16 @@ export function AddDocumentToBundleModal({ isOpen, onClose, onAddExistingDocumen
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         onClose();
-        onUpload();// const onSubmit()
         const fetchPDFPromises = resourceLinks.map(fetchPDF);
         const uploadFilesPromise = uploadLocalFiles(files);
 
 
         let resultingUploadedIds: string[] = [];
+        let allIds: string[] = [];
         try {
             const results = await Promise.all([...fetchPDFPromises, uploadFilesPromise]);
             resultingUploadedIds = results.flat().filter(Boolean).map((result) => result.documentId);
-            const allIds = [...selectedDocumentIds, ...resultingUploadedIds];
+            allIds = [...selectedDocumentIds, ...resultingUploadedIds];
             onAddExistingDocument(allIds);
             console.log("addDocumentToBundleModal allIds", allIds);
         } catch (error) {
@@ -76,10 +96,10 @@ export function AddDocumentToBundleModal({ isOpen, onClose, onAddExistingDocumen
         setFiles([]);
 
 
-        if (resultingUploadedIds.length > 0) {
+        if (allIds.length > 0) {
             onSuccess();
         } else {
-            onError();
+            onError(`No documents added`);
         }
 
     };

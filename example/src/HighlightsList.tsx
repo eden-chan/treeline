@@ -29,8 +29,6 @@ export const HighlightsList: React.FC<Props> = ({ highlights, selectedHighlightT
         highlight.comments?.some(comment => comment.text.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-
-
     return (
         <div className={styles.highlightsListContainer}>
             <div className={styles.highlightsHeader}>

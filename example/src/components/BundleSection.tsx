@@ -15,14 +15,11 @@ type Props = {
     documents: Document[];
     highlights: HighlightResponseTypeWithComments[];
     users: User[];
-    onUpload: () => void;
-    onError: () => void;
-    onSuccess: () => void;
 };
 
 const DEBOUNCE_TIME = 1000; // ms
 
-export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDocument, documents, highlights, users, onUpload, onError, onSuccess }: Props) {
+export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDocument, documents, highlights, users }: Props) {
     const [isCreateBundleModalOpen, setIsCreateBundleModalOpen] = useState(false);
     const [isAddDocumentModalOpen, setIsAddDocumentModalOpen] = useState(false);
     const [isExpanded, setIsExpanded] = useState(true);
@@ -95,20 +92,13 @@ export function BundleSection({ bundlesWithDocuments, toggleDocument, selectedDo
                 onClose={() => setIsCreateBundleModalOpen(false)}
                 onSubmit={handleCreateBundle}
                 documents={documents}
-                onUpload={onUpload}
-                onError={onError}
-                onSuccess={onSuccess}
             />
 
             <AddDocumentToBundleModal
-
                 isOpen={isAddDocumentModalOpen}
                 onClose={() => setIsAddDocumentModalOpen(false)}
                 onAddExistingDocument={handleAddExistingDocument}
                 documents={documents}
-                onUpload={onUpload}
-                onError={onError}
-                onSuccess={onSuccess}
             />
 
             {isExpanded && (

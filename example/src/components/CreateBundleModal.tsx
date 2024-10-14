@@ -6,21 +6,37 @@ import { fetchPDF, uploadLocalFiles } from './UploadDocumentForm';
 import { CreateDocumentDraft } from '../react-pdf-highlighter';
 import FileDropzone from './FileDropzone';
 import { FileList } from "./FileList";
+import { useToast } from '../context/ToastContext';
 
 type Props = {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (name: string, description: string, documentIds: string[]) => void;
     documents: Document[];
-    onUpload: () => void;
-    onError: () => void;
-    onSuccess: () => void;
 };
 
-export function CreateBundleModal({ isOpen, onClose, onSubmit, documents, onUpload, onError, onSuccess }: Props) {
+export function CreateBundleModal({ isOpen, onClose, onSubmit, documents }: Props) {
     const [newBundleName, setNewBundleName] = useState('');
     const [newBundleDescription, setNewBundleDescription] = useState('');
     const [selectedDocumentIds, setSelectedDocumentIds] = useState<string[]>([]);
+
+    const { addToast } = useToast();
+
+    const onSuccess = () => {
+        addToast({
+            message: `Bundle ${newBundleName} successfully created!`,
+            type: "success",
+            duration: 2000,
+        });
+    };
+
+    const onError = (error: string) => {
+        addToast({
+            message: `Unable to create bundle ${newBundleName} due to error ${error}`,
+            type: "error",
+            duration: 2000,
+        });
+    };
 
 
     // File Upload Stato
@@ -58,12 +74,12 @@ export function CreateBundleModal({ isOpen, onClose, onSubmit, documents, onUplo
 
         e.preventDefault();
         onClose();
-        onUpload();// const onSubmit()
         const fetchPDFPromises = resourceLinks.map(fetchPDF);
         const uploadFilesPromise = uploadLocalFiles(files);
 
 
         let resultingUploadedIds: string[] = [];
+        let allIds: string[] = [];
         try {
             const results = await Promise.all([...fetchPDFPromises, uploadFilesPromise]);
             resultingUploadedIds = results.flat().filter(Boolean).map((result) => result.documentId);
@@ -71,15 +87,12 @@ export function CreateBundleModal({ isOpen, onClose, onSubmit, documents, onUplo
             console.log("createdBundleModal resultingUploadedIds", resultingUploadedIds);
         } catch (error) {
             console.error("Error in upload process:", error);
-            onError();
+            onError(`${error}`);
         }
 
         if (newBundleName.trim()) {
-
-
-            const allIds = [...selectedDocumentIds, ...resultingUploadedIds];
+            allIds = [...selectedDocumentIds, ...resultingUploadedIds];
             console.log("createdBundleModal allIds", allIds);
-
 
             onSubmit(newBundleName.trim(), newBundleDescription.trim(), allIds);
             setNewBundleName('');
@@ -94,10 +107,10 @@ export function CreateBundleModal({ isOpen, onClose, onSubmit, documents, onUplo
         setFiles([]);
 
 
-        if (resultingUploadedIds.length > 0) {
+        if (allIds.length > 0) {
             onSuccess();
         } else {
-            onError();
+            onError(`No documents added`);
         }
 
     };
