@@ -22,7 +22,8 @@ import { IYoutubeService } from "./services/youtube/youtubeService.ts";
 import MobileNavigation from "./components/MobileNavigation.tsx";
 
 import { useToast, Toaster } from "./components/UseToast.tsx";
-import { UploadDocumentModal } from './UploadDocumentModal.tsx';
+import { UploadDocumentModal } from "./UploadDocumentModal.tsx";
+import { Viewer } from "./react-pdf-highlighter.ts";
 
 type Props = {
   documents: Document[];
@@ -40,6 +41,9 @@ type Props = {
   tags?: TagWithDocuments[];
   bundles?: BundleWithDocuments[];
   users: User[];
+  youtubeUrl: string;
+  setYoutubeUrl: (url: string) => void;
+  setViewer: (viewer: Viewer) => void; // For changing between youtube and pdf viewer
 };
 
 export function Sidebar({
@@ -55,12 +59,14 @@ export function Sidebar({
   closeSidebar,
   bundles,
   users,
+  setViewer,
+  youtubeUrl,
+  setYoutubeUrl,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const { toasts, addToast, removeToast } = useToast();
   const highlights = currentDocument?.highlights;
 
-  const [youtubeUrl, setYoutubeUrl] = useState("");
   const youtubeService = useService(IYoutubeService);
 
   const showDocumentUploadSuccess = () => {
@@ -98,12 +104,18 @@ export function Sidebar({
       console.error("Please enter a YouTube URL");
       return;
     }
+    setViewer("youtube");
     try {
       const transcript = await youtubeService.getTranscript(youtubeUrl);
       console.log("Transcript:", transcript);
     } catch (error) {
       console.error("Error fetching transcript:", error);
     }
+  };
+
+  const toggleDocumentAndViewPDF = (doc: Document) => {
+    setViewer("pdf");
+    toggleDocument(doc);
   };
 
   return (
@@ -147,7 +159,7 @@ export function Sidebar({
           {isMobile && (
             <MobileNavigation
               isAreaSelectionEnabled={false}
-              setIsAreaSelectionEnabled={() => { }}
+              setIsAreaSelectionEnabled={() => {}}
               setIsSidebarOpen={closeSidebar}
             />
           )}
@@ -156,7 +168,7 @@ export function Sidebar({
               highlights={highlights ?? []}
               documents={documents}
               bundlesWithDocuments={bundles ?? []}
-              toggleDocument={toggleDocument}
+              toggleDocument={toggleDocumentAndViewPDF}
               selectedDocument={currentDocument}
               onSuccess={showDocumentUploadSuccess}
               onError={showDocumentUploadError}
@@ -167,9 +179,10 @@ export function Sidebar({
 
           <DocumentList
             documents={documents}
-            toggleDocument={toggleDocument}
+            toggleDocument={toggleDocumentAndViewPDF}
             onAddNew={() => setIsModalOpen(true)}
             selectedDocument={currentDocument}
+            setViewer={setViewer}
           />
           <UploadDocumentModal
             isOpen={isModalOpen}
