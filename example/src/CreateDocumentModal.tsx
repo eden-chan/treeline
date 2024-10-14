@@ -1,103 +1,130 @@
 // CreateDocumentModal.tsx
-import { useState } from 'react';
-import styles from './CreateDocumentModal.module.css';
-import { addDocument } from './utils/dbUtils';
-import FileDropzone from './components/FileDropzone';
-import { FileList } from './components/FileList';
-import type { CreateDocumentDraft } from './react-pdf-highlighter';
-import { Modal } from './Modal';
+import { useState } from "react";
+import styles from "./CreateDocumentModal.module.css";
+import { addDocument } from "./utils/dbUtils";
+import FileDropzone from "./components/FileDropzone";
+import { FileList } from "./components/FileList";
+import type { CreateDocumentDraft } from "./react-pdf-highlighter";
+import { Modal } from "./Modal";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onSuccess: () => void;
+  onError: () => void;
+  onUpload: () => void;
 }
 
-export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
-  const [name, setName] = useState('');
-  const [urlInput, setUrlInput] = useState('');
+export const CreateDocumentModal: React.FC<Props> = ({
+  isOpen,
+  onClose,
+  onSuccess,
+  onError,
+  onUpload,
+}) => {
+  const [name, setName] = useState("");
+  const [urlInput, setUrlInput] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [resourceLinks, setResourceLinks] = useState<CreateDocumentDraft[]>([]);
 
   const submitBatch = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    setName('');
-    setUrlInput('');
-    setResourceLinks([]);
-    setFiles([]);
-
-    for (const link of resourceLinks) {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/get-hosted-pdf-url?url=${encodeURIComponent(link.sourceUrl)}`);
-        const data = await response.json();
-        console.log(data);
-        if (data.url) {
-          console.log('hosted url', data.url)
-          const hostedUrl = new URL(data.url);
-          const url = `${hostedUrl.origin}${hostedUrl.pathname}`;
-          addDocument({
-            name: link.name,
-            sourceUrl: url,
-          })
-        } else {
-          console.error('Error getting hosted URL:', data.error);
+    const fetchPDFs = async () => {
+      for (const link of resourceLinks) {
+        try {
+          const response = await fetch(
+            `${
+              import.meta.env.VITE_SERVER_URL
+            }/get-hosted-pdf-url?url=${encodeURIComponent(link.sourceUrl)}`
+          );
+          const data = await response.json();
+          console.log(data);
+          if (data.url) {
+            console.log("hosted url", data.url);
+            const hostedUrl = new URL(data.url);
+            const url = `${hostedUrl.origin}${hostedUrl.pathname}`;
+            addDocument({
+              name: link.name,
+              sourceUrl: url,
+            });
+          } else {
+            console.error("Error getting hosted URL:", data.error);
+          }
+        } catch (error) {
+          console.error("Error processing link:", link.sourceUrl, error);
         }
-      } catch (error) {
-        console.error('Error processing link:', link.sourceUrl, error);
       }
-    }
+    };
 
     const uploadFiles = async () => {
+      onUpload();
       try {
         const formData = new FormData();
         files.forEach((file, _) => {
-          console.log('uploading file', file)
-          formData.append('files', file);
+          console.log("uploading file", file);
+          formData.append("files", file);
         });
 
-        console.log('uploading files', formData)
-        const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/upload-files`, {
-          method: 'POST',
-          body: formData,
-        });
+        console.log("uploading files", formData);
+        const response = await fetch(
+          `${import.meta.env.VITE_SERVER_URL}/upload-files`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const data = await response.json();
-        console.log('upload files', data);
+        console.log("upload files", data);
 
         if (data.files) {
           for (const file of data.files) {
             try {
               const hostedUrl = new URL(file.url);
               const url = `${hostedUrl.origin}${hostedUrl.pathname}`;
-              console.log('hosted url', url);
+              console.log("hosted url", url);
               addDocument({
                 name: file.name,
                 sourceUrl: url,
               });
+              onClose();
             } catch (error) {
-              console.error('Error uploading file:', file.name, error);
+              console.error("Error uploading file:", file.name, error);
+              onError();
             }
           }
         }
       } catch (error) {
-        console.error('Error uploading files:', error);
+        console.error("Error uploading files:", error);
+        onError();
       }
     };
 
+    onClose();
+    await fetchPDFs();
     await uploadFiles();
 
-    onClose();
-
+    // Upload succeeded, now reset
+    setName("");
+    setUrlInput("");
+    setResourceLinks([]);
+    setFiles([]);
+    onSuccess();
   };
 
   const addLocalFileToBatch = (newFiles: File[]) => {
-    setFiles(prevFiles => {
-      const uniqueNewFiles = newFiles.filter(newFile =>
-        !prevFiles.some(prevFile => prevFile.name === newFile.name && prevFile.size === newFile.size)
+    setFiles((prevFiles) => {
+      const uniqueNewFiles = newFiles.filter(
+        (newFile) =>
+          !prevFiles.some(
+            (prevFile) =>
+              prevFile.name === newFile.name && prevFile.size === newFile.size
+          )
       );
       return [...prevFiles, ...uniqueNewFiles];
     });
@@ -107,11 +134,10 @@ export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
     if (urlInput) {
       // Create a new File object from the URL
       setResourceLinks([...resourceLinks, { name, sourceUrl: urlInput }]);
-      setUrlInput('');
-      setName('');
+      setUrlInput("");
+      setName("");
     }
   };
-
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Create Document">
@@ -131,7 +157,11 @@ export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
             placeholder="Enter URL"
             className={styles.inputField}
           />
-          <button type="button" onClick={addUrlToBatch} className={styles.addUrlButton}>
+          <button
+            type="button"
+            onClick={addUrlToBatch}
+            className={styles.addUrlButton}
+          >
             Add URL
           </button>
         </div>
@@ -150,8 +180,16 @@ export const CreateDocumentModal: React.FC<Props> = ({ isOpen, onClose }) => {
         )}
 
         <div className={styles.modalButtons}>
-          <button type="submit" className={styles.submitButton}>Upload</button>
-          <button type="button" onClick={onClose} className={styles.cancelButton}>Cancel</button>
+          <button type="submit" className={styles.submitButton}>
+            Upload
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className={styles.cancelButton}
+          >
+            Cancel
+          </button>
         </div>
       </form>
     </Modal>
