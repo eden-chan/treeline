@@ -60,6 +60,7 @@ const editorConfig = ({ value, onRenderMarkdown, isEditable = true }: { value: s
 
             while (true) {
                 match = mentionRegex.exec(value);
+                console.log('%c mentionRegex match', 'color: red', match);
 
                 if (match === null) break;
                 // Add text before the mention
@@ -83,15 +84,15 @@ const editorConfig = ({ value, onRenderMarkdown, isEditable = true }: { value: s
                 // Add the mention node
                 const paragraph = $createParagraphNode();
 
-                const name = match?.[0] ?? '';
-                const id = match?.[1] ?? '';
+                // const fullMatch = match?.[0] ?? '';
+                const matchedName = match?.[1] ?? '@[mentionName]'
+                const matchedId = match?.[2] ?? '<<id>>'
 
-                console.log('%cmention name/id', 'color: red', name, id);
+                console.log('%c recreating mention node name/id', 'color: red', 'name:', matchedName, 'id:', matchedId);
 
-                const mentionNode = $createMentionNode(name, id);
+                const mentionNode = $createMentionNode(matchedName, matchedId);
                 paragraph.append(mentionNode);
                 root.append(paragraph);
-                console.log('retrieving mentionNode', mentionNode);
                 preservedText += match[0];
                 lastIndex = match.index + match[0].length;
             }

@@ -33,10 +33,10 @@ function $convertMentionElement(
     domNode: HTMLElement,
 ): DOMConversionOutput | null {
     const textContent = domNode.textContent;
-
+    console.log('%cconvert mention element', 'color: red', domNode.getAttribute('data-lexical-mention-id'));
     if (textContent !== null) {
         console.log('%cconvert mention element', 'color: red', textContent);
-        const node = $createMentionNode(textContent, '');
+        const node = $createMentionNode(textContent, domNode.getAttribute('data-lexical-mention-id') ?? '');
         return {
             node,
         };
@@ -127,6 +127,7 @@ export class MentionNode extends TextNode {
     }
 
     getTextContent(): string {
+        // console.log('%cgetTextContent', 'color: green', this.__mention, 'mentionId:', this.__mentionId);
         return `@[${this.__mention}]<<${this.__mentionId}>>`;
     }
 }
@@ -136,10 +137,11 @@ export function $createMentionNode(mentionName: string, mentionId: string): Ment
     mentionNode.setMode('segmented').toggleDirectionless();
     // Set selection to the end of the new node
     const selection = $createRangeSelection();
-
-    console.log('mentionNode', mentionNode.__text);
-    selection.focus.set(mentionNode.getKey(), 5, 'text');
+    const nodeText = mentionNode.getTextContent();
+    selection.focus.set(mentionNode.getKey(), nodeText.length, 'text');
     $setSelection(selection);
+    console.log('%c set focus to end $createMentionNode', 'color: red', nodeText.length, nodeText);
+
 
 
     return $applyNodeReplacement(mentionNode);

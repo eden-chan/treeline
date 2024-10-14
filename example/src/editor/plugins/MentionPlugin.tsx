@@ -231,7 +231,9 @@ export default function MentionPlugin(): JSX.Element | null {
                 if (nodeToReplace) {
                     nodeToReplace.replace(mentionNode);
                 }
-                mentionNode.select();
+                const textLength = selectedOption.name.length;
+                // const textLength = mentionNode.getTextContent().length;
+                mentionNode.select(textLength, textLength);
                 closeMenu();
             });
         },

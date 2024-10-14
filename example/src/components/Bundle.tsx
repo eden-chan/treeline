@@ -24,8 +24,8 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
 
     const onRenderMarkdown = (markdown: string) => {
         descriptionRef.current = markdown;
-        console.log('%c preserved markdown onRenderMarkdown', 'color: blue', markdown);
-        console.log('%c SAVE descriptionRef.current', 'color: red', descriptionRef.current);
+        // console.log('%c preserved markdown onRenderMarkdown', 'color: blue', markdown);
+        // console.log('%c SAVE descriptionRef.current', 'color: red', descriptionRef.current);
     };
 
     // useEffect(() => {
@@ -36,11 +36,12 @@ export function Bundle({ bundle, selectedDocument, toggleDocument, handleBundleC
     const handleDescriptionChange = (editorState: EditorState, isEditable: boolean = false) => {
 
         if (!isEditable) {
-            console.log('%c not editable', 'color: red');
             return;
         }
         // Todo preserve markdown state on save from 
         const textContent = editorState.read(() => $getRoot().getTextContent());
+
+        console.log('%chandleDescriptionChange root textContent', 'color: red', textContent);
         // const markdown = editorState.read(() => $convertToMarkdownString(CUSTOM_TRANSFORMERS, $getRoot(), true));
 
         // console.log('%chandleDescriptionChange root textContent', 'color: red', textContent);
