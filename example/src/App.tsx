@@ -80,10 +80,11 @@ const HighlightPopup = ({ comment }: { comment: Comment }) =>
     </div>
   ) : null;
 
-const PRIMARY_PDF_URL = "https://arxiv.org/pdf/1708.08021";
+const DEFAULT_URL =
+  "https://treeline.s3.us-east-2.amazonaws.com/d1366281-Treeline.pdf";
 
 const searchParams = new URLSearchParams(document.location.search);
-const initialPdfUrl = searchParams.get("url") || PRIMARY_PDF_URL;
+const initialPdfUrl = searchParams.get("url") || DEFAULT_URL;
 
 export function AppWrapper() {
   return (

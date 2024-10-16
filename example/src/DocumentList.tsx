@@ -4,7 +4,7 @@ import { editDocument, removeDocument, type Document } from "./utils/dbUtils";
 import styles from "./DocumentList.module.css";
 import { EditDocumentModal } from "./EditDocumentModal";
 import { DocumentSettingsMenu } from "./components/DocumentSettingsMenu";
-import { Viewer } from "./react-pdf-highlighter";
+import type { Viewer } from "./react-pdf-highlighter";
 
 type Props = {
   documents: Document[];

@@ -6,16 +6,12 @@ import styles from "./HighlightItem.module.css";
 import { useToast } from "./context/ToastContext";
 import { Editor } from "./editor/Editor";
 
-interface HighlightItemProps {
+type Props = {
   highlight: HighlightResponseTypeWithComments;
-
   updateHash: (highlight: HighlightResponseTypeWithComments) => void;
-}
+};
 
-export const HighlightItem: React.FC<HighlightItemProps> = ({
-  highlight,
-  updateHash,
-}) => {
+export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
   const { addToast } = useToast();
 
   const copyToClipboard = () => {
