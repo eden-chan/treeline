@@ -154,7 +154,7 @@ const editorConfig = ({
 };
 
 type Props = {
-  value: string;
+  value?: string;
   onChange?: (editorState: EditorState) => void;
   onBlur?: (editorState: EditorState) => void;
   onRenderMarkdown?: (markdown: string) => void;
@@ -173,7 +173,11 @@ export function Editor({
 }: Props) {
   return (
     <LexicalComposer
-      initialConfig={editorConfig({ value, onRenderMarkdown, isEditable })}
+      initialConfig={editorConfig({
+        value: value ?? "",
+        onRenderMarkdown,
+        isEditable,
+      })}
     >
       <RichTextPlugin
         contentEditable={
