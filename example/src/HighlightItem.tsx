@@ -1,10 +1,15 @@
 import {
   deleteHighlight,
+  updateComment,
   type HighlightResponseTypeWithComments,
 } from "./utils/dbUtils";
 import styles from "./HighlightItem.module.css";
 import { useToast } from "./context/ToastContext";
 import { Editor } from "./editor/Editor";
+import { $getRoot, type EditorState } from "lexical";
+import { useCallback } from "react";
+// @ts-ignore
+import debounce, { DEBOUNCE_TIME } from "./utils/debounce";
 
 type Props = {
   highlight: HighlightResponseTypeWithComments;
@@ -54,6 +59,21 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
     }
   };
 
+  const debouncedUpdateComment = useCallback(
+    debounce((commentId: string, text: string) => {
+      updateComment(commentId, text);
+    }, DEBOUNCE_TIME),
+    [],
+  );
+
+  const handleEdit = (editorState: EditorState, commentId: string) => {
+    editorState.read(() => {
+      const root = $getRoot();
+      const textContent = root.getTextContent();
+      debouncedUpdateComment(commentId, textContent);
+    });
+  };
+
   return (
     <li className={styles.highlightItem}>
       <div className={styles.highlightHeader}>
@@ -93,7 +113,11 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
       )}
       <div>
         {highlight.comments?.map((comment) => (
-          <Editor key={comment.id} value={comment.text} />
+          <Editor
+            key={comment.id}
+            value={comment.text}
+            onChange={(editorState) => handleEdit(editorState, comment.id)}
+          />
         ))}
       </div>
       <div className={styles.highlightInfo}>

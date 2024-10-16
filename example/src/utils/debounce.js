@@ -389,3 +389,4 @@ function toNumber(value) {
 }
 
 export default debounce;
+export const DEBOUNCE_TIME = 1000; // ms

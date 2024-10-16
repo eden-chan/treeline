@@ -7,7 +7,7 @@ import type {
   User,
 } from "../utils/dbUtils";
 // @ts-ignore
-import debounce from "../utils/debounce";
+import debounce, { DEBOUNCE_TIME } from "../utils/debounce";
 import styles from "./BundleSection.module.css";
 import { CreateBundleModal } from "./CreateBundleModal";
 import { AddDocumentToBundleModal } from "./AddDocumentToBundleModal";
@@ -21,8 +21,6 @@ type Props = {
   highlights: HighlightResponseTypeWithComments[];
   users: User[];
 };
-
-const DEBOUNCE_TIME = 1000; // ms
 
 export function BundleSection({
   bundlesWithDocuments,
