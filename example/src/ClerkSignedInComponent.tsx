@@ -1,5 +1,4 @@
 "use client";
-import { useEffect } from "react";
 import { useAuth as useClerkAuth } from "@clerk/clerk-react";
 import {
   signInWithIdToken,
@@ -7,29 +6,42 @@ import {
   useAuth as useDbAuth,
 } from "./utils/dbUtils";
 import styles from "./ClerkSignedInComponent.module.css";
+import { UserIcon } from "./components/Icons";
+import { useEffect } from "react";
 
-export function ClerkSignedInComponent() {
-  const { getToken, signOut: signOutFromClerk } = useClerkAuth();
+export const ClerkSignedInComponent = () => {
+  const {
+    signOut: signOutFromClerk,
+    getToken,
+    isLoaded,
+    isSignedIn,
+  } = useClerkAuth();
+
+  const { isLoading, user, error } = useDbAuth();
+
+  const handleSignOut = () => {
+    console.log("Signing out");
+    signOutFromDb().then(() => {
+      signOutFromClerk();
+    });
+  };
+
+  useEffect(() => {
+    // on first click sign in with clerk modal
+    // on redirect sign in with instantdb id token
+    if (isLoaded && isSignedIn) {
+      signInToInstantWithClerkToken();
+    }
+  }, [isLoaded, isSignedIn]);
 
   const signInToInstantWithClerkToken = async () => {
     const idToken = await getToken();
-
-    if (!idToken) {
-      return;
-    }
-
+    if (!idToken) return;
     signInWithIdToken(
       idToken,
       import.meta.env.VITE_CLERK_CLIENT_NAME ?? "Treeline",
     );
   };
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: Load only once on mount
-  useEffect(() => {
-    signInToInstantWithClerkToken();
-  }, []);
-
-  const { isLoading, user, error } = useDbAuth();
 
   if (isLoading) {
     return <div className={styles.container}>Loading...</div>;
@@ -41,17 +53,12 @@ export function ClerkSignedInComponent() {
   }
   if (user) {
     return (
-      <button
-        className={styles.button}
-        type="button"
-        onClick={() => {
-          signOutFromDb().then(() => {
-            signOutFromClerk();
-          });
-        }}
-      >
-        Sign out
-      </button>
+      <div className={styles.container}>
+        <button className={styles.button} type="button" onClick={handleSignOut}>
+          <UserIcon />
+          <span className={styles.tooltip}>Sign Out</span>
+        </button>
+      </div>
     );
   }
   return (
@@ -60,7 +67,8 @@ export function ClerkSignedInComponent() {
       type="button"
       onClick={signInToInstantWithClerkToken}
     >
-      Sign in
+      <UserIcon />
+      <span className={styles.tooltip}>Sign In!!</span>
     </button>
   );
-}
+};
