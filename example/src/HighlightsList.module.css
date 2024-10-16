@@ -26,7 +26,7 @@
 
 .filterButton,
 .copyButton {
-  background-color: #4caf50; /* Green color for Treeline theme */
+  background-color: none; /* Green color for Treeline theme */
   color: white;
   border: none;
   padding: 0.5rem;
@@ -45,7 +45,7 @@
 
 .filterButton:hover,
 .copyButton:hover {
-  background-color: #45a049; /* Darker green for hover state */
+  background-color: none; /* Darker green for hover state */
 }
 
 .filterDropdown {
