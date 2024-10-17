@@ -1,5 +1,6 @@
 .highlight {
   position: absolute;
+  pointer-events: none; /* This allows clicking through to lower layers */
 }
 
 .emoji {
@@ -7,31 +8,73 @@
   color: black;
   opacity: 1;
   font-size: 28px;
+  pointer-events: auto; /* Make sure the emoji is clickable */
+  z-index: 3; /* Increased z-index to ensure it's above all highlights */
 }
 
 .parts {
   opacity: 1;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .part {
-  cursor: pointer;
   position: absolute;
-  background: rgba(255, 226, 143, 1);
-  transition: background 0.3s;
+  transition: background 0.3s, opacity 0.3s;
+  pointer-events: auto; /* Make sure the part is clickable */
+  mix-blend-mode: multiply; /* This allows color blending for overlaps */
+  opacity: 0.5; /* Adjust this value to control the visibility of overlaps */
+}
+
+/* Default cursor style */
+.part {
+  cursor: pointer;
+}
+
+/* Change cursor style when selecting text */
+.part::selection {
+  cursor: text;
+}
+
+/* For Firefox */
+.part::-moz-selection {
+  cursor: text;
+}
+
+.highlight:hover .part {
+  filter: brightness(80%); /* Darken the existing color */
 }
 
 .scrolledTo .part {
-  background: #ff4141;
+  background: rgba(255, 65, 65, 0.7); /* Semi-transparent red */
+  z-index: 2; /* Ensure scrolled-to highlights are above others */
 }
 
-.currentUser {
-  background: rgba(255, 226, 143, 1);
+.currentUser .part {
+  background: rgba(255, 226, 143, 0.7); /* Semi-transparent yellow */
 }
 
-.anonymousUser {
-  background: rgba(173, 216, 230, 0.8); /* Light blue */
+.anonymousUser .part {
+  background: rgba(173, 216, 230, 0.7); /* Semi-transparent light blue */
 }
 
-.otherRegisteredUser {
-  background: rgba(144, 238, 144, 0.8); /* Light green */
+.otherRegisteredUser .part {
+  background: rgba(144, 238, 144, 0.7); /* Semi-transparent light green */
+}
+
+/* Ensure the scrolledTo state is not affected by the hover effect */
+.scrolledTo.highlight:hover .part {
+  filter: none;
+  background: rgba(255, 65, 65, 0.7); /* Semi-transparent red */
+}
+
+/* New styles for current selection */
+.currentSelection {
+  position: absolute;
+  background: rgba(0, 123, 255, 0.3);
+  z-index: 1000; /* Ensure it's above all other highlights */
+  pointer-events: none;
 }

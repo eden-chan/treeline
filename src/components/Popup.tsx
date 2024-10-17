@@ -1,29 +1,32 @@
 import { useState } from "react";
 import { MouseMonitor } from "./MouseMonitor";
 
-interface Props {
+type Props = {
   onMouseOver: (content: JSX.Element) => void;
   popupContent: JSX.Element;
   onMouseOut: () => void;
   children: JSX.Element;
-}
+  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
+};
 
 export function Popup({
   onMouseOver,
   popupContent,
   onMouseOut,
   children,
+  setSearchTerm,
 }: Props) {
   const [mouseIn, setMouseIn] = useState(false);
-
   return (
     <div
       onMouseOver={() => {
         setMouseIn(true);
+        setSearchTerm(popupContent.props.comment.text);
         onMouseOver(
           <MouseMonitor
             onMoveAway={() => {
               if (mouseIn) {
+                console.log("mouse out");
                 return;
               }
 

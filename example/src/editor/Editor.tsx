@@ -7,11 +7,11 @@ import { $createMentionNode, MentionNode } from "./nodes/MentionNode";
 import MentionPlugin, { mentionRegex } from "./plugins/MentionPlugin";
 import { OnChangePlugin } from "@lexical/react/LexicalOnChangePlugin";
 import {
-	$createParagraphNode,
-	$createTextNode,
-	$getRoot,
-	TextNode,
-	type EditorState,
+  $createParagraphNode,
+  $createTextNode,
+  $getRoot,
+  TextNode,
+  type EditorState,
 } from "lexical";
 import type { InitialConfigType } from "@lexical/react/LexicalComposer";
 import { AutosavePlugin } from "./plugins/AutosavePlugin";
@@ -23,186 +23,172 @@ import { AutoLinkNode, LinkNode } from "@lexical/link";
 import { CUSTOM_TRANSFORMERS } from "./plugins/MyMarkdownTransformers";
 import { $convertFromMarkdownString } from "@lexical/markdown";
 import {
-	AutoLinkPlugin,
-	createLinkMatcherWithRegExp,
+  AutoLinkPlugin,
+  createLinkMatcherWithRegExp,
 } from "@lexical/react/LexicalAutoLinkPlugin";
 import { EnterKeyPlugin } from "./plugins/EnterKeyPlugin";
+import { FocusPlugin } from "./plugins/FocusPlugin";
 const editorConfig = ({
-	value,
-	onRenderMarkdown,
-	isEditable = true,
+  value,
+  onRenderMarkdown,
+  isEditable = true,
 }: {
-	value: string;
-	onRenderMarkdown?: (markdown: string) => void;
-	isEditable?: boolean;
+  value: string;
+  onRenderMarkdown?: (markdown: string) => void;
+  isEditable?: boolean;
 }): InitialConfigType => {
-	return {
-		namespace: "editor",
-		onError: (error: Error) => console.error(error),
-		nodes: [
-			MentionNode,
-			HeadingNode,
-			ListNode,
-			ListItemNode,
-			QuoteNode,
-			CodeNode,
-			CodeHighlightNode,
-			TableNode,
-			AutoLinkNode,
-			LinkNode,
-			TextNode,
-			CodeNode,
-		],
-		editorState: () => {
-			const root = $getRoot();
-			// const firstChild = root.getFirstChild();
+  return {
+    namespace: "editor",
+    onError: (error: Error) => console.error(error),
+    nodes: [
+      MentionNode,
+      HeadingNode,
+      ListNode,
+      ListItemNode,
+      QuoteNode,
+      CodeNode,
+      CodeHighlightNode,
+      TableNode,
+      AutoLinkNode,
+      LinkNode,
+      TextNode,
+      CodeNode,
+    ],
+    editorState: () => {
+      const root = $getRoot();
+      // const firstChild = root.getFirstChild();
 
-			// if (firstChild && $isCodeNode(firstChild) && firstChild.getLanguage() === 'markdown') {
-			//     // Markdown -> Node
-			//     $convertFromMarkdownString(firstChild.getTextContent(), TRANSFORMERS);
-			// } else {
-			//     // Node -> Markdown
-			//     const markdown = $convertToMarkdownString(TRANSFORMERS);
-			//     root.clear().append($createCodeNode('markdown').append($createTextNode(markdown)));
-			// }
+      // if (firstChild && $isCodeNode(firstChild) && firstChild.getLanguage() === 'markdown') {
+      //     // Markdown -> Node
+      //     $convertFromMarkdownString(firstChild.getTextContent(), TRANSFORMERS);
+      // } else {
+      //     // Node -> Markdown
+      //     const markdown = $convertToMarkdownString(TRANSFORMERS);
+      //     root.clear().append($createCodeNode('markdown').append($createTextNode(markdown)));
+      // }
 
-			// console.log('editorState val/ue', value);
+      // console.log('editorState val/ue', value);
 
-			let lastIndex = 0;
-			let match: RegExpExecArray | null;
-			let preservedText = "";
+      let lastIndex = 0;
+      let match: RegExpExecArray | null;
+      let preservedText = "";
 
-			while (true) {
-				match = mentionRegex.exec(value);
-				console.log("%c mentionRegex match", "color: red", match);
+      while (true) {
+        match = mentionRegex.exec(value);
 
-				if (match === null) break;
-				// Add text before the mention
+        if (match === null) break;
+        // Add text before the mention
 
-				if (match.index > lastIndex) {
-					const textBefore = value.slice(lastIndex, match.index);
-					const textNode = $createTextNode(textBefore);
-					const paragraphNode = $createParagraphNode();
-					paragraphNode.append(textNode);
-					console.log(
-						"%c rendering as markdown textBefore",
-						"color: green",
-						textBefore,
-					);
+        if (match.index > lastIndex) {
+          const textBefore = value.slice(lastIndex, match.index);
+          const textNode = $createTextNode(textBefore);
+          const paragraphNode = $createParagraphNode();
+          paragraphNode.append(textNode);
 
-					if (!isEditable) {
-						$convertFromMarkdownString(
-							textBefore,
-							CUSTOM_TRANSFORMERS,
-							paragraphNode,
-						);
-					}
-					root.append(paragraphNode);
-					preservedText += textBefore;
-					// const markdown = $convertToMarkdownString(CUSTOM_TRANSFORMERS);
-					// root.clear().append($createCodeNode('markdown').append($createTextNode(markdown)));
-				}
-				// Add the mention node
-				const paragraph = $createParagraphNode();
+          if (!isEditable) {
+            $convertFromMarkdownString(
+              textBefore,
+              CUSTOM_TRANSFORMERS,
+              paragraphNode,
+            );
+          }
+          root.append(paragraphNode);
+          preservedText += textBefore;
+          // const markdown = $convertToMarkdownString(CUSTOM_TRANSFORMERS);
+          // root.clear().append($createCodeNode('markdown').append($createTextNode(markdown)));
+        }
+        // Add the mention node
+        const paragraph = $createParagraphNode();
 
-				// const fullMatch = match?.[0] ?? '';
-				const matchedName = match?.[1] ?? "@[mentionName]";
-				const matchedId = match?.[2] ?? "<<id>>";
+        // const fullMatch = match?.[0] ?? '';
+        const matchedName = match?.[1] ?? "@[mentionName]";
+        const matchedId = match?.[2] ?? "<<id>>";
 
-				console.log(
-					"%c recreating mention node name/id",
-					"color: red",
-					"name:",
-					matchedName,
-					"id:",
-					matchedId,
-				);
+        const mentionNode = $createMentionNode(matchedName, matchedId);
+        paragraph.append(mentionNode);
+        root.append(paragraph);
+        preservedText += match[0];
+        lastIndex = match.index + match[0].length;
+      }
 
-				const mentionNode = $createMentionNode(matchedName, matchedId);
-				paragraph.append(mentionNode);
-				root.append(paragraph);
-				preservedText += match[0];
-				lastIndex = match.index + match[0].length;
-			}
+      // Add any remaining text after the last mention
+      if (lastIndex < value.length) {
+        const remainingText = value.slice(lastIndex);
 
-			// Add any remaining text after the last mention
-			if (lastIndex < value.length) {
-				const remainingText = value.slice(lastIndex);
+        const paragraphNode = $createParagraphNode();
+        const remainingTextNode = $createTextNode(remainingText);
+        paragraphNode.append(remainingTextNode);
 
-				const paragraphNode = $createParagraphNode();
-				const remainingTextNode = $createTextNode(remainingText);
-				paragraphNode.append(remainingTextNode);
-				console.log(
-					"%c rendering as markdown remainingText",
-					"color: green",
-					remainingText,
-				);
+        if (!isEditable) {
+          $convertFromMarkdownString(
+            remainingText,
+            CUSTOM_TRANSFORMERS,
+            paragraphNode,
+          );
+        }
+        root.append(paragraphNode);
+        preservedText += remainingText;
+      }
 
-				if (!isEditable) {
-					$convertFromMarkdownString(
-						remainingText,
-						CUSTOM_TRANSFORMERS,
-						paragraphNode,
-					);
-				}
-				root.append(paragraphNode);
-				preservedText += remainingText;
-			}
-
-			onRenderMarkdown?.(preservedText);
-		},
-	};
+      onRenderMarkdown?.(preservedText);
+    },
+  };
 };
 
 type Props = {
-	value?: string;
-	onChange?: (editorState: EditorState) => void;
-	onBlur?: (editorState: EditorState) => void;
-	onRenderMarkdown?: (markdown: string) => void;
-	onEnter?: (editorState: EditorState) => void;
-	className?: string;
-	isEditable?: boolean;
-	placeholder?: string;
+  value?: string;
+  onChange?: (editorState: EditorState) => void;
+  onBlur?: (editorState: EditorState) => void;
+  onRenderMarkdown?: (markdown: string) => void;
+  onEnter?: (editorState: EditorState) => void;
+  className?: string;
+  isEditable?: boolean;
+  placeholder?: string;
+  isSearchMode?: boolean;
+  autoFocus?: boolean;
 };
 
 export function Editor({
-	value,
-	onChange,
-	onBlur,
-	onRenderMarkdown,
-	className,
-	placeholder,
-	isEditable = true,
-	onEnter,
+  value,
+  onChange,
+  onBlur,
+  onRenderMarkdown,
+  className,
+  placeholder,
+  isEditable = true,
+  isSearchMode = false,
+  onEnter,
+  autoFocus = false,
 }: Props) {
-	return (
-		<LexicalComposer
-			initialConfig={editorConfig({
-				value: value ?? placeholder ?? "",
-				onRenderMarkdown,
-				isEditable,
-			})}
-		>
-			<RichTextPlugin
-				contentEditable={
-					<ContentEditable
-						className={`${styles.contentEditable} ${className}`}
-						suppressContentEditableWarning
-					/>
-				}
-				ErrorBoundary={LexicalErrorBoundary}
-			/>
-			<AutoLinkPlugin
-				matchers={[
-					createLinkMatcherWithRegExp(/(https?:\/\/[^\s]+)/g, (url) =>
-						url.startsWith("http") ? url : `https://${url}`,
-					),
-				]}
-			/>
-			<MentionPlugin />
-			{onChange && <OnChangePlugin onChange={onChange} />}
-			{onBlur && <AutosavePlugin onBlur={onBlur} />}
-			{onEnter && <EnterKeyPlugin onEnter={onEnter} />}
-		</LexicalComposer>
-	);
+  return (
+    <LexicalComposer
+      initialConfig={editorConfig({
+        value: value ?? placeholder ?? "",
+        onRenderMarkdown,
+        isEditable,
+      })}
+    >
+      <RichTextPlugin
+        contentEditable={
+          <ContentEditable
+            className={`${styles.contentEditable} ${className}`}
+            suppressContentEditableWarning
+          />
+        }
+        ErrorBoundary={LexicalErrorBoundary}
+      />
+      <AutoLinkPlugin
+        matchers={[
+          createLinkMatcherWithRegExp(/(https?:\/\/[^\s]+)/g, (url) =>
+            url.startsWith("http") ? url : `https://${url}`,
+          ),
+        ]}
+      />
+      <MentionPlugin isSearchMode={isSearchMode} />
+      {onChange && <OnChangePlugin onChange={onChange} />}
+      {onBlur && <AutosavePlugin onBlur={onBlur} />}
+      {onEnter && <EnterKeyPlugin onEnter={onEnter} />}
+      {autoFocus && <FocusPlugin />}
+    </LexicalComposer>
+  );
 }

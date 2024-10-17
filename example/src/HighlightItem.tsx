@@ -1,3 +1,4 @@
+import React, { useCallback, useEffect, useState } from "react";
 import {
   deleteComment,
   deleteHighlight,
@@ -8,7 +9,6 @@ import styles from "./HighlightItem.module.css";
 import { useToast } from "./context/ToastContext";
 import { Editor } from "./editor/Editor";
 import { $getRoot, type EditorState } from "lexical";
-import { useCallback } from "react";
 // @ts-ignore
 import debounce, { DEBOUNCE_TIME } from "./utils/debounce";
 import { TrashIcon } from "./components/Icons";
@@ -20,6 +20,7 @@ type Props = {
 
 export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
   const { addToast } = useToast();
+  const [comments, setComments] = useState(highlight.comments || []);
 
   const copyToClipboard = () => {
     if (highlight.content.text) {
@@ -61,9 +62,32 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
     }
   };
 
+  const debouncedUpdateComment = useCallback(
+    debounce((commentId: string, text: string) => {
+      updateComment(commentId, text);
+    }, DEBOUNCE_TIME),
+    [],
+  );
+
+  const handleEdit = useCallback(
+    (editorState: EditorState, commentId: string) => {
+      editorState.read(() => {
+        const root = $getRoot();
+        const textContent = root.getTextContent();
+        debouncedUpdateComment(commentId, textContent);
+      });
+    },
+    [debouncedUpdateComment],
+  );
+
+  useEffect(() => {
+    setComments(highlight.comments || []);
+  }, [highlight.comments]);
+
   const handleDeleteComment = async (commentId: string) => {
     try {
       await deleteComment(commentId);
+      setComments(comments.filter((comment) => comment.id !== commentId));
       addToast({
         message: "Comment deleted successfully",
         type: "success",
@@ -77,21 +101,6 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
         duration: 2000,
       });
     }
-  };
-
-  const debouncedUpdateComment = useCallback(
-    debounce((commentId: string, text: string) => {
-      updateComment(commentId, text);
-    }, DEBOUNCE_TIME),
-    [],
-  );
-
-  const handleEdit = (editorState: EditorState, commentId: string) => {
-    editorState.read(() => {
-      const root = $getRoot();
-      const textContent = root.getTextContent();
-      debouncedUpdateComment(commentId, textContent);
-    });
   };
 
   return (
@@ -127,12 +136,15 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
         </div>
       </div>
       {highlight.content.image && (
-        <div className={styles.highlightImage}>
+        <div
+          className={styles.highlightImage}
+          onClick={() => updateHash(highlight)}
+        >
           <img src={highlight.content.image} alt="Screenshot" />
         </div>
       )}
       <div>
-        {highlight.comments?.map((comment) => (
+        {comments.map((comment) => (
           <div key={comment.id} className={styles.commentContainer}>
             <div className={styles.editorWrapper}>
               <button

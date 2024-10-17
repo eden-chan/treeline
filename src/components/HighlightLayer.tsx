@@ -56,7 +56,7 @@ export function HighlightLayer<T_HT extends IHighlight>({
 }: HighlightLayerProps<T_HT>) {
   const currentHighlights = highlightsByPage[String(pageNumber)] || [];
   return (
-    <div>
+    <div key={crypto.randomUUID()}>
       {currentHighlights.map((highlight, index) => {
         const viewportHighlight: T_ViewportHighlight<T_HT> = {
           ...highlight,
