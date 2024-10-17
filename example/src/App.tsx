@@ -59,7 +59,12 @@ import { ToastProvider } from "./context/ToastContext";
 // @ts-ignore
 import debounce, { DEBOUNCE_TIME } from "./utils/debounce";
 import { HighlightPopup } from "./components/HighlightPopup";
-import { encodeUrl, decodeUrl } from "./utils/urlHash";
+import {
+  encodeUrl,
+  decodeUrl,
+  parseIdFromHash,
+  resetHash,
+} from "./utils/urlHash";
 
 export function useService<T extends ServiceIdentifier>(
   serviceIdentifier: T,
@@ -70,13 +75,6 @@ export function useService<T extends ServiceIdentifier>(
   }
   return container.container.get<ServiceType<T>>(serviceIdentifier);
 }
-
-const parseIdFromHash = () =>
-  document.location.hash.slice("#highlight-".length);
-
-const resetHash = () => {
-  document.location.hash = "";
-};
 
 const DEFAULT_URL =
   "https://treeline.s3.us-east-2.amazonaws.com/d1366281-Treeline.pdf";

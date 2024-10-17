@@ -267,6 +267,7 @@ export default function MentionPlugin(): JSX.Element | null {
         const mentionNode = $createMentionNode(
           selectedOption.name,
           selectedOption.id,
+          true,
         );
         if (nodeToReplace) {
           nodeToReplace.replace(mentionNode);
