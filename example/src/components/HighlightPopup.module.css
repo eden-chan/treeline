@@ -22,3 +22,42 @@
 .deleteButton:hover .trashIcon {
   color: #ff0000;
 }
+
+.popup {
+  background-color: #faf8ef;
+  border: 0.5px solid #d0d0d0;
+  color: #3d464d;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  max-width: 300px;
+  max-height: 100px;
+  min-width: 300px;
+  overflow-y: scroll;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+}
+
+.saveButton {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  opacity: 0.5;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.saveButton:hover {
+  opacity: 0.8;
+}
+
+.arrowDownIcon {
+  width: 16px;
+  height: 16px;
+  color: #4caf50;
+  opacity: 0.6;
+}

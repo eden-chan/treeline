@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { $getRoot, type EditorState } from "lexical";
 
 import {
@@ -14,7 +14,7 @@ import {
 import debounce, { DEBOUNCE_TIME } from "../utils/debounce";
 import { Editor } from "../editor/Editor";
 import styles from "./HighlightPopup.module.css";
-import { TrashIcon } from "./Icons"; // Import the TrashIcon
+import { TrashIcon } from "./Icons"; // Import the ArrowDownIcon
 
 type Props = {
   comment: Comment;
@@ -36,6 +36,7 @@ export const HighlightPopup = ({
     [],
   );
 
+  const textRef = useRef<string>("");
   const handleEdit = (editorState: EditorState, commentId: string) => {
     editorState.read(() => {
       const root = $getRoot();
@@ -50,12 +51,18 @@ export const HighlightPopup = ({
   const handleSubmitFirstComment = (editorState: EditorState) => {
     if (comment.text) {
       console.log("[handleSubmitFirstComment] already exists", comment.text);
+      debouncedUpdateComment(comment.id, comment.text);
       return;
     }
-
     editorState.read(() => {
       const root = $getRoot();
       const textContent = root.getTextContent();
+      textRef.current = textContent;
+
+      if (comment.text) {
+        console.log("[handleSubmitFirstComment] already exists", comment.text);
+        return;
+      }
 
       const userId = user?.id ?? ANONYMOUS_USER_ID;
       const userName = user?.email ?? ANONYMOUS_USER_ID;
@@ -88,7 +95,7 @@ export const HighlightPopup = ({
       </button>
       <Editor
         key={highlightId}
-        className="Highlight__popup"
+        className={styles.popup}
         value={comment.text ?? ""}
         onEnter={(editorState) => handleSubmitFirstComment(editorState)}
         onChange={(editorState) => handleEdit(editorState, comment.id)}

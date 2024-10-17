@@ -1,4 +1,5 @@
 import {
+  deleteComment,
   deleteHighlight,
   updateComment,
   type HighlightResponseTypeWithComments,
@@ -10,6 +11,7 @@ import { $getRoot, type EditorState } from "lexical";
 import { useCallback } from "react";
 // @ts-ignore
 import debounce, { DEBOUNCE_TIME } from "./utils/debounce";
+import { TrashIcon } from "./components/Icons";
 
 type Props = {
   highlight: HighlightResponseTypeWithComments;
@@ -41,7 +43,7 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
     }
   };
 
-  const handleDelete = async () => {
+  const handleDeleteHighlight = async () => {
     try {
       await deleteHighlight(highlight.id);
       addToast({
@@ -53,6 +55,24 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
       console.error("Failed to delete highlight:", error);
       addToast({
         message: "Failed to delete highlight",
+        type: "error",
+        duration: 2000,
+      });
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      await deleteComment(commentId);
+      addToast({
+        message: "Comment deleted successfully",
+        type: "success",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Failed to delete comment:", error);
+      addToast({
+        message: "Failed to delete comment",
         type: "error",
         duration: 2000,
       });
@@ -97,7 +117,7 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
             📋
           </button>
           <button
-            onClick={handleDelete}
+            onClick={handleDeleteHighlight}
             className={styles.deleteButton}
             aria-label="Delete highlight"
             type="button"
@@ -113,11 +133,23 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
       )}
       <div>
         {highlight.comments?.map((comment) => (
-          <Editor
-            key={comment.id}
-            value={comment.text}
-            onChange={(editorState) => handleEdit(editorState, comment.id)}
-          />
+          <div key={comment.id} className={styles.commentContainer}>
+            <div className={styles.editorWrapper}>
+              <button
+                onClick={() => handleDeleteComment(comment.id)}
+                className={styles.deleteCommentButton}
+                aria-label="Delete comment"
+                type="button"
+              >
+                <TrashIcon className={styles.trashIcon} />
+              </button>
+              <Editor
+                key={comment.id}
+                value={comment.text}
+                onChange={(editorState) => handleEdit(editorState, comment.id)}
+              />
+            </div>
+          </div>
         ))}
       </div>
       <div className={styles.highlightInfo}>

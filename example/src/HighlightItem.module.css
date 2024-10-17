@@ -81,3 +81,40 @@
 .copyButton:hover {
   color: #4a90e2;
 }
+.commentContainer {
+  position: relative;
+  margin-bottom: 10px;
+}
+
+.editorWrapper {
+  position: relative;
+}
+
+.deleteCommentButton {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  z-index: 2;
+}
+
+.trashIcon {
+  width: 16px;
+  height: 16px;
+  color: #666;
+  transition: color 0.2s ease-in-out;
+}
+
+.deleteCommentButton:hover .trashIcon {
+  color: #ff0000;
+}
+
+.commentContent {
+  position: relative;
+  z-index: 1;
+}
+
+/* Add styles for the Editor component if needed */
