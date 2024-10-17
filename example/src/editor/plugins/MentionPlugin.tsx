@@ -166,8 +166,7 @@ function MentionsTypeaheadMenuItem({
     <li
       onKeyDown={(e) => {
         if (e.key === "Enter") {
-          e.preventDefault();
-          // onClick();
+          onClick();
         }
       }}
       key={option.id}
@@ -317,10 +316,12 @@ export default function MentionPlugin(): JSX.Element | null {
                       index={i}
                       isSelected={selectedIndex === i}
                       onClick={() => {
+                        console.log("[onClick] option", option);
                         setHighlightedIndex(i);
                         selectOptionAndCleanUp(option);
                       }}
                       onMouseEnter={() => {
+                        console.log("[onMouseEnter] option", option);
                         setHighlightedIndex(i);
                       }}
                       key={option.id}

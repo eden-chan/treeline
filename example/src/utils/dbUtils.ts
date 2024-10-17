@@ -322,6 +322,18 @@ export const addDocumentComment = (
   );
 };
 
+export const addCommentToHighlight = (
+  comment: CreateCommentDraft,
+  highlightId: string,
+) => {
+  console.debug("Adding comment", comment, highlightId);
+  return db.transact(
+    tx.comments[id()]
+      .update({ ...comment, createdAt: getCurrentDate() })
+      .link({ highlights: highlightId }),
+  );
+};
+
 export const deleteComment = (commentId: string) => {
   console.debug("Deleting comment", commentId);
   return db.transact(tx.comments[commentId].delete());

@@ -77,6 +77,9 @@ export class Tip extends Component<Props, State> {
                     text: editorState.read(() => $getRoot().getTextContent()),
                   });
                 }}
+                onEnter={(editorState) => {
+                  console.log("[onEnter] editorState", editorState);
+                }}
               />
 
               <div>

@@ -1,0 +1,24 @@
+.highlightPopupContainer {
+  position: relative;
+}
+
+.deleteButton {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 1;
+}
+
+.trashIcon {
+  width: 20px;
+  height: 20px;
+  color: #666;
+}
+
+.deleteButton:hover .trashIcon {
+  color: #ff0000;
+}

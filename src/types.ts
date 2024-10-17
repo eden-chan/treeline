@@ -47,6 +47,7 @@ export interface HighlightContent {
 export type Reply = Omit<Comment, "replies">;
 
 export interface Comment {
+  id: string;
   text: string;
   emoji: string;
   userId: string;

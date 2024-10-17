@@ -17,7 +17,7 @@ import {
   Tip,
 } from "./react-pdf-highlighter";
 import ReactPlayer from "react-player";
-import type { Comment, IHighlight, Viewer } from "./react-pdf-highlighter";
+import type { IHighlight, Viewer } from "./react-pdf-highlighter";
 
 import { Sidebar } from "./Sidebar";
 import { Spinner } from "./Spinner";
@@ -55,7 +55,9 @@ import { serviceContextContainer, ServicesContext } from "./services/globals";
 import MobileNavigation from "./components/MobileNavigation";
 import { BundleProvider } from "./context/BundleContext";
 import { ToastProvider } from "./context/ToastContext";
-import { Editor } from "./editor/Editor";
+// @ts-ignore
+import debounce, { DEBOUNCE_TIME } from "./utils/debounce";
+import { HighlightPopup } from "./components/HighlightPopup";
 
 export function useService<T extends ServiceIdentifier>(
   serviceIdentifier: T,
@@ -73,17 +75,6 @@ const parseIdFromHash = () =>
 const resetHash = () => {
   document.location.hash = "";
 };
-
-const HighlightPopup = ({ comment }: { comment: Comment }) =>
-  comment.text ? (
-    <div className="Highlight__popup">
-      {comment.emoji} {comment.text}
-    </div>
-  ) : (
-    <div>
-      <Editor onChange={() => {}} />
-    </div>
-  );
 
 const DEFAULT_URL =
   "https://treeline.s3.us-east-2.amazonaws.com/d1366281-Treeline.pdf";
@@ -137,6 +128,7 @@ export function ViewManager() {
   const currentDocument: DocumentWithHighlightsAndComments | undefined =
     documentData?.documents.find((doc) => doc.sourceUrl === pdfUrl);
 
+  console.log("currentDocument", currentDocument);
   // Fetch Highlights
   // const {data: highlightData, error: errorHighlights } = getHighlightsByDocument(url);
   const highlights = currentDocument?.highlights;
@@ -382,12 +374,7 @@ export function ViewManager() {
                           <Highlight
                             isScrolledTo={isScrolledTo}
                             position={highlight.position}
-                            comment={
-                              highlight?.comments?.[0] ?? {
-                                text: "",
-                                emoji: "",
-                              }
-                            }
+                            comment={highlight?.comments?.[0] ?? {}}
                             highlightType={highlightType}
                           />
                         ) : (
@@ -411,13 +398,10 @@ export function ViewManager() {
                           <Popup
                             popupContent={
                               <HighlightPopup
-                                {...highlight}
-                                comment={
-                                  highlight?.comments?.[0] ?? {
-                                    text: "",
-                                    emoji: "",
-                                  }
-                                }
+                                comment={highlight?.comments?.[0] ?? {}}
+                                highlightId={highlight.id}
+                                user={user}
+                                onClose={hideTip}
                               />
                             }
                             onMouseOver={(popupContent) =>
