@@ -217,6 +217,7 @@ export class PdfHighlighter<T_HT extends IHighlight> extends PureComponent<
   } {
     const { ghostHighlight } = this.state;
 
+    console.log("ghosthighlights", ghostHighlight);
     const allHighlights = [...highlights, ghostHighlight].filter(
       Boolean,
     ) as T_HT[];
