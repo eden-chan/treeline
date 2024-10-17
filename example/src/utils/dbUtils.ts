@@ -327,11 +327,15 @@ export const addCommentToHighlight = (
   highlightId: string,
 ) => {
   console.debug("Adding comment", comment, highlightId);
-  return db.transact(
-    tx.comments[id()]
-      .update({ ...comment, createdAt: getCurrentDate() })
-      .link({ highlights: highlightId }),
-  );
+  const commentId = id();
+  return {
+    commentId,
+    ...db.transact(
+      tx.comments[commentId]
+        .update({ ...comment, createdAt: getCurrentDate() })
+        .link({ highlights: highlightId }),
+    ),
+  };
 };
 
 export const deleteComment = (commentId: string) => {

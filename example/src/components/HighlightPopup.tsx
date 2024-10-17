@@ -1,4 +1,4 @@
-import { useCallback, useRef } from "react";
+import { useCallback, useState } from "react";
 import { $getRoot, type EditorState } from "lexical";
 
 import {
@@ -36,14 +36,14 @@ export const HighlightPopup = ({
     [],
   );
 
-  const textRef = useRef<string>("");
-  const handleEdit = (editorState: EditorState, commentId: string) => {
+  const [existingCommentId, setCommentId] = useState(comment.id);
+
+  const handleEdit = (editorState: EditorState) => {
     editorState.read(() => {
       const root = $getRoot();
       const textContent = root.getTextContent();
-
-      if (commentId) {
-        debouncedUpdateComment(commentId, textContent);
+      if (existingCommentId) {
+        debouncedUpdateComment(existingCommentId, textContent);
       }
     });
   };
@@ -57,10 +57,12 @@ export const HighlightPopup = ({
     editorState.read(() => {
       const root = $getRoot();
       const textContent = root.getTextContent();
-      textRef.current = textContent;
 
-      if (comment.text) {
-        console.log("[handleSubmitFirstComment] already exists", comment.text);
+      if (existingCommentId) {
+        console.log(
+          "[handleSubmitFirstComment] already exists",
+          existingCommentId,
+        );
         return;
       }
 
@@ -74,7 +76,8 @@ export const HighlightPopup = ({
         userName,
       };
 
-      addCommentToHighlight(commentDraft, highlightId);
+      const { commentId } = addCommentToHighlight(commentDraft, highlightId);
+      setCommentId(commentId);
     });
   };
 
@@ -98,7 +101,7 @@ export const HighlightPopup = ({
         className={styles.popup}
         value={comment.text ?? ""}
         onEnter={(editorState) => handleSubmitFirstComment(editorState)}
-        onChange={(editorState) => handleEdit(editorState, comment.id)}
+        onChange={(editorState) => handleEdit(editorState)}
       />
     </div>
   );
