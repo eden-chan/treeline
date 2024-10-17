@@ -213,10 +213,7 @@ export function ViewManager() {
       );
 
       if (highlight) {
-        console.log("scrollto highlight found", highlight);
         scrollViewerTo.current(highlight);
-      } else {
-        console.log("no highlight found", "highlight", highlight);
       }
     };
 

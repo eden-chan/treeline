@@ -27,6 +27,8 @@ import {
   createLinkMatcherWithRegExp,
 } from "@lexical/react/LexicalAutoLinkPlugin";
 import { EnterKeyPlugin } from "./plugins/EnterKeyPlugin";
+import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
+import { FocusPlugin } from "./plugins/FocusPlugin";
 const editorConfig = ({
   value,
   onRenderMarkdown,
@@ -144,6 +146,7 @@ type Props = {
   isEditable?: boolean;
   placeholder?: string;
   isSearchMode?: boolean;
+  autoFocus?: boolean;
 };
 
 export function Editor({
@@ -156,6 +159,7 @@ export function Editor({
   isEditable = true,
   isSearchMode = false,
   onEnter,
+  autoFocus = false,
 }: Props) {
   return (
     <LexicalComposer
@@ -185,6 +189,7 @@ export function Editor({
       {onChange && <OnChangePlugin onChange={onChange} />}
       {onBlur && <AutosavePlugin onBlur={onBlur} />}
       {onEnter && <EnterKeyPlugin onEnter={onEnter} />}
+      {autoFocus && <FocusPlugin />}
     </LexicalComposer>
   );
 }
