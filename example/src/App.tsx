@@ -1,4 +1,5 @@
 "use client";
+
 import {
   useState,
   useEffect,
@@ -58,6 +59,7 @@ import { ToastProvider } from "./context/ToastContext";
 // @ts-ignore
 import debounce, { DEBOUNCE_TIME } from "./utils/debounce";
 import { HighlightPopup } from "./components/HighlightPopup";
+import { encodeUrl, decodeUrl } from "./utils/urlHash";
 
 export function useService<T extends ServiceIdentifier>(
   serviceIdentifier: T,
@@ -79,9 +81,6 @@ const resetHash = () => {
 const DEFAULT_URL =
   "https://treeline.s3.us-east-2.amazonaws.com/d1366281-Treeline.pdf";
 
-const searchParams = new URLSearchParams(document.location.search);
-const initialPdfUrl = searchParams.get("url") || DEFAULT_URL;
-
 export function AppWrapper() {
   return (
     <ServicesContext.Provider value={{ container: serviceContextContainer }}>
@@ -98,7 +97,32 @@ export function AppWrapper() {
 }
 
 export function ViewManager() {
-  const [pdfUrl, setPdfUrl] = useState(initialPdfUrl);
+  const [pdfUrl, setPdfUrl] = useState<string>("");
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const urlHash = searchParams.get("doc");
+
+    if (urlHash) {
+      // Here, you would look up the original URL using the hash
+      // For now, we'll just use the hash as is
+      const decodedUrl = decodeUrl(urlHash);
+      setPdfUrl(decodedUrl);
+    } else {
+      setPdfUrl(DEFAULT_URL);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (pdfUrl) {
+      const encodedUrl = encodeUrl(pdfUrl);
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set("doc", encodedUrl);
+      window.history.pushState({}, "", newUrl.toString());
+
+      // Here, you would store the mapping of encodedUrl to pdfUrl in your database or cache
+    }
+  }, [pdfUrl]);
 
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [selectedHighlightTypes, setSelectedHighlightTypes] = useState<
