@@ -42,6 +42,8 @@ type Props = {
   youtubeUrl: string;
   setYoutubeUrl: (url: string) => void;
   setViewer: (viewer: Viewer) => void; // For changing between youtube and pdf viewer
+  searchTerm: string;
+  setSearchTerm: React.Dispatch<React.SetStateAction<string>>;
 };
 
 export function Sidebar({
@@ -58,6 +60,8 @@ export function Sidebar({
   youtubeUrl,
   setYoutubeUrl,
   setViewer,
+  searchTerm,
+  setSearchTerm,
 }: Props) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const highlights = currentDocument?.highlights;
@@ -169,6 +173,8 @@ export function Sidebar({
           highlights={highlights}
           selectedHighlightTypes={selectedHighlightTypes}
           handleFilterChange={handleFilterChange}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
         />
         <div className={styles.buttonContainer}>
           {highlights && highlights.length > 0 && (
