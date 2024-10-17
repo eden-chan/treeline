@@ -99,6 +99,7 @@ export function AppWrapper() {
 
 export function ViewManager() {
   const [pdfUrl, setPdfUrl] = useState(initialPdfUrl);
+
   const [youtubeUrl, setYoutubeUrl] = useState("");
   const [selectedHighlightTypes, setSelectedHighlightTypes] = useState<
     HighlightType[]
@@ -128,7 +129,6 @@ export function ViewManager() {
   const currentDocument: DocumentWithHighlightsAndComments | undefined =
     documentData?.documents.find((doc) => doc.sourceUrl === pdfUrl);
 
-  console.log("currentDocument", currentDocument);
   // Fetch Highlights
   // const {data: highlightData, error: errorHighlights } = getHighlightsByDocument(url);
   const highlights = currentDocument?.highlights;

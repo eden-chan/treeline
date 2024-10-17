@@ -33,13 +33,8 @@ function $convertMentionElement(
   domNode: HTMLElement,
 ): DOMConversionOutput | null {
   const textContent = domNode.textContent;
-  console.log(
-    "%cconvert mention element",
-    "color: red",
-    domNode.getAttribute("data-lexical-mention-id"),
-  );
+
   if (textContent !== null) {
-    console.log("%cconvert mention element", "color: red", textContent);
     const node = $createMentionNode(
       textContent,
       domNode.getAttribute("data-lexical-mention-id") ?? "",
@@ -154,20 +149,18 @@ export class MentionNode extends TextNode {
 export function $createMentionNode(
   mentionName: string,
   mentionId: string,
+  isAutocompleting = false,
 ): MentionNode {
   const mentionNode = new MentionNode(mentionName, mentionId);
   mentionNode.setMode("segmented").toggleDirectionless();
-  // Set selection to the end of the new node
-  const selection = $createRangeSelection();
-  const nodeText = mentionNode.getTextContent();
-  selection.focus.set(mentionNode.getKey(), nodeText.length, "text");
-  $setSelection(selection);
-  console.log(
-    "%c set focus to end $createMentionNode",
-    "color: red",
-    nodeText.length,
-    nodeText,
-  );
+
+  if (isAutocompleting) {
+    // Set selection to the end of the new node
+    const selection = $createRangeSelection();
+    const nodeText = mentionNode.getTextContent();
+    selection.focus.set(mentionNode.getKey(), nodeText.length, "text");
+    $setSelection(selection);
+  }
 
   return $applyNodeReplacement(mentionNode);
 }
