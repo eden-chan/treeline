@@ -27,7 +27,6 @@ import {
   createLinkMatcherWithRegExp,
 } from "@lexical/react/LexicalAutoLinkPlugin";
 import { EnterKeyPlugin } from "./plugins/EnterKeyPlugin";
-import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin";
 import { FocusPlugin } from "./plugins/FocusPlugin";
 const editorConfig = ({
   value,
