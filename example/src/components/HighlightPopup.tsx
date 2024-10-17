@@ -50,7 +50,6 @@ export const HighlightPopup = ({
 
   const handleSubmitFirstComment = (editorState: EditorState) => {
     if (comment.text) {
-      console.log("[handleSubmitFirstComment] already exists", comment.text);
       debouncedUpdateComment(comment.id, comment.text);
       return;
     }
@@ -59,10 +58,6 @@ export const HighlightPopup = ({
       const textContent = root.getTextContent();
 
       if (existingCommentId) {
-        console.log(
-          "[handleSubmitFirstComment] already exists",
-          existingCommentId,
-        );
         return;
       }
 
