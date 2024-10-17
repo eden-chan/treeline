@@ -136,7 +136,10 @@ export const HighlightItem: React.FC<Props> = ({ highlight, updateHash }) => {
         </div>
       </div>
       {highlight.content.image && (
-        <div className={styles.highlightImage}>
+        <div
+          className={styles.highlightImage}
+          onClick={() => updateHash(highlight)}
+        >
           <img src={highlight.content.image} alt="Screenshot" />
         </div>
       )}

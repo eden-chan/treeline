@@ -143,6 +143,7 @@ type Props = {
   className?: string;
   isEditable?: boolean;
   placeholder?: string;
+  isSearchMode?: boolean;
 };
 
 export function Editor({
@@ -153,6 +154,7 @@ export function Editor({
   className,
   placeholder,
   isEditable = true,
+  isSearchMode = false,
   onEnter,
 }: Props) {
   return (
@@ -179,7 +181,7 @@ export function Editor({
           ),
         ]}
       />
-      <MentionPlugin />
+      <MentionPlugin isSearchMode={isSearchMode} />
       {onChange && <OnChangePlugin onChange={onChange} />}
       {onBlur && <AutosavePlugin onBlur={onBlur} />}
       {onEnter && <EnterKeyPlugin onEnter={onEnter} />}

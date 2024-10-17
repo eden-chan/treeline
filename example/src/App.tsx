@@ -211,8 +211,12 @@ export function ViewManager() {
       const highlight = highlights?.find(
         (highlight) => highlight.id === highlightId,
       );
+
       if (highlight) {
+        console.log("scrollto highlight found", highlight);
         scrollViewerTo.current(highlight);
+      } else {
+        console.log("no highlight found", "highlight", highlight);
       }
     };
 

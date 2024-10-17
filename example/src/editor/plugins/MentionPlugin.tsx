@@ -184,7 +184,11 @@ function MentionsTypeaheadMenuItem({
   );
 }
 
-export default function MentionPlugin(): JSX.Element | null {
+export default function MentionPlugin({
+  isSearchMode,
+}: {
+  isSearchMode: boolean;
+}): JSX.Element | null {
   const [editor] = useLexicalComposerContext();
   const {
     documents,
@@ -263,7 +267,17 @@ export default function MentionPlugin(): JSX.Element | null {
       closeMenu: () => void,
     ) => {
       editor.update(() => {
-        // const $cursor = editor.getCursor();
+        // only want the text node autocompletion when in search mode
+        if (isSearchMode) {
+          const autocompleteTextNode = $createTextNode(selectedOption.name);
+          if (nodeToReplace) {
+            nodeToReplace.replace(autocompleteTextNode);
+          }
+          autocompleteTextNode.select();
+          closeMenu();
+          return;
+        }
+
         const mentionNode = $createMentionNode(
           selectedOption.name,
           selectedOption.id,
@@ -282,7 +296,7 @@ export default function MentionPlugin(): JSX.Element | null {
         closeMenu();
       });
     },
-    [editor],
+    [editor, isSearchMode],
   );
 
   const checkForMentionMatch = useCallback(

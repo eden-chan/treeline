@@ -153,7 +153,6 @@ export function $createMentionNode(
 ): MentionNode {
   const mentionNode = new MentionNode(mentionName, mentionId);
   mentionNode.setMode("segmented").toggleDirectionless();
-
   if (isAutocompleting) {
     // Set selection to the end of the new node
     const selection = $createRangeSelection();

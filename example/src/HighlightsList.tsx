@@ -5,6 +5,8 @@ import { HighlightType } from "./utils/highlightTypes";
 import styles from "./HighlightsList.module.css";
 import { HighlightItem } from "./HighlightItem";
 import { useToast } from "./context/ToastContext";
+import { Editor } from "./editor/Editor";
+import { $getRoot } from "lexical";
 
 type Props = {
   highlights: HighlightResponseTypeWithComments[] | undefined;
@@ -54,11 +56,13 @@ export const HighlightsList: React.FC<Props> = ({
 
   const filteredHighlights = highlights?.filter(
     (highlight) =>
-      highlight.content.text
-        ?.toLowerCase()
-        .includes(searchTerm.toLowerCase()) ||
+      (highlight.content.text ?? "")
+        .toLowerCase()
+        .includes((searchTerm ?? "").toLowerCase()) ||
       highlight.comments?.some((comment) =>
-        comment.text.toLowerCase().includes(searchTerm.toLowerCase()),
+        (comment.text ?? "")
+          .toLowerCase()
+          .includes((searchTerm ?? "").toLowerCase()),
       ),
   );
 
@@ -92,12 +96,13 @@ export const HighlightsList: React.FC<Props> = ({
     <div className={styles.highlightsListContainer}>
       <div className={styles.highlightsHeader}>
         <div className={styles.searchContainer}>
-          <input
-            type="text"
+          <Editor
             className={styles.searchBar}
-            placeholder="Search for annotations..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(editorState) =>
+              setSearchTerm(editorState.read(() => $getRoot().getTextContent()))
+            }
+            isSearchMode={true}
           />
           <button
             onClick={() => setIsFilterOpen(!isFilterOpen)}
